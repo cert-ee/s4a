@@ -58,6 +58,6 @@ Without the following open source products, this project would not have been pos
 
   * https://grafana.com/
 
-* Detector - Web interface to manage detector settings and other aspects. Communication with salt and web interface is done via loopback connected to a MongoDB database.
+* Loopback - Web interface to manage detector settings and other aspects. Communication with salt and web interface is done via loopback connected to a MongoDB database.
 
     * [https://github.com/strongloop/loopback](https://github.com/strongloop/loopback)
