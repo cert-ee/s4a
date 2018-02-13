@@ -1,0 +1,4 @@
+Codename: xenial
+Components: universe 
+Architectures: amd64
+#SignWith: A72DB3EF

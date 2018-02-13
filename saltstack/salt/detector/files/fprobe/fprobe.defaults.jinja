@@ -1,0 +1,7 @@
+#fprobe default configuration file
+
+INTERFACE="{{ int }}"
+FLOW_COLLECTOR="localhost:9555"
+
+#fprobe can't distinguish IP packet from other (e.g. ARP)
+OTHER_ARGS="-fip"

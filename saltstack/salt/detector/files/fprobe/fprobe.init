@@ -1,0 +1,85 @@
+#! /bin/bash
+#
+#
+#		Written by Miquel van Smoorenburg <miquels@cistron.nl>.
+#		Modified for Debian 
+#		by Ian Murdock <imurdock@gnu.ai.mit.edu>.
+#	
+#		Modified for fprobe
+#		by Radu Spineanu <radu@timisoara.roedu.net>
+#
+
+
+### BEGIN INIT INFO
+# Provides:          fprobe
+# Required-Start:    $local_fs $remote_fs $syslog $network $time
+# Required-Stop:     $local_fs $remote_fs $syslog $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: NetFlow Collector
+### END INIT INFO
+
+
+# Include fprobe defaults if available
+if [ -f /etc/default/fprobe ] ; then
+        . /etc/default/fprobe
+fi
+
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=/usr/sbin/fprobe
+NAME=fprobe
+DESC=fprobe
+
+IFS_bak="$IFS"; IFS=,
+read -ra INTERFACES <<< "$INTERFACE"
+IFS="$IFS_bak"
+
+test -x $DAEMON || exit 0
+
+set -e
+
+case "$1" in
+  start)
+        for int in "${INTERFACES[@]}"; 
+        do
+        	DAEMON_OPTS="-i$int $OTHER_ARGS -l1:${int} $FLOW_COLLECTOR"
+		export PIDFILE=/var/run/$NAME-$int.pid
+		echo -n "Starting $DESC: "
+		start-stop-daemon --start --quiet --pidfile /var/run/$NAME[$int].pid \
+			--exec $DAEMON -- $DAEMON_OPTS
+		echo "$NAME.$int"
+	done
+	;;
+  stop)
+        for int in "${INTERFACES[@]}"; 
+        do
+		echo -n "Stopping $DESC: "
+		export PIDFILE=/var/run/$NAME-$int.pid
+		start-stop-daemon --stop --quiet --pidfile /var/run/$NAME[$int].pid \
+			--oknodo --exec $DAEMON -- "-l1:${int}"
+		echo "$NAME.$int"
+	done
+	;;
+  restart|force-reload)
+        for int in "${INTERFACES[@]}"; 
+        do
+        	DAEMON_OPTS="-i$int $OTHER_ARGS -l1:${int} $FLOW_COLLECTOR"
+		export PIDFILE=/var/run/$NAME-$int.pid
+		echo -n "Restarting $DESC: "
+		start-stop-daemon --stop --quiet --pidfile \
+			/var/run/$NAME[$int].pid --exec $DAEMON
+		sleep 1
+		start-stop-daemon --start --quiet --pidfile \
+			/var/run/$NAME[$int].pid --exec $DAEMON -- $DAEMON_OPTS
+		echo "$NAME.$int"
+	done
+	;;
+  *)
+	N=/etc/init.d/$NAME
+    echo "Usage: $N {start|stop|restart|force-reload}" >&2
+	exit 1
+	;;
+esac
+
+exit 0

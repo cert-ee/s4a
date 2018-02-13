@@ -1,0 +1,4 @@
+#!/bin/bash
+
+find /var/log/elasticsearch/ -mtime +7 -name "elasticsearch-*.log*" -print -delete
+find /var/log/elasticsearch/ -name "elasticsearch-*.log" -exec xz \{\} \;

@@ -1,0 +1,6 @@
+CONF_DIR=/etc/elasticsearch
+LOG_DIR=/var/log/elasticsearch
+PID_DIR=/var/run/elasticsearch
+
+ES_JAVA_OPTS="-Xms{{ salt['pillar.get']('elastic:java:opts', '30') }}g -Xmx{{ salt['pillar.get']('elastic:java:opts', '30') }}g"
+ES_STARTUP_SLEEP_TIME=5

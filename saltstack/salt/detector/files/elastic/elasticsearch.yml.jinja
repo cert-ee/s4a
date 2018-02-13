@@ -1,0 +1,18 @@
+cluster.name: {{ salt['grains.get']('host', 'elastic') }}
+node.name: "{{ salt['grains.get']('host', 'node1') }}"
+#node.machine: "{{ salt['grains.get']('fqdn', 'node1') }}"
+node.data: true
+path.data: /srv/elasticsearch
+#bootstrap.mlockall: true
+network.host: _local_
+
+gateway.expected_nodes: 1
+gateway.recover_after_data_nodes: 1
+
+discovery.zen.minimum_master_nodes: 1
+
+indices.breaker.fielddata.limit: 70%
+
+cluster.routing.allocation.disk.threshold_enabled: true
+cluster.routing.allocation.disk.watermark.low: 90%
+cluster.routing.allocation.disk.watermark.high: 95%

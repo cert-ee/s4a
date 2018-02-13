@@ -1,0 +1,49 @@
+#!/bin/sh
+#
+# Custom calculations to set RETAINNUMDAYS
+# Initalize variables
+export LC_ALL=C
+sizes=""
+nr=""
+# We need bc for non integer calculations and jq for parsing json
+apt-get -q -y install bc jq >>/dev/null
+
+#Get last seven days in proper format
+for ((i=7; i>=1; i--))
+do
+    nr+=" $(date +%y%m%d -d "$i days ago")"
+done
+
+# Get index sizes in bytes
+for x in $nr
+do
+    sizes+=" $(curl --silent -XGET "localhost:9200/sessions-$x/_stats" | jq ".indices[\"sessions-$x\"].total.store.size_in_bytes // empty" 2>/dev/null)"
+done
+
+# Get average of all returned index sizes
+average=`echo $sizes | jq -s 'add/length'`
+
+# Convert average to GB
+gb=$((`printf "%.0f\n" $average`/1024/1024/1024))
+
+# Make sure that $gb is not zero
+if [ $gb -eq 0 ] ; then
+    gb=1
+fi
+
+# Get disk size in MB of disk where /srv is mounted
+disk=`df -BG --output=size /srv/elasticsearch | tail -n 1 | grep -oP '\d+(?=G)'`
+
+# Add in a reserve
+if mountpoint /srv/elasticsearch >>/dev/null ; then
+    available=$(( $disk - $(printf "%.0f\n" $(echo "$disk * 0.15" | bc)) ))
+else
+    available=$(( $disk - $(printf "%.0f\n" $(echo "$disk * 0.2" | bc)) ))
+fi
+
+# Final number of days to keep indexes
+# Moloch daily cron
+ESHOSTPORT={{ es }}
+RETAINNUMDAYS=$(( $available / $gb ))
+
+/data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS

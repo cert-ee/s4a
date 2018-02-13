@@ -1,0 +1,14 @@
+[Unit]
+Description=Moloch Capture Service
+After=syslog.target
+
+[Service]
+Type=simple
+StandardOutput=syslog.target
+ExecStart=/data/moloch/bin/moloch-capture -c /data/moloch/etc/config.ini -n {{ grains['host'] }}
+Restart=always
+LimitMEMLOCK=infinity
+WorkingDirectory=/data/moloch
+
+[Install]
+WantedBy=multi-user.target

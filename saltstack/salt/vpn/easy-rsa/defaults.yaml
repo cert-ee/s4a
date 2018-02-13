@@ -1,0 +1,12 @@
+openvpn:
+  easyrsa_path: /etc/openvpn/easy-rsa
+  keys_path: /etc/openvpn/keys
+  key_size: 2048
+  ca_expire: 3650
+  key_expire: 3650
+  key_country: "EE"
+  key_province: "Harjumaa"
+  key_city: "Tallinn"
+  key_email: ""
+  key_org: ""
+  key_ou: ""

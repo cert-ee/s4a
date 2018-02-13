@@ -1,0 +1,186 @@
+{% set elasticsearch_host = salt['pillar.get']('central:es', 'localhost') %}
+# EveBox Server configuration file.
+
+# Path to the data directory. This directory holds data for EveBox
+# such as the configuration/user/authentication database, and SQLite
+# database files if the sqlite database is being used. It needs to be
+# writable by the user EveBox is running as. If not set it will
+# default to the current directory.
+#data-directory: /var/lib/evebox
+
+http:
+
+  tls:
+    # Enable or disable TLS.
+    # env: EVEBOX_TLS_ENABLED
+    enabled: false
+
+    # Path to certificate PEM file.
+    # env: EVEBOX_TLS_CERT
+    #certificate: /etc/nginx/ssl/nginx.crt
+
+    # Path to key PEM file.
+    # env: EVEBOX_TLS_KEY
+    #key: /etc/nginx/ssl/nginx.key
+
+  # If behind a reverse proxy set to true so the proper IP address of
+  # clients can be logged.
+  # Default: false
+  # env: EVEBOX_HTTP_REVERSE_PROXY
+  #reverse-proxy: true
+
+  # Enable HTTP request logging. This can be very verbose.
+  # Default: false
+  # env: EVEBOX_HTTP_REQUEST_LOGGING
+  #request-logging: true
+
+# Database configuration.
+database:
+
+  # Database type: elasticsearch, sqlite.
+  type: elasticsearch
+
+  elasticsearch:
+    url: http://{{ elasticsearch_host }}:9200
+    index: evebox
+    disable-certificate-check: True
+
+    # The keyword to use for terms query. EveBox will do its best to
+    # figure this out on its own, but if you need to override it, you
+    # can do so here. The usual values are:
+    #    raw     -> Logstash / Elastic Search < 5.
+    #    keyword -> Logstash / Elastic Search >= 5.
+    #    ""      -> Filebeat / Elastic Search >= 5.
+    # Note that a quoted empty string is required to force an empty string.
+    #keyword: ""
+
+    #username: username
+    #password: password
+
+  postgresql:
+
+    # If managed, EveBox will manage its own PostgreSQL instance using
+    # PostgreSQL found on the path.
+    managed: true
+
+    # If not managed...
+    # PostgreSQL hostname (default: localhost; env: PGHOST)
+    #host:
+
+    # PostgreSQL port (default: 5432; env: PGPORT)
+    #port:
+
+    # Database name (default: eveobox; env: PGDATABASE)
+    #database:
+
+    # Database user (default: evebox; env: PGUSER)
+    #user:
+
+    # Password (default: ""; env: PGPASSWORD)
+    #password:
+
+  # Retention period in days. 0 or comment out to disable.
+  # Currently only applies to SQLite, not Elastic Search.
+  #retention-period: 3
+
+authentication:
+
+  # Default: false
+  # env: EVEBOX_AUTHENTICATION_REQUIRED
+  required: no
+
+  # Type of login required:
+  # - username         -- just a username...
+  # - usernamepassword -- username and password
+  # env: EVEBOX_AUTHENTICATION_TYPE
+  type: usernamepassword
+
+  # A little message that is displayed in the login dialog.
+  #login-message: Some message here...
+
+  # GitHub Oauth2 authentication. More of a proof of concept for Oauth
+  # in EveBox. Configuration will likely move into the UI at some
+  # point.
+  #
+  # Users must still be added with the EveBox config tool.
+  github:
+
+    enabled: no
+
+    # GitHub Client ID
+    # env: GITHUB_CLIENT_ID
+    client-id: GITHUB_CLIENT_ID
+
+    # GitHub Client Secret
+    # env: GITHUB_CLIENT_SECRET
+    client-secret: GITHUB_CLIENT_SECRET
+
+    # Callback URL. The EveBox portion of the callback URL is:
+    #     /auth/github/callback
+    callback: http://localhost:5636/auth/github/callback
+
+# The server can process a log file, eliminating the need for a
+# separate agent process if on the same machine.
+input:
+  # Toggle to disable the input without commenting it out.
+  enabled: true
+
+  # Filename to read.
+  filename: "/var/log/suricata/eve.json"
+
+  # Bookmark directory, as with the agent if the server can't write to
+  # the directory where the above log file is, you need to provide
+  # this.
+  bookmark-directory: /var/lib/evebox
+
+  # Custom fields to add to the event. Only top level fields can be set,
+  # and only simple values (string, integer) can be set.
+  custom-fields:
+    # Set a host field. This will override the "host" field set by
+    # Suricata if the Suricata "sensor-name" option is set.
+    #host: "evebox-server"
+
+  # The event reader can add rules to events.
+  rules:
+    - /etc/suricata/rules/*.rules
+
+geoip:
+  disabled: false
+  # Path to the MaxMind database. This must be the version 2 database
+  # (http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.mmdb.gz)
+  # File must be ungzipped.
+  #
+  # This is temporary, EveBox will eventually support downloading and
+  # updateing the geo database itself.
+  database: /etc/evebox/GeoLite2-City.mmdb
+
+# Event services: links that will be provided on events to link to additonal
+# services.
+event-services:
+
+  # Custom service to link the rule in Scirius.
+  - type: custom
+    enabled: false
+    name: Scirius
+
+    # Only make available for alert types.
+    event-types:
+      - alert
+
+    # URL template. All eve values can be used.
+    url: https://10.16.1.179/rules/rule/{{'{{'}}alert.signature_id{{'}}'}}
+
+  # Custom service to link to Dumpy for full packet capture.
+  #
+  # This one has no event-types meaning its available for all event types.
+  - type: custom
+    enabled: false
+    name: Dumpy
+
+    # The URL template, {''{{'}}raw{{'}}'}} expands to the raw eve event as a JSON
+    # string which is then url encoded.
+    url: http://10.16.1.1:7000/?event={{'{{'}}raw{{'}}'}}
+
+    # Open in new window. The default is the same window.
+    target: new
+

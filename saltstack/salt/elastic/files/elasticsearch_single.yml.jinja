@@ -1,0 +1,18 @@
+cluster.name: {{ grains['fqdn'] }}
+node.name: "{{ grains['host'] }}"
+path.data: /srv/elasticsearch
+node.master: true
+node.data: true
+bootstrap.memory_lock: true
+network.host: {{ grains['ipv4'][0] }}
+http.cors.enabled: true
+http.cors.allow-origin: "/.*/"
+discovery.zen.minimum_master_nodes: 1
+
+thread_pool.index.queue_size: 1000
+thread_pool.bulk.queue_size: 1000
+
+indices.breaker.fielddata.limit: 70%
+
+cluster.routing.allocation.disk.watermark.low: 90%
+cluster.routing.allocation.disk.watermark.high: 95%

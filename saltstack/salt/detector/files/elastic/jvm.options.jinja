@@ -1,0 +1,58 @@
+## JVM configuration
+
+{%- set mem = (salt['grains.get']('mem_total') / 1000) | int %}
+{%- if mem >= 64 %}
+{%- set heap = '26g' %}
+{%- elif mem >= 16 %}
+{%- set num = ((mem - 8) / 2) | int %}
+{%- set heap = num ~ 'g' %}
+{%- else %}
+{%- set heap = '2g' %}
+{%- endif %}
+
+# Xms represents the initial size of total heap space
+# Xmx represents the maximum size of total heap space
+
+-Xms{{ heap }}
+-Xmx{{ heap }}
+
+
+## GC configuration
+-XX:+UseConcMarkSweepGC
+-XX:CMSInitiatingOccupancyFraction=75
+-XX:+UseCMSInitiatingOccupancyOnly
+
+# pre-touch memory pages used by the JVM during initialization
+-XX:+AlwaysPreTouch
+
+# force the server VM (remove on 32-bit client JVMs)
+-server
+
+# explicitly set the stack size (reduce to 320k on 32-bit client JVMs)
+-Xss1m
+
+# set to headless, just in case
+-Djava.awt.headless=true
+
+# ensure UTF-8 encoding by default (e.g. filenames)
+-Dfile.encoding=UTF-8
+
+# use our provided JNA always versus the system one
+-Djna.nosys=true
+
+# use old-style file permissions on JDK9
+-Djdk.io.permissionsUseCanonicalPath=true
+
+# flags to configure Netty
+-Dio.netty.noUnsafe=true
+-Dio.netty.noKeySetOptimization=true
+-Dio.netty.recycler.maxCapacityPerThread=0
+
+# log4j 2
+-Dlog4j.shutdownHookEnabled=false
+-Dlog4j2.disable.jmx=true
+-Dlog4j.skipJansi=true
+
+# generate a heap dump when an allocation from the Java heap fails
+# heap dumps are created in the working directory of the JVM
+-XX:+HeapDumpOnOutOfMemoryError

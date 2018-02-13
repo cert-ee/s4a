@@ -1,0 +1,4 @@
+verbose
+basedir /srv/{{ grains['fqdn'] }}/repositories
+#ask-passphrase
+

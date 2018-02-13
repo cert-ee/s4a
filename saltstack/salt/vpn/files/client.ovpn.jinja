@@ -1,0 +1,41 @@
+{%- import_yaml "vpn/easy-rsa/defaults.yaml" as defaults %}
+{%- set ovpn = salt['pillar.get']('openvpn:key', defaults.openvpn, merge=True) %}
+{%- set server = salt['pillar.get']('openvpn:server', {}) %}
+{%- set client = salt['file.basename'](path).split('.')[0] %}
+{%- set client_crt_path = 'file://' ~ ovpn.keys_path ~ '/' ~ client ~ '.crt' %}
+{%- set ca_crt_path = 'file://' ~ ovpn.keys_path ~ '/ca.crt' %}
+{%- set ta_path = 'file://' ~ ovpn.keys_path ~ '/ta.key' %}
+client
+dev {{ server.dev }}
+proto {{ server.proto }}
+remote {{ server.local }}
+port {{ server.port }}
+management 127.0.0.1 41195
+nobind
+connect-retry-max 1
+#user nobody
+#group nogroup
+persist-key
+persist-tun
+<ca>
+{{ salt['cp.get_file_str'](path=ca_crt_path) }}
+</ca>
+<cert>
+{{ salt['cp.get_file_str'](path=client_crt_path) }}
+</cert>
+key {{ salt['pillar.get']('detector:vpn:keys_path', '/etc/openvpn') }}/detector.key
+ns-cert-type server
+remote-cert-tls server
+key-direction 1
+<tls-auth>
+{{ salt['cp.get_file_str'](path=ta_path) }}
+</tls-auth>
+cipher {{ server.cipher }}
+auth {{ server.auth }}
+key-direction 1
+comp-lzo
+verb {{ server.verb }}
+auth-nocache
+script-security 2
+up /etc/openvpn/update-resolv-conf
+down /etc/openvpn/update-resolv-conf

@@ -1,0 +1,118 @@
+{% set api = salt['pillar.get']('detector:api', {'host': '127.0.0.1', 'port': '4000'}) %}
+{% set connect_test = salt.network.connect(api.host, port=api.port) %}
+{% if connect_test.result == True %}
+{% 	set certs_config = salt.http.query('http://'+api.host+':'+api.port+'/api/components/nginx', decode=true )['dict'] %}
+{% endif %}
+server {
+	listen 80 default_server;
+	listen [::]:80 default_server;
+
+	root /var/www/html;
+
+	server_name _;
+
+	error_page 404 502 503 500 /404.html;
+	location = /404.html {
+		root /etc/nginx/404;
+		internal;
+	}
+
+	location / {
+		return 301 https://$host$request_uri;
+	}
+}
+
+server {
+	listen 443 ssl http2;
+	listen [::]:443 ssl http2;
+
+	# SSL configuration. Using snakeoil certs
+	ssl_session_timeout 1d;
+	ssl_session_cache shared:SSL:50m;
+	ssl_session_tickets off;
+	ssl_protocols TLSv1.2;
+	ssl_ciphers 'ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256';
+	ssl_prefer_server_ciphers on;
+{% if certs_config['configuration'] is defined and certs_config['configuration']['ssl_cert'] is defined and certs_config['configuration']['ssl_key'] is defined and certs_config['configuration']['ssl_chain'] %}
+	ssl_certificate detector.chained.crt;
+	ssl_certificate_key detector.key;
+{% else %}
+	ssl_certificate /etc/ssl/certs/ssl-cert-snakeoil.pem;
+	ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
+{% endif %}
+	# HSTS (ngx_http_headers_module is required) (15768000 seconds = 6 months)
+	add_header Strict-Transport-Security max-age=15768000;
+
+	root /var/www/html;
+
+	server_name _;
+
+	proxy_send_timeout          3600;
+	proxy_read_timeout          3600;
+
+	error_page 404 502 503 500 /404.html;
+	location = /404.html {
+                root /etc/nginx/404;
+                internal;
+        }
+
+        location /server_status {
+		stub_status on;
+		access_log   off;
+		allow 127.0.0.1;
+		allow ::1;
+		deny all;
+		satisfy any;
+	}
+
+	auth_basic "Detector";
+	auth_basic_user_file /etc/nginx/.htpasswd;
+
+	location /netdata {
+		rewrite /[^\/]+(.*) $1  break;
+		proxy_pass http://127.0.0.1:19999;
+	}
+
+	location /evebox {
+		rewrite /[^\/]+(.*) $1  break;
+		proxy_pass http://127.0.0.1:5636;
+	}
+
+	location /kibana {
+		rewrite /[^\/]+(.*) $1  break;
+		proxy_pass http://127.0.0.1:5601;
+	}
+
+	location /grafana {
+		rewrite /[^\/]+(.*) $1  break;
+		proxy_pass http://127.0.0.1:3000;
+	}
+
+        location /moloch {
+                rewrite /[^\/]+(.*) $1  break;
+                proxy_pass http://127.0.0.1:8005;
+		proxy_set_header moloch_user $remote_user;
+        }
+
+	location /api {
+		proxy_pass http://127.0.0.1:4000;
+	}
+
+	location /nfsen {
+		alias /var/www/nfsen;
+
+		index nfsen.php;
+		try_files $uri $uri/ =404;
+
+		location ~ \.php$ {
+			include snippets/fastcgi-php.conf;
+			fastcgi_param SCRIPT_FILENAME /var/www/$fastcgi_script_name;
+			fastcgi_pass unix:/run/php/php7.0-fpm.sock;
+		}
+	}
+
+	location / {
+		proxy_pass http://127.0.0.1:4001;
+		proxy_set_header x-remote-user $remote_user;
+	}
+}
