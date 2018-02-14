@@ -48,6 +48,7 @@ dependency_pkgs:
     - pkgs:
       - apt-transport-https
       - python-software-properties
+      - python-elasticsearch
 
 oracle-ppa:
   pkgrepo.managed:
