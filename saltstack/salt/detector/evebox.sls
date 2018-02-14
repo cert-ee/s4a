@@ -1,5 +1,8 @@
 {% set evebox_es_index_name = "evebox-*" %}
 
+include:
+  - detector.elastic
+
 golang_repo:
   pkgrepo.managed:
     - humanname: Golang 1.8 PPA for Ubuntu 16.04 Xenial
