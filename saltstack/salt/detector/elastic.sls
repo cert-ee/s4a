@@ -61,6 +61,8 @@ elasticsearch_jvm_options:
     - template: jinja
     - require:
       - file: elasticsearch_dirs
+    - watch_in:
+      - service: elasticsearch
 
 elasticsearch_defaults:
   file.managed:
@@ -73,7 +75,7 @@ elasticsearch_defaults:
 
 elasticsearch_cron:
   file.managed:
-    - name: /etc/cron.daily/elassticsearch
+    - name: /etc/cron.daily/elasticsearch
     - source: salt://{{ slspath }}/files/elastic/elasticsearch.cron
     - user: root
     - group: root
