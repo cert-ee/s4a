@@ -46,6 +46,16 @@ detector_sudoers_s4a:
     - require:
       - pkg: sudo
 
+detector_defaults_s4a:
+  file.replace:
+    - name: /etc/default/s4a-detector
+    - pattern: '^CENTRAL_API_URL\=.+$'
+    - repl: CENTRAL_API_URL={{ salt['pillar.get']('detector:central:proto') }}://{{ salt['pillar.get']('detector:central:host') }}:{{ salt['pillar.get']('detector:central:port') }}/api
+    - require:
+      - pkg: s4a-detector
+    - watch_in:
+      - service: s4a-detector
+
 detector_gpg_conf:
   file.managed:
     - user: root

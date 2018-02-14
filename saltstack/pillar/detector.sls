@@ -1,4 +1,8 @@
 detector:
+  central:
+    host: 'central.example.com'
+    port: 5000
+    proto: http
   int_default: 'eth1'
   repo: repo.example.com
   keyserver: keys.example.com
