@@ -12,7 +12,7 @@
 /usr/bin/salt-call state.apply detector/cron
 {%- if components is defined %}
 {%- for c in components %}
-{%- if c.enabled and c.installed %}
+{%- if c.enabled and c.installed and c.name != 'evebox-agent'%}
 /usr/bin/salt-call state.apply detector/{{ c.name }}
 {%- endif %}
 {%- endfor %}
