@@ -1,6 +1,7 @@
 s4a ALL = NOPASSWD: /usr/bin/salt-call state.apply detector/autoupgrade
 s4a ALL = NOPASSWD: /usr/bin/salt-call state.apply detector/autoupgrade_disabled
 s4a ALL = NOPASSWD: /usr/bin/salt-call state.apply detector/autoupgrade_enabled
+s4a ALL = NOPASSWD: /usr/bin/salt-call state.apply detector/cron
 s4a ALL = NOPASSWD: /usr/bin/salt-call state.apply detector/elastic
 s4a ALL = NOPASSWD: /usr/bin/salt-call state.apply detector/elastic_uninstall
 s4a ALL = NOPASSWD: /usr/bin/salt-call state.apply detector/evebox

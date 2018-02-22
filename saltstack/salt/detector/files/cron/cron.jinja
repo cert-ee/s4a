@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Automatically run salt states for all components that are installed and enabled
+
+{%- set api = salt['pillar.get']('detector:api', {'host': '127.0.0.1', 'port': '4000'}) %}
+{%- set connect_test = salt.network.connect(api.host, port=api.port) %}
+{%- if connect_test.result == True %}
+{%-     set components = salt.http.query('http://' ~ api.host ~ ':' ~ api.port ~ '/api/components', decode=true)['dict'] %}
+{%- endif %}
+
+# Salt states to run
+/usr/bin/salt-call state.apply detector/cron
+{%- if components is defined %}
+{%- for c in components %}
+{%- if c.enabled and c.installed %}
+/usr/bin/salt-call state.apply detector/{{ c.name }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
