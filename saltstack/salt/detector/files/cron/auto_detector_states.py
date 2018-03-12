@@ -33,6 +33,9 @@ def main():
             output = caller.cmd('state.apply', 'detector/{0}'.format(comp['name']))
             logging.info('Ran state detector/%s with result: %s', comp['name'], output)
 
+    cron_output = caller.cmd('state.apply', 'detector/cron')
+    logging.info('Ran state detector/cron with result: %s', cron_output)
+
 
 if __name__ == '__main__':
     main()

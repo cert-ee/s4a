@@ -1,5 +1,6 @@
 include:
   - detector.deps
+  - detector.cron
 
 mongodb-org:
   pkg.installed:
