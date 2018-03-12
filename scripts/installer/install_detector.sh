@@ -16,7 +16,7 @@ SSH_KEY_PATH="/root/.ssh"
 SSH_KEY="$SSH_KEY_PATH/id_rsa"
 SSH_KEY_PUB="$SSH_KEY_PATH/id_rsa.pub"
 
-REQUIRED_PKGS="curl pwgen apache2-utils jq python-pygit2"
+REQUIRED_PKGS="curl pwgen apache2-utils jq python-pygit2 libssh2-1"
 SALT_STATES="detector/detector,detector/nginx"
 
 S4A_USER="s4a"
@@ -151,6 +151,7 @@ confirm "$( gettext -s wish_to_continue )"
 # Install
 # -----------------------------------------------------------------------------
 msg_header "* $( gettext -s installing_prequisites ): "
+echo "deb [arch=amd64 trusted=yes] https://$DEB_REPO_HOST xenial universe" | sudo tee -a /etc/apt/sources.list.d/repo-s4a.list
 echo "	$REQUIRED_PKGS"
 apt_result=$( apt-get update && apt-get -q -y install $REQUIRED_PKGS 2>&1 )
 msg_header "* $(gettext -s bootstrapping_salt):"
