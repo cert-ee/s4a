@@ -1,4 +1,4 @@
-{% set evebox_es_index_name = "logstash-*" %}
+{% set evebox_es_index_name = "logstash" %}
 
 golang_repo:
   pkgrepo.managed:
@@ -46,7 +46,7 @@ evebox_set_template:
   elasticsearch_index_template.present:
     - name: "{{ evebox_es_index_name }}"
     - definition:
-        template: "{{ evebox_es_index_name }}"
+        template: "{{ evebox_es_index_name }}-*"
         order: 1
         settings:
           number_of_shards: 1
