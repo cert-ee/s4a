@@ -42,7 +42,6 @@ database:
 
   elasticsearch:
     url: http://{{ elasticsearch_host }}:9200
-    index: logstash
     disable-certificate-check: True
 
     # The keyword to use for terms query. EveBox will do its best to
@@ -183,4 +182,3 @@ event-services:
 
     # Open in new window. The default is the same window.
     target: new
-
