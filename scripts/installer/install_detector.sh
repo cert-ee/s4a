@@ -30,6 +30,7 @@ DISK_SRV_AVAIL=10000000
 MEM_TOTAL=32000000
 CPU_SUGGESTED=4
 
+export LC_ALL=C
 export TEXTDOMAINDIR="./locale"
 export TEXTDOMAIN="en"
 # -----------------------------------------------------------------------------
