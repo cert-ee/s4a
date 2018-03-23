@@ -5,7 +5,9 @@ GIT_REPO_HOST="github.com"
 GIT_REPO_PORT="22"
 GIT_SALT_STATES="ssh://git@$GIT_REPO_HOST:$GIT_REPO_PORT/cert-ee/s4a.git"
 GIT_SALT_PILLAR="ssh://git@$GIT_REPO_HOST:$GIT_REPO_PORT/cert-ee/s4a.git"
-API_URL="http://central.example.com:5000/api/report/feedback"
+API_HOST="central.example.com"
+API_PORT="5000"
+API_URL="http://$API_HOST:$API_PORT/api/report/feedback"
 DEB_REPO_HOST="repo.example.com"
 DEB_REPO_PORT="80"
 
@@ -127,6 +129,10 @@ if [ ! $( check_port $DEB_REPO_HOST $DEB_REPO_PORT ) ] ; then
 fi
 if [ ! $( check_port $GIT_REPO_HOST $GIT_REPO_PORT ) ] ; then
 	msg_exit "$( gettext -s host_unreachable ): $GIT_REPO_HOST $( gettext -s port ) $GIT_REPO_PORT"
+fi
+
+if [ ! $( check_port $API_HOST $API_PORT ) ] ; then
+	msg_exit "$( gettext -s host_unreachable ): $API_HOST $( gettext -s port ) $API_PORT"
 fi
 
 if [ $( df --output=avail / | tail -1 ) -lt $DISK_ROOT_AVAIL ] || [ $( df --output=avail /srv/ | tail -1 ) -lt $DISK_SRV_AVAIL ] ; then
