@@ -32,9 +32,12 @@ DISK_SRV_AVAIL=10000000
 MEM_TOTAL=32000000
 CPU_SUGGESTED=4
 
-export LC_ALL=C
+#export LC_ALL=C
 export TEXTDOMAINDIR="./locale"
 export TEXTDOMAIN="en"
+[[ ${LANG/\.*/} == "et_EE" ]] && export TEXTDOMAIN="et"
+# No translation, fallback to EN
+[[ ! -d $TEXTDOMAINDIR/$TEXTDOMAIN ]] && export LANG=en_US.UTF-8
 # -----------------------------------------------------------------------------
 # Functions
 # -----------------------------------------------------------------------------
@@ -163,7 +166,7 @@ echo "	$REQUIRED_PKGS"
 apt_result=$( apt-get update && apt-get -q -y install $REQUIRED_PKGS 2>&1 )
 msg_header "* $(gettext -s bootstrapping_salt):"
 echo "	$SALT_BOOTSTRAP"
-salt_bootstrap_result=$( curl -s -L $SALT_BOOTSTRAP | sh 2>&1 )
+salt_bootstrap_result=$( curl -s -L $SALT_BOOTSTRAP | LANG=en_US.UTF-8 sh 2>&1 )
 if [ $? != 0 ] ; then
 	msg_header "$( gettext -s salt_install_failed ): "
 	echo -e "---\n$salt_result\n---"
