@@ -5,7 +5,9 @@ GIT_REPO_HOST="github.com"
 GIT_REPO_PORT="22"
 GIT_SALT_STATES="ssh://git@$GIT_REPO_HOST:$GIT_REPO_PORT/cert-ee/s4a.git"
 GIT_SALT_PILLAR="ssh://git@$GIT_REPO_HOST:$GIT_REPO_PORT/cert-ee/s4a.git"
-API_URL="http://central.example.com:5000/api/report/feedback"
+API_HOST="central.example.com"
+API_PORT="5000"
+API_URL="http://$API_HOST:$API_PORT/api/report/feedback"
 DEB_REPO_HOST="repo.example.com"
 DEB_REPO_PORT="80"
 
@@ -30,9 +32,12 @@ DISK_SRV_AVAIL=10000000
 MEM_TOTAL=32000000
 CPU_SUGGESTED=4
 
-export LC_ALL=C
+#export LC_ALL=C
 export TEXTDOMAINDIR="./locale"
 export TEXTDOMAIN="en"
+[[ ${LANG/\.*/} == "et_EE" ]] && export TEXTDOMAIN="et"
+# No translation, fallback to EN
+[[ ! -d $TEXTDOMAINDIR/$TEXTDOMAIN ]] && export LANG=en_US.UTF-8
 # -----------------------------------------------------------------------------
 # Functions
 # -----------------------------------------------------------------------------
@@ -129,6 +134,10 @@ if [ ! $( check_port $GIT_REPO_HOST $GIT_REPO_PORT ) ] ; then
 	msg_exit "$( gettext -s host_unreachable ): $GIT_REPO_HOST $( gettext -s port ) $GIT_REPO_PORT"
 fi
 
+if [ ! $( check_port $API_HOST $API_PORT ) ] ; then
+	msg_exit "$( gettext -s host_unreachable ): $API_HOST $( gettext -s port ) $API_PORT"
+fi
+
 if [ $( df --output=avail / | tail -1 ) -lt $DISK_ROOT_AVAIL ] || [ $( df --output=avail /srv/ | tail -1 ) -lt $DISK_SRV_AVAIL ] ; then
 	msg_header "\n$( gettext -s low_on_space )"
 	echo ""
@@ -157,7 +166,7 @@ echo "	$REQUIRED_PKGS"
 apt_result=$( apt-get update && apt-get -q -y install $REQUIRED_PKGS 2>&1 )
 msg_header "* $(gettext -s bootstrapping_salt):"
 echo "	$SALT_BOOTSTRAP"
-salt_bootstrap_result=$( curl -s -L $SALT_BOOTSTRAP | sh 2>&1 )
+salt_bootstrap_result=$( curl -s -L $SALT_BOOTSTRAP | LANG=en_US.UTF-8 sh 2>&1 )
 if [ $? != 0 ] ; then
 	msg_header "$( gettext -s salt_install_failed ): "
 	echo -e "---\n$salt_result\n---"

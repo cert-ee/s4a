@@ -1,0 +1,13 @@
+[Unit]
+Description=EveBox Server
+
+[Service]
+User=evebox
+Group=evebox
+ExecStart=/usr/bin/evebox server $ELASTICSEARCH_URL $CONFIG $EVEBOX_OPTS
+EnvironmentFile=-/etc/default/evebox
+Environment=EVEBOX_DATA_DIRECTORY=/var/lib/evebox
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
