@@ -10,6 +10,8 @@ gen_client_cert:
     - tgt: {{ data.id }}
     - arg:
       - . {{ ovpn.easyrsa_path }}/vars; export KEY_CN="{{ client }}"; export KEY_ALTNAMES="DNS:{{ client }}"; $OPENSSL ca -batch -days $KEY_EXPIRE -out "{{ data.path.split('.')[0] }}.crt" -in "{{ data.path }}" $CA_EXT -config "$KEY_CONFIG" -subj '/C={{ ovpn.key_country }}/ST={{ ovpn.key_province }}/L={{ ovpn.key_city }}/CN={{ client }}/name={{ salt['pillar.get']('openvpn:key:key_ou') }}/emailAddress={{ salt['pillar.get']('openvpn:key:key_email') }}'
+      - creates: {{ ovpn.keys_path }}/{{ client }}.crt
+      - cwd: {{ ovpn.keys_path }}
 
 client_ovpn:
   salt.state:
