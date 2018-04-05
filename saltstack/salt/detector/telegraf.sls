@@ -1,10 +1,10 @@
-{% set api = salt['pillar.get']('detector:api', {'host': '127.0.0.1', 'port': '4000'}) %}
+{% set api = salt['pillar.get']('detector:api', {'host': '127.0.0.1', 'port': 4000}) %}
 {% set connect_test = salt.network.connect(api.host, port=api.port) %}
 {% if connect_test.result == True %}
-{%      set detector_status = salt.http.query('http://'+api.host+':'+api.port+'/api/registration', decode=true)['dict'] %}
+{%      set detector_status = salt.http.query('http://'+api.host+':'+api.port|string+'/api/registration', decode=true)['dict'] %}
 {% endif %}
-{% if detector_status is not defined 
-        or detector_status == "" 
+{% if detector_status is not defined
+        or detector_status == ""
         or detector_status[0] is not defined
         or detector_status[0].registration_status != "Approved" %}
 
