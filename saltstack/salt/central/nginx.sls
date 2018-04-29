@@ -32,8 +32,8 @@ central_nginx_passwd:
   file.managed:
     - name: /etc/nginx/.htpasswd
     - user: s4a
-    - group: s4a
-    - mode: 600
+    - group: www-data
+    - mode: 640
     - require:
       - file: central_nginx_conf
 
