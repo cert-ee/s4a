@@ -161,7 +161,10 @@ confirm "$( gettext -s wish_to_continue )"
 # Install
 # -----------------------------------------------------------------------------
 msg_header "* $( gettext -s installing_prequisites ): "
-echo "deb [arch=amd64 trusted=yes] https://$DEB_REPO_HOST xenial universe" | sudo tee -a /etc/apt/sources.list.d/repo-s4a.list
+REPO_CHK=`grep -c "https://$DEB_REPO_HOST xenial universe" /etc/apt/sources.list.d/repo-s4a.list 2>/dev/null`
+if [ ${REPO_CHK:-0} -lt 1 ] ; then
+	echo "deb [arch=amd64 trusted=yes] https://$DEB_REPO_HOST xenial universe" | sudo tee -a /etc/apt/sources.list.d/repo-s4a.list
+fi
 echo "	$REQUIRED_PKGS"
 apt_result=$( apt-get update && apt-get -q -y install $REQUIRED_PKGS 2>&1 )
 msg_header "* $(gettext -s bootstrapping_salt):"
