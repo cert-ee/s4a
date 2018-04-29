@@ -1,8 +1,8 @@
-{% set api = salt['pillar.get']('detector:api', {'host': '127.0.0.1', 'port': '4000'}) %}
+{% set api = salt['pillar.get']('detector:api', {'host': '127.0.0.1', 'port': 4000}) %}
 {% set int_def = salt['pillar.get']('detector:int_default', 'eth1' ) %}
 {% set connect_test = salt.network.connect(api.host, port=api.port) %}
 {% if connect_test.result == True %}
-{% 	set int = salt.http.query('http://'+api.host+':'+api.port+'/api/network_interfaces/listForSalt', decode=true )['dict']['interfaces'] %}
+{% 	set int = salt.http.query('http://'+api.host+':'+api.port|string+'/api/network_interfaces/listForSalt', decode=true )['dict']['interfaces'] %}
 {% endif %}
 {% if int is not defined or int == "" %}
 {% 	set int = int_def %}

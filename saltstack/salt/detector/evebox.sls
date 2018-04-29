@@ -1,4 +1,4 @@
-{% set evebox_es_index_name = "evebox-*" %}
+{% set evebox_es_index_name = "logstash-*" %}
 
 golang_repo:
   pkgrepo.managed:
@@ -107,7 +107,7 @@ evebox_defaults_conf:
 
 evebox_sysd_service:
   file.managed:
-    - name: /etc/systemd/system/multi-user.target.wants/evebox.service
+    - name: /lib/systemd/system/evebox.service
     - source: salt://{{ slspath }}/files/evebox/evebox.service
     - template: jinja
 
