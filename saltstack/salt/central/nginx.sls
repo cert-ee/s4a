@@ -28,6 +28,15 @@ central_nginx_conf:
     - require:
       - pkg: nginx_pkg
 
+central_nginx_passwd:
+  file.managed:
+    - name: /etc/nginx/.htpasswd
+    - user: s4a
+    - group: s4a
+    - mode: 600
+    - require:
+      - file: central_nginx_conf
+
 central_nginx_site_conf:
   file.managed:
     - name: /etc/nginx/sites-available/default
