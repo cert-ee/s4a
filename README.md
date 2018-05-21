@@ -61,3 +61,6 @@ Without the following open source products, this project would not have been pos
 * Loopback - Web interface to manage detector settings and other aspects. Communication with salt and web interface is done via loopback connected to a MongoDB database.
 
     * [https://github.com/strongloop/loopback](https://github.com/strongloop/loopback)
+
+* SaltStack - Configuration management and orchestration for both detector and central components
+    * [https://saltstack.com/]
