@@ -1,4 +1,4 @@
-{% set evebox_es_index_name = "evebox-*" %}
+{% set evebox_es_index_name = "logstash-*" %}
 
 golang_repo:
   pkgrepo.managed:
