@@ -12,9 +12,9 @@ extend:
 
 central_php_fpm_pkg:
   pkg.installed:
-    - name: nginx
     - refresh: true
     - pkgs:
+        - nginx
         - php-fpm
 
 central_nginx_conf:
