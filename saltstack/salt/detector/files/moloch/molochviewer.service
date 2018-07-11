@@ -1,5 +1,5 @@
 Description=Moloch Viewer Service
-After=syslog.target
+After=syslog.target elasticsearch.target
 
 [Service]
 Type=simple
@@ -7,6 +7,7 @@ User=nobody
 WorkingDirectory=/data/moloch/viewer/
 ExecStart=/data/moloch/bin/node /data/moloch/viewer/viewer.js -c /data/moloch/etc/config.ini
 Restart=always
+RestartSec=3
 
 [Install]
 WantedBy=multi-user.target
