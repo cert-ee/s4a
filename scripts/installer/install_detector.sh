@@ -263,8 +263,12 @@ if [ "x$ERRORS_DETECTED" != "x0" ] ; then
 				-d '{ "message": "initial installation failed", "id": "'$machine_id'", "logs": { "apt": "'"$apt_result"'", "salt_bootstrap": "'"$salt_bootstrap_result"'", "salt": "'"$salt_result"'"} }' )
 
 	# Output results
-	case_nr=$( echo $cert_result | jq -r '.case_number' )
-	faq_url=$( echo $cert_result | jq -r '.faq_url' )
-	echo -e "\n\t$( gettext -s log_sent_to_cert ):\n\t\tID: $machine_id\n\t\t$( gettext -s received_case_nr ): $case_nr"
-	echo -e "\n\t$faq_url\n"
+	case_nr=$( echo $cert_result | jq -r '.case_number' || submit_error="$cert_result" )
+	faq_url=$( echo $cert_result | jq -r '.faq_url' || submit_error="$submit_error\n---\n$cert_result" )
+	if [ -z $submit_error ] ; then
+		echo -e "\n\t$( gettext -s log_sent_to_cert ):\n\t\tID: $machine_id\n\t\t$( gettext -s received_case_nr ): $case_nr"
+		echo -e "\n\t$faq_url\n"
+	else
+		echo "\n---$submit_error\n---"
+	fi
 fi
