@@ -8,8 +8,11 @@ nr=""
 # We need bc for non integer calculations and jq for parsing json
 apt-get -q -y install bc jq >>/dev/null
 
+# Get number of available indexes
+allindex=$(curl --silent -XGET 'localhost:9200/_cat/indices?v&pretty' --stderr - | grep 'sessions' | wc -l)
+
 #Get last seven days in proper format
-for ((i=7; i>=1; i--))
+for ((i=$allindex; i>=1; i--))
 do
     nr+=" $(date +%y%m%d -d "$i days ago")"
 done
@@ -31,7 +34,7 @@ if [ $gb -eq 0 ] ; then
     gb=1
 fi
 
-# Get disk size in MB of disk where /srv is mounted
+# Get disk size in GB of disk where /srv is mounted
 disk=`df -BG --output=size /srv/elasticsearch | tail -n 1 | grep -oP '\d+(?=G)'`
 
 # Add in a reserve
