@@ -43,10 +43,11 @@ function debbuild_helper() {
 	local build_options=$1
 	shift
 	local provides="$*"
+	[[ -z $provides ]] && provides="pfring-$pkg_name"
 	(
 		cd $pkg_name
 		dh_make -y -c gpl2 -n -s -p pfring-${pkg_name}_${pf_ring_version} >> $build_path/build.pfring-${pkg_name}.log
-		sed -i "s/\(Description:.*\)/Replaces: ${provides// /, }\n\\1: $description/" debian/control
+		sed -i "s/\(Description: \).*/Replaces: ${provides// /, }\n\\1: $description/" debian/control
 		echo -e " [1m*[0m Building pfring-${pkg_name}"
 		DEB_BUILD_OPTIONS="$build_options" debuild -j32 -b -uc -us >> $build_path/build.pfring-${pkg_name}.log
 	)
@@ -70,7 +71,7 @@ sudo apt-get -q -q install $build_deps >> $build_path/build.pfring.log 2>&1
 echo -e " [1m*[0m Grabing PF_RING:$git_pfring_version"
 cd $build_path
 git clone -q $git_pfring
-( cd $build_path/PF_RING && git checkout $git_pfring_version )
+( cd $build_path/PF_RING && git checkout $git_pfring_version ) >> $build_path/build.pfring.log 2>&1
 
 # Prepare PF_RING
 # ------------------------------------------------------------------------------
@@ -108,6 +109,11 @@ make all 2>&1 | pv -p -t -l -s 740 -  >> $build_path/build.pfring.log
 
 cd $build_path/PF_RING/kernel
 sudo make -f Makefile.dkms deb >> $build_path/build.pfring.log 2>&1
+
+# build pfring package
+cd $build_path/PF_RING/package/ubuntu
+debuild -j32 -b -uc -us >> $build_path/build.pfring.log 2>&1
+
 find /var/lib/dkms/pfring/ -name "pfring-dkms*.deb" -exec cp \{\} $build_path \;
 
 # migrate debs
