@@ -3,7 +3,7 @@
 version="$1"
 # version=3.2.2
 if [ -z $version ] ; then
-	echo "Usage: $0 <suricata version>"
+	echo "Usage: $0 <suricata version> [tag]"
 	exit
 fi
 
@@ -15,6 +15,7 @@ DEBEMAIL="automake@auto.bots"
 DEBFULLNAME="automake"
 
 git_pfring="https://github.com/ntop/PF_RING.git"
+git_pfring_version="tags/${2:-7.2.0}"
 git_libhtp="https://github.com/OISF/libhtp.git"
 url_suricata="https://www.openinfosecfoundation.org/download/suricata-${version}.tar.gz"
 # from PF_RING's  README.FIRST
@@ -66,9 +67,10 @@ sudo apt-get -q -q install $build_deps >> $build_path/build.pfring.log 2>&1
 # PF_RING
 # ------------------------------------------------------------------------------
 # 
-echo -e " [1m*[0m Grabing PF_RING"
+echo -e " [1m*[0m Grabing PF_RING:$git_pfring_version"
 cd $build_path
 git clone -q $git_pfring
+( cd $build_path/PF_RING && git checkout $git_pfring_version )
 
 # Prepare PF_RING
 # ------------------------------------------------------------------------------
@@ -79,8 +81,6 @@ pf_ring_version=`grep "RING_VERSION " 	PF_RING/kernel/linux/pf_ring.h | awk -F\"
 cd $build_path/PF_RING/package/ubuntu
 # configure expects that PF_RING is in $HOME
 HOME=$build_path ./configure >> $build_path/build.pfring.log
-# Fix problem with dkms build
-sed -i ':a;N;$!ba;s/ifeq (,\$(BUILD_KERNEL[^\n]\+\n\([^\n]\+\)\n/ifeq (,\$(KERNELRELEASE))\n\1\nelse\n BUILD_KERNEL=\$(KERNELRELEASE)\n/g' $build_path/PF_RING/kernel/Makefile
 # no signing yet
 sed -i "s/dpkg-sig/#dpkg-sig/" Makefile
 
@@ -96,10 +96,7 @@ sudo apt-get -q -q install `find $build_path -name pfring-lib_*_amd64.deb` >> $b
 sudo dpkg -r tcpdump libpcap0.8 libpcap0.8-dev libpcap-dev libpcap >> $build_path/build.suricata.log 2>&1
 sudo apt-get -q -q install `find $build_path -name pfring-libpcap_*_amd64.deb` >> $build_path/build.suricata.log
 
-# Remove pcap test, shouldn't be important
-sed -i "s/^\(pcap-invalid-version-2\)/# \\1/" tcpdump/tests/TESTLIST
-sed -i "s/^\(pcap-ng-invalid-vers-2\)/# \\1/" tcpdump/tests/TESTLIST
-debbuild_helper tcpdump nocheck "command-line network traffic analyzer, with PF_RINT support" "tcpdump"
+debbuild_helper tcpdump "command-line network traffic analyzer, with PF_RINT support" "nocheck" "tcpdump"
 
 # build PF_RING dkms
 # ------------------------------------------------------------------------------
@@ -107,9 +104,6 @@ debbuild_helper tcpdump nocheck "command-line network traffic analyzer, with PF_
 echo -e " [1m*[0m Building PF_RING: $build_path/build.pfring.log"
 
 cd $build_path/PF_RING/package/ubuntu
-# skip Snort module
-# ??? rm -rf $build_path/PF_RING/userland/snort
-# went into loop :(((
 make all 2>&1 | pv -p -t -l -s 740 -  >> $build_path/build.pfring.log
 
 cd $build_path/PF_RING/kernel
