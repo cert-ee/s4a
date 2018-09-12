@@ -18,7 +18,7 @@ SSH_KEY_PATH="/root/.ssh"
 SSH_KEY="$SSH_KEY_PATH/id_rsa"
 SSH_KEY_PUB="$SSH_KEY_PATH/id_rsa.pub"
 
-REQUIRED_PKGS="curl pwgen apache2-utils jq python-pygit2 libssh2-1"
+REQUIRED_PKGS="curl pwgen apache2-utils jq git xz-utils python-pygit2 libssh2-1"
 SALT_STATES="detector/detector,detector/nginx"
 
 S4A_USER="s4a"
