@@ -8,7 +8,8 @@ Type=forking
 Restart=always
 TimeoutStartSec=8
 RestartSec=8
-ExecStart=/usr/bin/suricata {% for val in int %}{{ space() }}--pfring-int={{ val }}{% endfor %} --pfring-cluster-id=99 --pfring-cluster-type=cluster_flow -c /etc/suricata/suricata.yaml -D
+ExecStartPre=/bin/rm -f @e_rundir@suricata.pid
+ExecStart=/usr/bin/suricata {% for val in int %}{{ space() }}--pfring-int={{ val }}{% endfor %} --pfring-cluster-id=99 --pfring-cluster-type=cluster_flow -c /etc/suricata/suricata.yaml --pidfile @e_rundir@suricata.pid -D
 ExecReload=/bin/kill -HUP $MAINPID
 ExecStop=/bin/kill $MAINPID
 
