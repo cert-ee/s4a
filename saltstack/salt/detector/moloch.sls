@@ -17,6 +17,14 @@
 include:
   - detector.deps
 
+# ttyname failed: Inappropriate ioctl for device
+neutralize_annoying_message:
+  file.line:
+    - name: /root/.profile
+    - match: ^mesg n || true
+    - mode: replace
+    - content: tty -s && mesg n || true
+
 detector_moloch_pkg:
   pkg.installed:
     - name: moloch
@@ -136,7 +144,10 @@ detector_moloch_update_geo:
     - require:
       - pkg: detector_moloch_pkg
 
+{% set moloch_db_status = "-1" %}
+{% if salt['file.file_exists' ]('/data/moloch/db/db.pl') %}
 {% set moloch_db_status = salt['cmd.run'](cmd='/data/moloch/db/db.pl ' + es + ' info | grep "DB Version" | awk \{\'print $3\'}', python_shell=True) %}
+{% endif %}
 {% if not moloch_db_status or moloch_db_status == "-1" %}
 detector_moloch_db:
   cmd.run:
