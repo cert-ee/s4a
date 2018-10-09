@@ -176,6 +176,8 @@ detector_moloch_admin_profile:
   cmd.run:
     - name: /usr/local/bin/moloch_reset_profile.sh admin
     - runas: root
+    - require:
+      - file: detector_moloch_admin_profile_sh
 
 detector_moloch_capture_systemd:
   file.managed:
