@@ -1,0 +1,11 @@
+/var/log/suricata/*.json
+{
+    rotate 3
+    daily
+    missingok
+    create
+    sharedscripts
+    postrotate
+            systemctl restart evebox-agent
+    endscript
+}
