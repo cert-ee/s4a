@@ -46,7 +46,7 @@ evebox_db_template:
 
 evebox_set_template:
   cmd.run:
-    - name: curl -XPUT -d@/etc/evebox/elasticsearch-template-es5x.json http://{{ salt['pillar.get']('central:es', 'localhost') }}:9200/_template/logstash
+    - name: curl -XPUT -d@/etc/evebox/elasticsearch-template-es5x.json http://{{ salt['pillar.get']('central:es', 'localhost') }}:9200/_template/evebox*
     - require:
       - pkg: evebox_pkgs
       - file: evebox_db_template
