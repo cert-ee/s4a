@@ -1,0 +1,16 @@
+{%- set influxdb_host = salt['pillar.get']('central:influxdb:host', 'localhost') %}
+{%- set influxdb_port = salt['pillar.get']('central:influxdb:port', '8086') %}
+{%- set influxdb_user = salt['pillar.get']('central:influxdb:user', 's4a') %}
+{%- set influxdb_pass = salt['pillar.get']('central:influxdb:pass', 's4a') %}
+{%- set influxdb_proto = salt['pillar.get']('central:influxdb:proto', 'https') %}
+
+{%- set kapacitor_host = salt['pillar.get']('central:kapacitor:host', 'localhost') %}
+{%- set kapacitor_port = salt['pillar.get']('central:kapacitor:port', '9092') %}
+{%- set kapacitor_proto = salt['pillar.get']('central:kapacitor:proto', 'http') %}
+
+BOLT_PATH="/var/lib/chronograf/chronograf-v1.db"
+BASE_PATH="/chronograf"
+INFLUXDB_URL="{{ influxdb_proto }}://{{ influxdb_host }}:{{ influxdb_port }}"
+INFLUXDB_USERNAME="{{ influxdb_user }}"
+INFLUXDB_PASSWORD="{{ influxdb_pass }}"
+KAPACITOR_URL="{{ kapacitor_proto }}://{{ kapacitor_host }}:{{ kapacitor_port }}"
