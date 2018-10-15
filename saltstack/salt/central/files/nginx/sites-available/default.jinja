@@ -2,11 +2,12 @@
 {%- set chronograf_port = salt['pillar.get']('central:chronograf:port', '8888') %}
 
 server {
-        listen {{ salt['network.interfaces']()['eth0']['inet'][0]['address'] }}:5000 ssl http2;
+        listen {{ salt['grains.get']('ipv4')[0] }}:5000 default_server ssl;
 
         root /var/www/html;
 
-        server_name _;
+	# Let's Encrypt is not happy about this during renewal. Therefore commenting out
+	#server_name {{ grains['fqdn'] }} {{ grains['host'] }}.{{ grains['domain'].split('.')[1:]|join('.') }};
 
 	# SSL configuration. Let's Encrypt
 	ssl_certificate /etc/letsencrypt/live/{{ grains['fqdn'] }}/fullchain.pem;
@@ -30,7 +31,7 @@ server {
 
 	root /var/www/html;
 
-	server_name _;
+	server_name {{ grains['fqdn'] }} {{ grains['host'] }}.{{ grains['domain'].split('.')[1:]|join('.') }};
 
 	error_page 404 502 503 500 /404.html;
 	location = /404.html {
