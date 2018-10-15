@@ -53,3 +53,11 @@ var alert = data
 // Alert
 alert
   .log('/tmp/cpu_alert_log.txt')
+  .email()
+    .to('s4a@localhost')
+    .to('sms@localhost')
+  .slack()
+    .workspace('slack.localhost')
+    .channel('#alerts')
+    .username('kapacitor')
+    .iconEmoji(':smile:')

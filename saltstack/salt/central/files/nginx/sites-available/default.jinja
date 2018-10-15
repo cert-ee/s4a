@@ -1,11 +1,12 @@
+{%- set chronograf_host = salt['pillar.get']('central:chronograf:host', 'localhost') %}
+{%- set chronograf_port = salt['pillar.get']('central:chronograf:port', '8888') %}
 
 server {
-        listen {{ salt['grains.get']('ipv4')[0] }}:5000 default_server ssl;
+        listen {{ salt['network.interfaces']()['eth0']['inet'][0]['address'] }}:5000 ssl http2;
 
         root /var/www/html;
 
-        # Let's Encrypt is not happy about this during renewal. Therefore commenting out
-        #server_name {{ grains['fqdn'] }} {{ grains['host'] }}.{{ grains['domain'].split('.')[1:]|join('.') }};
+        server_name _;
 
 	# SSL configuration. Let's Encrypt
 	ssl_certificate /etc/letsencrypt/live/{{ grains['fqdn'] }}/fullchain.pem;
@@ -29,7 +30,7 @@ server {
 
 	root /var/www/html;
 
-	server_name {{ grains['fqdn'] }} {{ grains['host'] }}.{{ grains['domain'].split('.')[1:]|join('.') }};
+	server_name _;
 
 	error_page 404 502 503 500 /404.html;
 	location = /404.html {
@@ -99,15 +100,15 @@ server {
 		proxy_pass http://127.0.0.1:3000;
 	}
 
+        location /chronograf {
+                proxy_pass http://{{ chronograf_host }}:{{ chronograf_port }};
+        }
+
 	location /moloch {
 		rewrite /[^\/]+(.*) $1  break;
 		proxy_pass http://127.0.0.1:8005;
 		satisfy any;
 		allow all;
-	}
-
-	location /chronograf {
-		proxy_pass http://127.0.0.1:8888;
 	}
 
 	location /api {

@@ -9,3 +9,6 @@ central:
     user: s4a
     pass: it-secure
     proto: https
+  chronograf:
+    host: influxdb.example.com
+    port: 8888

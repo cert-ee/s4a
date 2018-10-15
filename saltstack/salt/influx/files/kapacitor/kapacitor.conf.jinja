@@ -1,8 +1,26 @@
-{%- set influxdb_host = salt['pillar.get']('central:influxdb:host', 'localhost') %}
-{%- set influxdb_port = salt['pillar.get']('central:influxdb:port', '8086') %}
-{%- set influxdb_user = salt['pillar.get']('central:influxdb:user', 's4a') %}
-{%- set influxdb_pass = salt['pillar.get']('central:influxdb:pass', 's4a') %}
-{%- set influxdb_proto = salt['pillar.get']('central:influxdb:proto', 'https') %}
+{%- set influxdb_host = salt['pillar.get']('kapacitor:influxdb:host', 'localhost') %}
+{%- set influxdb_port = salt['pillar.get']('kapacitor:influxdb:port', '8086') %}
+{%- set influxdb_user = salt['pillar.get']('kapacitor:influxdb:user', 'kapacitor') %}
+{%- set influxdb_pass = salt['pillar.get']('kapacitor:influxdb:pass', 'kapacitor') %}
+{%- set influxdb_proto = salt['pillar.get']('kapacitor:influxdb:proto', 'http') %}
+
+{%- set kapacitor_https_enabled = salt['pillar.get']('kapacitor:https_enabled', 'false') %}
+{%- set kapacitor_cert = salt['pillar.get']('kapacitor:cert', '/etc/ssl/kapacitor.pem') %}
+
+{%- set smtp_enabled = salt['pillar.get']('kapacitor:smtp:enabled', 'false') %}
+{%- set smtp_host = salt['pillar.get']('kapacitor:smtp:host', 'localhost') %}
+{%- set smtp_port = salt['pillar.get']('kapacitor:smtp:port', '25') %}
+{%- set smtp_user = salt['pillar.get']('kapacitor:smtp:user', '') %}
+{%- set smtp_pass = salt['pillar.get']('kapacitor:smtp:pass', '') %}
+{%- set smtp_from = salt['pillar.get']('kapacitor:smtp:from', 'root@localhost') %}
+
+{%- set slack_enabled = salt['pillar.get']('kapacitor:slack:enabled', '"false"') %}
+{%- set slack_default = salt['pillar.get']('kapacitor:slack:default', '"false"') %}
+{%- set slack_workspace = salt['pillar.get']('kapacitor:slack:workspace', '') %}
+{%- set slack_hook_url = salt['pillar.get']('kapacitor:slack:hook_url', '') %}
+{%- set slack_channel = salt['pillar.get']('kapacitor:slack:channel', '') %}
+{%- set slack_global = salt['pillar.get']('kapacitor:slack:global', '') %}
+{%- set slack_state_changes_only = salt['pillar.get']('kapacitor:slack:state_changes_only', '') %}
 
 # The hostname of this node.
 # Must be resolvable by any configured InfluxDB hosts.
@@ -30,8 +48,8 @@ default-retention-policy = ""
   log-enabled = true
   write-tracing = false
   pprof-enabled = false
-  https-enabled = false
-  https-certificate = "/etc/ssl/kapacitor.pem"
+  https-enabled = {{ kapacitor_https_enabled }}
+  https-certificate = "{{ kapacitor_cert }}"
   ### Use a separate private key location.
   # https-private-key = ""
 
@@ -209,13 +227,13 @@ default-retention-policy = ""
   # Configure an SMTP email server
   # Will use TLS and authentication if possible
   # Only necessary for sending emails from alerts.
-  enabled = false
-  host = "localhost"
-  port = 25
-  username = ""
-  password = ""
+  enabled = {{ smtp_enabled }}
+  host = "{{ smtp_host }}"
+  port = {{ smtp_port }}
+  username = "{{ smtp_user }}"
+  password = "{{ smtp_pass }}"
   # From address for outgoing mail
-  from = ""
+  from = "{{ smtp_from }}"
   # List of default To addresses.
   # to = ["oncall@example.com"]
 
@@ -382,29 +400,29 @@ default-retention-policy = ""
 #  repeating [[slack]] sections.
 [[slack]]
   # Configure Slack.
-  enabled = false
+  enabled = {{ slack_enabled }}
   # identify one of the slack configurations as the default
-  default = true
+  default = {{ slack_default }}
 
   # workspace ID
   # This can be any string to identify this particular slack configuration
   # A logical choice is the name of the slack workspace, e.g. <workspace>.slack.com
-  workspace = ""
+  workspace = "{{ slack_workspace }}"
 
   # The Slack webhook URL, can be obtained by adding
   # an Incoming Webhook integration.
   # Visit https://slack.com/services/new/incoming-webhook
   # to add new webhook for Kapacitor.
-  url = ""
+  url = "{{ slack_hook_url }}"
   # Default channel for messages
-  channel = ""
+  channel = "{{ slack_channel }}"
   # If true all the alerts will be sent to Slack
   # without explicitly marking them in the TICKscript.
   global = false
   # Only applies if global is true.
   # Sets all alerts in state-changes-only mode,
   # meaning alerts will only be sent if the alert state changes.
-  state-changes-only = false
+  state-changes-only = {{ slack_state_changes_only }}
 
 [telegram]
   # Configure Telegram.
