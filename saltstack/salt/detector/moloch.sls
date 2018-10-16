@@ -9,9 +9,6 @@
 {% endif %}
 {% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', 'localhost' ) + ':9200' %}
 
-{% set wise_ip_out = salt['environ.get']('PATH_MOLOCH_WISE_IP_OUT') %}
-{% set wise_url_out = salt['environ.get']('PATH_MOLOCH_WISE_URL_OUT') %}
-{% set wise_domain_out = salt['environ.get']('PATH_MOLOCH_WISE_DOMAIN_OUT') %}
 {% set yara_path = salt['environ.get']('PATH_MOLOCH_YARA_OUT') %}
 
 # Note:
