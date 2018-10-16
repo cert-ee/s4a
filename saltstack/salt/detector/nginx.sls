@@ -33,7 +33,10 @@ detector_nginx_site_conf:
 {% set api = salt['pillar.get']('detector:api', {'host': '127.0.0.1', 'port': 4000}) %}
 {% set connect_test = salt.network.connect(api.host, port=api.port) %}
 {% if connect_test.result == True %}
-{% set certs_config = salt.http.query('http://'+api.host+':'+api.port|string+'/api/components/nginx', decode=true )['dict'] %}
+{% 	set http_result = salt.http.query('http://'+api.host+':'+api.port|string+'/api/components/nginx', decode=true ) %}
+{% endif %}
+{% if http_result['dict'] is defined %}
+{% 	set certs_config = http_result['dict'] %}
 {% endif %}
 {% if certs_config is defined and certs_config['configuration'] is defined and certs_config['configuration']['ssl_cert'] is defined and certs_config['configuration']['ssl_key'] is defined and certs_config['configuration']['ssl_chain'] is defined %}
 detector_nginx_certs:
