@@ -161,6 +161,23 @@ detector_moloch_admin_profile:
     - require:
       - file: detector_moloch_admin_profile_sh
 
+detector_moloch_reset_users_sh:
+  file.managed:
+    - name: /usr/local/bin/moloch_reset_users.sh
+    - source: salt://{{ slspath }}/files/moloch/moloch_reset_users.sh
+    - user: root
+    - group: root
+    - mode: 755
+    - require:
+      - pkg: detector_moloch_pkg
+
+detector_moloch_reset_users:
+  cmd.run:
+    - name: /usr/local/bin/moloch_reset_users.sh
+    - runas: root
+    - require:
+      - file: detector_moloch_reset_users_sh
+
 detector_moloch_capture_systemd:
   file.managed:
     - name: /etc/systemd/system/molochcapture.service
