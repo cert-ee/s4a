@@ -60,7 +60,7 @@ function confirm
 		read -p "$msg " yn
 		case $yn in
 			[Yy]* ) break;;
-			[Nn]* ) exit;;
+			[Nn]* ) exit 1;;
 			* ) echo "$( gettext -s yes_or_no )";;
 		esac
 	done
@@ -127,6 +127,14 @@ echo -e """
 msg_header "\n$( gettext -s initial_requirements )\n"
 
 # Some essential tests
+if [ -e /etc/default/s4a-detector ] && [ -e /root/.mongodb.passwd ] ; then
+	$( confirm "$( gettext -s previous_install_detected )" )
+	if [ $? == 0 ] ; then
+		. /root/.mongodb.passwd
+		/usr/bin/mongo --quiet --authenticationDatabase admin -u $MONGODB_USER -p $MONGODB_PASS s4a-detector --eval "db.dropDatabase();"
+	fi
+fi
+
 if [ ! $( check_port $DEB_REPO_HOST $DEB_REPO_PORT ) ] ; then
 	msg_exit "$( gettext -s host_unreachable ): $DEB_REPO_HOST $( gettext -s port ) $DEB_REPO_PORT"
 fi
