@@ -9,6 +9,11 @@
 {% endif %}
 {% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', 'localhost' ) + ':9200' %}
 
+{% set wise_ip_out = salt['environ.get']('PATH_MOLOCH_WISE_IP_OUT') %}
+{% set wise_url_out = salt['environ.get']('PATH_MOLOCH_WISE_URL_OUT') %}
+{% set wise_domain_out = salt['environ.get']('PATH_MOLOCH_WISE_DOMAIN_OUT') %}
+{% set yara_path = salt['environ.get']('PATH_MOLOCH_YARA_OUT') %}
+
 # Note:
 # After initial installation user needs to be added
 # /data/moloch/bin/moloch_add_user.sh <user id> <user friendly name> <password> [<options>]
@@ -103,24 +108,6 @@ detector_moloch_rc_local:
     - template: jinja
     - defaults:
         int: {{ int | join(';') }}
-
-{% for val in int %}
-capture_interface_{{ val }}:
-  network.managed:
-    - name: {{ val }}
-    - enabled: True
-    - type: eth
-    - proto: manual
-    - rx: off
-    - tx: off
-    - sg: off
-    - tso: off
-    - ufo: off
-    - gso: off
-    - gro: off
-    - lro: off
-    - required_in: detector_moloch_capture_service
-{% endfor %}
 
 detector_moloch_config_ini:
   file.managed:
