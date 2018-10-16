@@ -32,7 +32,7 @@ detector_nginx_site_conf:
 
 {% set api = salt['pillar.get']('detector:api', {'host': '127.0.0.1', 'port': 4000}) %}
 {% set connect_test = salt.network.connect(api.host, port=api.port) %}
-{% if connect_test.result %}
+{% if connect_test.result == True %}
 {% 	set http_result = salt.http.query('http://'+api.host+':'+api.port|string+'/api/components/nginx', decode=true ) %}
 {% endif %}
 {% if http_result is defined and http_result['dict'] is defined %}
