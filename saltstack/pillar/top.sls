@@ -6,6 +6,9 @@ base:
     - beacons
     - central
     - central.le
+  'influxdb.*':
+    - kapacitor
+    - chronograf
   'vpn.*':
     - vpn
   'docs.*':
