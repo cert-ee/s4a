@@ -9,8 +9,6 @@
 {% endif %}
 {% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', 'localhost' ) + ':9200' %}
 
-{% set yara_path = salt['environ.get']('PATH_MOLOCH_YARA_OUT') %}
-
 # Note:
 # After initial installation user needs to be added
 # /data/moloch/bin/moloch_add_user.sh <user id> <user friendly name> <password> [<options>]
