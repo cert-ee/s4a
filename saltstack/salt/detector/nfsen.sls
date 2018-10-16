@@ -62,24 +62,6 @@ fprobe_defaults_yaml:
     - defaults:
         int: {{ int[0] }}
 
-{% for val in int %}
-capture_interface_{{ val }}:
-  network.managed:
-    - name: {{ val }}
-    - enabled: True
-    - type: eth
-    - proto: manual
-    - rx: off
-    - tx: off
-    - sg: off
-    - tso: off
-    - ufo: off
-    - gso: off
-    - gro: off
-    - lro: off
-    - required_in: fprobe_pkg
-{% endfor %}
-
 fprobe_pkg:
   pkg.installed:
     - refresh: true

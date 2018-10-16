@@ -104,24 +104,6 @@ detector_moloch_rc_local:
     - defaults:
         int: {{ int | join(';') }}
 
-{% for val in int %}
-capture_interface_{{ val }}:
-  network.managed:
-    - name: {{ val }}
-    - enabled: True
-    - type: eth
-    - proto: manual
-    - rx: off
-    - tx: off
-    - sg: off
-    - tso: off
-    - ufo: off
-    - gso: off
-    - gro: off
-    - lro: off
-    - required_in: detector_moloch_capture_service
-{% endfor %}
-
 detector_moloch_config_ini:
   file.managed:
     - name: /data/moloch/etc/config.ini
