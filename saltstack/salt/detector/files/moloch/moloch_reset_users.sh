@@ -3,19 +3,25 @@
 . /etc/default/s4a-detector
 
 mongo_query='
-	db.getCollection("roleMapping").aggregate([
-	        { $lookup: { from: "user", localField: "principalId", foreignField: "_id", as: "user" }},
-        	{ $unwind: "$user" },
-	        { $lookup: { from: "role", localField: "roleId", foreignField: "_id", as: "role" }},
-        	{ $unwind: "$role" },
-	]).forEach( function (doc) { print (doc.user.username + " " + doc.role.name);});'
+	db.getCollection("user").aggregate([
+	        { $lookup: { from: "roleMapping", localField: "_id", foreignField: "principalId", as: "mapping" }},
+	        { $match: { "roleMapping.0": { $exists: false } } },
+		{ $unwind: { path: "$mapping", preserveNullAndEmptyArrays: true } },
+		{ $lookup: { from: "role", localField: "mapping.roleId", foreignField: "_id", as: "roles" }},
+		{ $match: { "role.0": { "$exists": false } } },
+		{ $unwind: { path: "$roles", preserveNullAndEmptyArrays: true } }
+	]).forEach( function (doc) { if (doc.roles) print (doc.username + " " + doc.roles.name); else print (doc.username + " none"); });'
 
 mongo_result=`mongo --quiet --authenticationDatabase admin -u $MONGODB_USER -p $MONGODB_PASSWORD $MONGODB_DATABASE --eval "$mongo_query"`
 
-IFS_bak="$IFS"
-IFS=$'\n'
-for user_data in $mongo_result
-do
-	IFS="$IFS_bak"
-	/usr/local/bin/moloch_reset_profile.sh $user_data
-done
+if [ $? == 0 ] ; then
+	IFS_bak="$IFS"
+	IFS=$'\n'
+	for user_data in $mongo_result
+	do
+		IFS="$IFS_bak"
+		/usr/local/bin/moloch_reset_profile.sh $user_data
+	done
+else
+	echo "MongoDB error"
+fi
