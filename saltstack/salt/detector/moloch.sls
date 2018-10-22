@@ -156,7 +156,7 @@ detector_moloch_admin_profile_sh:
 
 detector_moloch_admin_profile:
   cmd.run:
-    - name: /usr/local/bin/moloch_reset_profile.sh admin
+    - name: /usr/local/bin/moloch_reset_profile.sh admin admin
     - runas: root
     - require:
       - file: detector_moloch_admin_profile_sh

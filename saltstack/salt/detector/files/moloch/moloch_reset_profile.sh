@@ -1,11 +1,18 @@
 #!/bin/bash
 
 username=$1
-[[ $2 != "admin" ]] && admin="false"   || admin="true"
-[[ $2 == "none"  ]] && enabled="false" || enabled="true"
+admin=false
+enabled=false
+
+while [ ! -z $2 ] ; 
+do
+	[[ $2 == "admin" ]] && admin="true" && enabled="true"
+	[[ $2 == "read"  ]] && enabled="true"
+	shift
+done
 
 if [ "x$username" == "x" ] ; then
-	echo "Usage: $0 <username> [admin|user|none]"
+	echo "Usage: $0 <username> [admin] [read]"
 	exit
 fi
 
