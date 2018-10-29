@@ -59,7 +59,7 @@ central_nginx_site_conf_tmp:
       - file: central_nginx_site_conf
 
 {% for user, hash in salt['pillar.get']('central:htpasswd', {}).items() %}
-central_nginx_passwd:
+central_{{ user }}_nginx_passwd:
   file.append:
     - name: /etc/nginx/.htpasswd
     - template: jinja
