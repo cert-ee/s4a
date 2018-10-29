@@ -7,13 +7,12 @@ elastic_pkgs:
       - apt-transport-https
       - python-software-properties
 
-oracle-ppa:
+central_oracle-ppa:
   pkgrepo.managed:
     - humanname: Oracle Java 8 Repo
-    - name: deb http://mirror.cert.ee/ppa.launchpad.net/webupd8team/java/ubuntu/ xenial main
-    - key_url: http://mirror.cert.ee/ppa.launchpad.net/webupd8team/GPG-KEY-java.key
-    - file: /etc/apt/sources.list.d/webupd8team-ubuntu-java-xenial.list
-    - clean_file: True
+    - name: ppa:webupd8team/java
+    - keyid: EEA14886
+    - keyserver: keyserver.ubuntu.com
 
 oracle-license-select:
   cmd.run:

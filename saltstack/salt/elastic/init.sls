@@ -5,8 +5,8 @@ include:
 elastic_repo:
   pkgrepo.managed:
     - humanname: Elasticsearch 5.x Repo
-    - name: deb http://mirror.cert.ee/artifacts.elastic.co/packages/5.x/apt stable main
-    - key_url: http://mirror.cert.ee/packages.elastic.co/GPG-KEY-elasticsearch.key
+    - name: deb https://artifacts.elastic.co/packages/5.x/apt stable main
+    - key_url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
     - file: /etc/apt/sources.list.d/elasticsearch.list
 
 elastic_pkg:
