@@ -8,7 +8,7 @@ mongodb-org:
     - pkgs:
         - mongodb-org
     - require:
-        - pkgrepo: mongodb-org_repo
+        - pkgrepo: central_mongodb-org_repo
   service.running:
     - name: mongod
     - reload: true
