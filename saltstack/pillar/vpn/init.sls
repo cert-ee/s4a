@@ -22,5 +22,5 @@ openvpn:
     proto: tcp
     status: /var/log/openvpn-status.log
     verb: 1
-    ciphers: AES-128-CBC
+    cipher: AES-128-CBC
     routes:
