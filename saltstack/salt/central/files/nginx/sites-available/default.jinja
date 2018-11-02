@@ -9,6 +9,9 @@ server {
 	# Let's Encrypt is not happy about this during renewal. Therefore commenting out
 	#server_name {{ grains['fqdn'] }} {{ grains['host'] }}.{{ grains['domain'].split('.')[1:]|join('.') }};
 
+	proxy_send_timeout	3600;
+	proxy_read_timeout	3600;
+
 	# SSL configuration. Let's Encrypt
 	ssl_certificate /etc/letsencrypt/live/{{ grains['fqdn'] }}/fullchain.pem;
 	ssl_certificate_key /etc/letsencrypt/live/{{ grains['fqdn'] }}/privkey.pem;
@@ -51,6 +54,9 @@ server {
 	root /var/www/html;
 
 	server_name _;
+
+	proxy_send_timeout	3600;
+	proxy_read_timeout	3600;
 
 	error_page 404 502 503 500 /404.html;
 	location = /404.html {
