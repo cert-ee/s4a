@@ -8,7 +8,7 @@ golang_repo:
 evebox_repo:
   pkgrepo.managed:
     - humanname: EveBox Debian Repository
-    - name: deb [arch=amd64] http://files.evebox.org/evebox/debian unstable main
+    - name: deb [arch=amd64] http://files.evebox.org/evebox/debian stable main
     - key_url: https://evebox.org/files/GPG-KEY-evebox
     - file: /etc/apt/sources.list.d/evebox.list
 
