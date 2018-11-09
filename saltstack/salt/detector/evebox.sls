@@ -11,6 +11,7 @@ evebox_repo:
     - name: deb [arch=amd64] http://files.evebox.org/evebox/debian stable main
     - key_url: https://evebox.org/files/GPG-KEY-evebox
     - file: /etc/apt/sources.list.d/evebox.list
+    - clean_file: true
 
 evebox_pkgs:
   pkg.latest:
