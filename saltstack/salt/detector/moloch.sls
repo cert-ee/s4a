@@ -3,11 +3,21 @@
 {% set connect_test = salt.network.connect(api.host, port=api.port) %}
 {% if connect_test.result == True %}
 {% 	set int = salt.http.query('http://'+api.host+':'+api.port|string+'/api/network_interfaces/listForSalt', decode=true )['dict']['interfaces'] %}
+{% 	set http_result = salt.http.query('http://'+api.host+':'+api.port|string+'/api/components/moloch', decode=true ) %}
 {% endif %}
 {% if int is not defined or int == "" %}
 {% 	set int = int_def %}
 {% endif %}
+{% if http_result is defined and http_result['dict'] is defined %}
+{% 	set moloch_config = http_result['dict'] %}
+{% endif %}
+
 {% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', 'localhost' ) + ':9200' %}
+
+{% set wise_ip_out = salt['environ.get']('PATH_MOLOCH_WISE_IP_OUT') %}
+{% set wise_url_out = salt['environ.get']('PATH_MOLOCH_WISE_URL_OUT') %}
+{% set wise_domain_out = salt['environ.get']('PATH_MOLOCH_WISE_DOMAIN_OUT') %}
+{% set yara_path = salt['environ.get']('PATH_MOLOCH_YARA_OUT') %}
 
 # Note:
 # After initial installation user needs to be added
@@ -115,6 +125,8 @@ detector_moloch_config_ini:
     - defaults:
         int: {{ int | join(';') }}
         es: {{ es }}
+        moloch_config: {{ moloch_config }}
+        yara_path: {{ yara_path }}
     - require:
       - pkg: detector_moloch_pkg
 
@@ -228,3 +240,46 @@ detector_moloch_viewer_service:
     - watch:
       - pkg: detector_moloch_pkg
       - cmd: detector_moloch_admin_profile
+
+{% if (myenvvar is defined or wise_url_out is defined or wise_domain_out is defined ) %}
+moloch_wise_conf:
+  file.managed:
+    - name: /data/moloch/etc/wise.ini
+    - source: salt://{{ slspath }}/files/moloch/wise.ini.jinja
+    - user: root
+    - group: root
+    - mode: 755
+    - template: jinja
+    - defaults:
+       wise_ip_out: {{ wise_ip_out }}
+       wise_url_out: {{ wise_url_out }}
+       wise_domain_out: {{ wise_domain_out }}
+
+detector_moloch_wise_systemd:
+  file.managed:
+    - name: /etc/systemd/system/molochwise.service
+    - source: salt://{{ slspath }}/files/moloch/molochwise.service
+    - user: root
+    - group: root
+    - mode: 644
+    - template: jinja
+
+{% if moloch_config is defined and moloch_config['configuration'] is defined and moloch_config['configuration']['wise_enabled'] is defined and moloch_config['configuration']['wise_enabled'] == True %}
+detector_moloch_wise_service:
+  service.running:
+    - name: molochwise
+    - enable: true
+    - full_restart: true
+    - require:
+      - file: detector_moloch_wise_systemd
+      - file: moloch_wise_conf
+    - watch:
+      - pkg: detector_moloch_pkg
+{% else %}
+detector_moloch_wise_service:
+  service.dead:
+    - name: molochwise
+    - enable: false
+{% endif %}
+
+{% endif %}
