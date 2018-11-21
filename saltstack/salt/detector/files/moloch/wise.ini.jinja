@@ -1,0 +1,29 @@
+[wiseService]
+port=8081
+# Exclude common DNSBL style lookups
+excludeDomains=*.bl.barracudabrts.com;*.zen.spamhaus.org;*.in-addr.arpa;*.avts.mcafee.com;*.avqs.mcafee.com;*.bl.barracuda.com;*.lbl8.mailshell.net;*.dnsbl.sorbs.net;*.s.sophosxl.net
+
+{% if wise_ip_out is defined %}
+[file:PATH_MOLOCH_WISE_IP_OUT]
+file={{ wise_ip_out }}
+tags=ipwise
+type=ip
+format=tagger
+
+{% endif %}
+{% if wise_url_out is defined %}
+[file:PATH_MOLOCH_WISE_URL_OUT]
+file={{ wise_url_out }}
+tags=urlwise
+type=url
+format=tagger
+
+{% endif %}
+{% if wise_domain_out is defined %}
+[file:PATH_MOLOCH_WISE_DOMAIN_OUT]
+file={{ wise_domain_out }}
+tags=domainwise
+type=domain
+format=tagger
+
+{% endif %}
