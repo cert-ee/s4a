@@ -101,7 +101,6 @@ vm.max_map_count:
 capture_interface_{{ val }}:
   network.managed:
     - name: {{ val }}
-    - filename: {{ val }}
     - enabled: True
     - type: eth
     - proto: manual
