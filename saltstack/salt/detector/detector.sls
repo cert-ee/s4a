@@ -24,7 +24,7 @@ nodejs:
   pkg.installed:
     - refresh: true
     - pkgs:
-        - nodejs
+        - nodejs: 10.14.0-1nodesource1
         - yarn
 
 s4a-detector:
