@@ -6,12 +6,16 @@ mongodb-org:
   pkg.installed:
     - refresh: true
     - pkgs:
-        - mongodb-org
+        - mongodb-org: latest
+        - mongodb-org-mongos: latest
+        - mongodb-org-server: latest
+        - mongodb-org-shell: latest
+        - mongodb-org-tools: latest
     - require:
         - pkgrepo: mongodb-org_repo
   service.running:
     - name: mongod
-    - reload: true
+    - full_restart: true
     - enable: true
     - watch:
       - pkg: mongodb-org
