@@ -26,8 +26,9 @@ done
 # Get average of all returned index sizes
 average=`echo $sizes | jq -s 'add/length'`
 
-# Convert average to GB
-gb=$((`printf "%.0f\n" $average`/1024/1024/1024))
+# Convert average to GB and round up
+ngb=$(echo $average | awk '{ byte =$1 /1024/1024/1024; print byte}')
+gb=$(printf "%.0f" $ngb)
 
 # Make sure that $gb is not zero
 if [ $gb -eq 0 ] ; then
