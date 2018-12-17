@@ -32,3 +32,4 @@ s4a ALL = NOPASSWD:SETENV: /usr/bin/salt-call state.apply detector/vpn_enabled
 s4a ALL = NOPASSWD:SETENV: /usr/bin/salt-call state.apply detector/vpn
 s4a ALL = NOPASSWD:SETENV: /usr/bin/salt-call state.apply detector/vpn_uninstall
 s4a ALL = NOPASSWD:SETENV: /usr/bin/salt-call state.apply detector/bundle
+s4a ALL = NOPASSWD:SETENV: /usr/bin/apt-cache policy
