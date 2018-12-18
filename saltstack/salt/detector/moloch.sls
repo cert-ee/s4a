@@ -3,21 +3,21 @@
 {% set connect_test = salt.network.connect(api.host, port=api.port) %}
 {% if connect_test.result == True %}
 {% 	set int = salt.http.query('http://'+api.host+':'+api.port|string+'/api/network_interfaces/listForSalt', decode=true )['dict']['interfaces'] %}
-{% 	set http_result = salt.http.query('http://'+api.host+':'+api.port|string+'/api/components/moloch', decode=true ) %}
+{% 	set result_moloch = salt.http.query('http://'+api.host+':'+api.port|string+'/api/components/moloch', decode=true ) %}
+{% 	set result_settings = salt.http.query('http://'+api.host+':'+api.port|string+'/api/settings/paths', decode=true ) %}
 {% endif %}
 {% if int is not defined or int == "" %}
 {% 	set int = int_def %}
 {% endif %}
-{% if http_result is defined and http_result['dict'] is defined %}
-{% 	set moloch_config = http_result['dict'] %}
+{% if result_moloch is defined and result_moloch['dict'] is defined %}
+{% 	set moloch_config = result_moloch['dict'] %}
+{% endif %}
+{% if result_settings is defined and result_settings['dict'] is defined %}
+{%	set path_moloch_wise_ini = result_settings['dict']['path_moloch_wise_ini'] %}
+{%	set path_moloch_yara_ini = result_settings['dict']['path_moloch_yara_ini'] %}
 {% endif %}
 
 {% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', 'localhost' ) + ':9200' %}
-
-{% set wise_ip_out = salt['environ.get']('PATH_MOLOCH_WISE_IP_OUT') %}
-{% set wise_url_out = salt['environ.get']('PATH_MOLOCH_WISE_URL_OUT') %}
-{% set wise_domain_out = salt['environ.get']('PATH_MOLOCH_WISE_DOMAIN_OUT') %}
-{% set yara_path = salt['environ.get']('PATH_MOLOCH_YARA_OUT') %}
 
 # Note:
 # After initial installation user needs to be added
@@ -126,7 +126,9 @@ detector_moloch_config_ini:
         int: {{ int | join(';') }}
         es: {{ es }}
         moloch_config: {{ moloch_config }}
-        yara_path: {{ yara_path }}
+{% if path_moloch_yara_ini is defined %}
+        path_moloch_yara_ini: {{ path_moloch_yara_ini }}
+{% endif %}
     - require:
       - pkg: detector_moloch_pkg
 
@@ -241,7 +243,7 @@ detector_moloch_viewer_service:
       - pkg: detector_moloch_pkg
       - cmd: detector_moloch_admin_profile
 
-{% if (myenvvar is defined or wise_url_out is defined or wise_domain_out is defined ) %}
+{% if moloch_config is defined and moloch_config['configuration'] is defined and moloch_config['configuration']['wise_enabled'] is defined and moloch_config['configuration']['wise_enabled'] == True %}
 moloch_wise_conf:
   file.managed:
     - name: /data/moloch/etc/wise.ini
@@ -251,9 +253,16 @@ moloch_wise_conf:
     - mode: 755
     - template: jinja
     - defaults:
-       wise_ip_out: {{ wise_ip_out }}
-       wise_url_out: {{ wise_url_out }}
-       wise_domain_out: {{ wise_domain_out }}
+       moloch_config: {{ moloch_config }}
+
+{% if path_moloch_wise_ini is defined and salt['file.file_exists' ](path_moloch_wise_ini) %}
+moloch_wise_conf_sources:
+   file.append:
+   - name: /data/moloch/etc/wise.ini
+   - source: {{ path_moloch_wise_ini }}
+   - watch:
+     - file: moloch_wise_conf
+{% endif %}
 
 detector_moloch_wise_systemd:
   file.managed:

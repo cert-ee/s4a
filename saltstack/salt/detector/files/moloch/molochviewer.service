@@ -1,3 +1,4 @@
+[Unit]
 Description=Moloch Viewer Service
 After=syslog.target elasticsearch.target
 
