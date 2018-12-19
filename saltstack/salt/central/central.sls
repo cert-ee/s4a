@@ -17,7 +17,7 @@ mongodb-org:
       - pkg: mongodb-org
 
 nodejs:
-  pkg.installed:
+  pkg.latest:
     - refresh: true
     - pkgs:
         - nodejs
