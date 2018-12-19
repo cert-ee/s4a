@@ -84,7 +84,7 @@ s4a_repo:
   pkgrepo.managed:
     - humanname: repo-s4a
     - name: deb [trusted=yes arch=amd64] {{ salt['pillar.get']('detector:repo') }} xenial universe
-    - key_url: //{{ salt['pillar.get']('detector:repo') }}/GPG.pub
+    - key_url: {{ salt['pillar.get']('detector:repo') }}/GPG.pub
     - file: /etc/apt/sources.list.d/repo-s4a.list
     - clean_file: True
 
