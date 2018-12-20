@@ -21,10 +21,10 @@ mongodb-org:
       - pkg: mongodb-org
 
 nodejs:
-  pkg.installed:
+  pkg.latest:
     - refresh: true
     - pkgs:
-        - nodejs: 10.14.0-1nodesource1
+        - nodejs
         - yarn
 
 s4a-detector:
