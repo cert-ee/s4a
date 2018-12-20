@@ -24,8 +24,9 @@
 # /data/moloch/bin/moloch_add_user.sh <user id> <user friendly name> <password> [<options>]
 #
 
+# Elastic includes the rest of the deps as well
 include:
-  - detector.deps
+  - detector.elastic
 
 # ttyname failed: Inappropriate ioctl for device
 neutralize_annoying_message:
@@ -41,6 +42,7 @@ detector_moloch_pkg:
     - refresh: True
     - require:
       - pkgrepo: s4a_repo
+      - pkg: elasticsearch
 
 # Note:
 # Moloch viewer does not use user from configration, but runs under 'daemon'

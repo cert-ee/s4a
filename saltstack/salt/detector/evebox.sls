@@ -1,5 +1,8 @@
 {% set evebox_es_index_name = "logstash-*" %}
 
+include:
+  - detector.elastic
+
 golang_repo:
   pkgrepo.managed:
     - humanname: Golang 1.8 PPA for Ubuntu 16.04 Xenial
@@ -25,6 +28,7 @@ evebox_pkgs:
     - require:
       - pkgrepo: golang_repo
       - pkgrepo: evebox_repo
+      - pkg: elasticsearch
 
 GeoLite2-City:
   file.managed:
