@@ -37,7 +37,7 @@ neutralize_annoying_message:
     - content: tty -s && mesg n || true
 
 detector_moloch_pkg:
-  pkg.installed:
+  pkg.latest:
     - name: moloch
     - refresh: True
     - require:
