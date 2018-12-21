@@ -6,7 +6,7 @@ detector_ntp_pkg:
 detector_ntp_service:
   service.running:
     - name: ntp
-    - reload: true
+    - full_restart: true
     - watch:
       - pkg: detector_ntp_pkg
       - file: detector_ntp_conf
