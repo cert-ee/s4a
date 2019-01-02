@@ -10,6 +10,7 @@
 
 include:
   - detector.deps
+  - detector.capture_interface
 
 nfsen_config_yaml:
   file.managed:

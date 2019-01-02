@@ -27,6 +27,7 @@
 # Elastic includes the rest of the deps as well
 include:
   - detector.elastic
+  - detector.capture_interface
 
 # ttyname failed: Inappropriate ioctl for device
 neutralize_annoying_message:

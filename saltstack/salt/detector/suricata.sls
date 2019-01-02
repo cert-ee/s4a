@@ -9,6 +9,7 @@
 {% endif %}
 include:
   - detector.deps
+  - detector.capture_interface
 
 suricata_group:
   group.present:
@@ -77,7 +78,7 @@ detector_suricata_file_service:
     - source: salt://{{ slspath }}/files/suricata/suricata.service
     - user: root
     - group: root
-    - mode: 755
+    - mode: 644
     - template: jinja
     - defaults:
         int: {{ int }}
