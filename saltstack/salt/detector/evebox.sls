@@ -33,7 +33,7 @@ evebox_pkgs:
 GeoLite2-City:
   file.managed:
     - name: /etc/evebox/GeoLite2-City.mmdb.gz
-    - source: https://repo.s4a.cert.ee/GeoLite2-City.mmdb.gz
+    - source: https://repo.s4a.cert.ee/geoip/GeoLite2-City.mmdb.gz
     - skip_verify: true
   module.run:
     - name: archive.gunzip
