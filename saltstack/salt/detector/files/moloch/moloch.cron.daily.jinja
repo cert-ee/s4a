@@ -9,18 +9,13 @@ nr=""
 apt-get -q -y install bc jq >>/dev/null
 
 # Get number of available indexes
-allindex=$(curl --silent -XGET 'localhost:9200/_cat/indices?v&pretty' --stderr - | grep 'sessions' | wc -l)
-
-#Get last seven days in proper format
-for ((i=$allindex; i>=1; i--))
-do
-    nr+=" $(date +%y%m%d -d "$i days ago")"
-done
+nr="$(curl --silent -XGET 'localhost:9200/_cat/indices?v&pretty' --stderr - | grep -oE 'sessions.*-[0-9]{6}' | tr '\n' ' ' | sed 's/ $//')"
 
 # Get index sizes in bytes
+
 for x in $nr
 do
-    sizes+=" $(curl --silent -XGET "localhost:9200/sessions-$x/_stats" | jq ".indices[\"sessions-$x\"].total.store.size_in_bytes // empty" 2>/dev/null)"
+    sizes+=" $(curl --silent -XGET "localhost:9200/$x/_stats" | jq ".indices[\"$x\"].total.store.size_in_bytes // empty" 2>/dev/null)"
 done
 
 # Get average of all returned index sizes
@@ -47,7 +42,7 @@ fi
 
 # Final number of days to keep indexes
 # Moloch daily cron
-ESHOSTPORT={{ es }}
+ESHOSTPORT=http://localhost:9200
 RETAINNUMDAYS=$(( $available / $gb ))
 
 /data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS
