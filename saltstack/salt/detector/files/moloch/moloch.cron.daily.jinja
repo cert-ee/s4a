@@ -89,5 +89,4 @@ ESHOSTPORT=http://localhost:9200
 RETAINNUMDAYS=$(( ($available - $logstashSize) / $molochAverageSession ))
 #RETAINNUMDAYS=$(( $available / $molochAverageSession ))
 
-echo "($available - $logstashSize) / $molochAverageSession"
-echo "/data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS"
+/data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS
