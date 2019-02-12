@@ -3,15 +3,29 @@
 # Custom calculations to set RETAINNUMDAYS
 # Initalize variables
 export LC_ALL=C
+
+getMolochSessionsSize() {
 sizes=""
 nr=""
+ngb=""
+molochAverageSession=""
+
 # We need bc for non integer calculations and jq for parsing json
 apt-get -q -y install bc jq >>/dev/null
 
 # Get number of available indexes
+#allindex=$(curl --silent -XGET 'localhost:9200/_cat/indices?v&pretty' --stderr - | grep 'sessions' | wc -l)
+
 nr="$(curl --silent -XGET 'localhost:9200/_cat/indices?v&pretty' --stderr - | grep -oE 'sessions.*-[0-9]{6}' | tr '\n' ' ' | sed 's/ $//')"
 
+#Get last seven days in proper format
+#for ((i=$allindex; i>=1; i--))
+#do
+#    nr+=" $(date +%y%m%d -d "$i days ago")"
+#done
+
 # Get index sizes in bytes
+
 for x in $nr
 do
     sizes+=" $(curl --silent -XGET "localhost:9200/$x/_stats" | jq ".indices[\"$x\"].total.store.size_in_bytes // empty" 2>/dev/null)"
@@ -22,12 +36,41 @@ average=`echo $sizes | jq -s 'add/length'`
 
 # Convert average to GB and round up
 ngb=$(echo $average | awk '{ byte =$1 /1024/1024/1024; print byte}')
-gb=$(printf "%.0f" $ngb)
+molochAverageSession=$(printf "%.0f" $ngb)
 
-# Make sure that $gb is not zero
-if [ $gb -eq 0 ] ; then
-    gb=1
+# Make sure that molochAverageSession is not zero
+if [ $molochAverageSession -eq 0 ] ; then
+    molochAverageSession=1
 fi
+
+}
+
+getLogstashSize() {
+
+sum=""
+ngb=""
+logstashSize=""
+sizes=""
+
+logstash="$(curl --silent -XGET 'localhost:9200/_cat/indices?v&pretty' --stderr - | grep -oE 'logstash.*-[0-9]{4}\.[0-9]{2}\.[0-9]{2}' | tr '\n' ' ' | sed 's/ $//')"
+
+# Get index sizes in bytes
+for x in $logstash
+do
+    sizes+=" $(curl --silent -XGET "localhost:9200/$x/_stats" | jq ".indices[\"$x\"].total.store.size_in_bytes // empty" 2>/dev/null)"
+done
+
+# Get sum of all returned index sizes
+sum=`echo $sizes | jq -s 'add'`
+
+# Convert sum bytes to GB and round up
+ngb=$(echo $sum | awk '{ byte =$1 /1024/1024/1024; print byte}')
+logstashSize=$(printf "%.0f" $ngb)
+
+}
+
+getMolochSessionsSize
+getLogstashSize
 
 # Get disk size in GB of disk where /srv is mounted
 disk=`df -BG --output=size /srv/elasticsearch | tail -n 1 | grep -oP '\d+(?=G)'`
@@ -41,7 +84,9 @@ fi
 
 # Final number of days to keep indexes
 # Moloch daily cron
-ESHOSTPORT={{ es }}
-RETAINNUMDAYS=$(( $available / $gb ))
+ESHOSTPORT=http://localhost:9200
+RETAINNUMDAYS=$(( ($available - $logstashSize) / $molochAverageSession ))
+#RETAINNUMDAYS=$(( $available / $molochAverageSession ))
 
-/data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS
+echo "($available - $logstashSize) / $molochAverageSession"
+echo "/data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS"
