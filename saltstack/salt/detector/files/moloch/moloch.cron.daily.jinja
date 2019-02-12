@@ -14,18 +14,9 @@ molochAverageSession=""
 apt-get -q -y install bc jq >>/dev/null
 
 # Get number of available indexes
-#allindex=$(curl --silent -XGET 'localhost:9200/_cat/indices?v&pretty' --stderr - | grep 'sessions' | wc -l)
-
 nr="$(curl --silent -XGET 'localhost:9200/_cat/indices?v&pretty' --stderr - | grep -oE 'sessions.*-[0-9]{6}' | tr '\n' ' ' | sed 's/ $//')"
 
-#Get last seven days in proper format
-#for ((i=$allindex; i>=1; i--))
-#do
-#    nr+=" $(date +%y%m%d -d "$i days ago")"
-#done
-
 # Get index sizes in bytes
-
 for x in $nr
 do
     sizes+=" $(curl --silent -XGET "localhost:9200/$x/_stats" | jq ".indices[\"$x\"].total.store.size_in_bytes // empty" 2>/dev/null)"
@@ -49,7 +40,6 @@ getLogstashSize() {
 
 sum=""
 ngb=""
-logstash=""
 logstashSize=""
 sizes=""
 
@@ -77,16 +67,29 @@ getLogstashSize
 disk=`df -BG --output=size /srv/elasticsearch | tail -n 1 | grep -oP '\d+(?=G)'`
 
 # Add in a reserve
-if mountpoint /srv/elasticsearch >>/dev/null ; then
-    available=$(( $disk - $(printf "%.0f\n" $(echo "$disk * 0.15" | bc)) ))
-else
-    available=$(( $disk - $(printf "%.0f\n" $(echo "$disk * 0.2" | bc)) ))
+customSettings=/data/moloch/db/daily_cusotm.settings
+
+if [ -r $customSettings ]
+then
+	source $customSettings
+	if [[ $DISK_RESERVE =~ [0-9] ]] && [[ $DISK_RESERVE -gt 0 ]]
+	then
+		available=$(( $disk - $DISK_RESERVE))
+	fi
+fi
+
+if [ -z $available ]
+then
+	if mountpoint /srv/elasticsearch >>/dev/null ; then
+		available=$(( $disk - $(printf "%.0f\n" $(echo "$disk * 0.15" | bc)) ))
+	else
+		available=$(( $disk - $(printf "%.0f\n" $(echo "$disk * 0.2)" | bc)) ))
+	fi
 fi
 
 # Final number of days to keep indexes
 # Moloch daily cron
 ESHOSTPORT=http://localhost:9200
 RETAINNUMDAYS=$(( ($available - $logstashSize) / $molochAverageSession ))
-#RETAINNUMDAYS=$(( $available / $molochAverageSession ))
 
-/data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS
+echo "/data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS"
