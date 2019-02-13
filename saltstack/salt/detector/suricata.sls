@@ -64,13 +64,6 @@ suricata_pkg:
         - pfring-lib
     - require:
         - pkgrepo: s4a_repo
-  service.running:
-    - name: suricata
-    - enable: true
-    - reload: true
-    - watch:
-      - pkg: suricata_pkg
-      - file: detector_suricata_yaml
 
 detector_suricata_file_service:
   file.managed:
@@ -108,5 +101,14 @@ detector_suricata_rules_perms:
 detector_suricata_systemctl_reload:
   module.run:
     - name: service.systemctl_reload
-    - watch:
+    - onchanges:
       - file: detector_suricata_file_service
+
+suricata_sevice:
+  service.running:
+    - name: suricata
+    - enable: true
+    - full_restart: true
+    - watch:
+      - pkg: suricata_pkg
+      - file: detector_suricata_yaml
