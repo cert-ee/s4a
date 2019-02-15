@@ -67,7 +67,12 @@ getLogstashSize
 disk=`df -BG --output=size /srv/elasticsearch | tail -n 1 | grep -oP '\d+(?=G)'`
 
 # Add in a reserve
-customSettings=/data/moloch/db/daily_cusotm.settings
+
+# Define custom reserve in file /data/moloch/db/daily_custom.settings
+# using variable DISK_RESERVE with a value of reserverd Giga Bytes.
+# Example: DISK_RESERVE=500
+
+customSettings=/data/moloch/db/daily_custom.settings
 
 if [ -r $customSettings ]
 then
@@ -78,6 +83,7 @@ then
 	fi
 fi
 
+# If custom reserve is not defined add 15% or 20% of disk size depending if /srv/elasticsearch is a separate partition or not. 
 if [ -z $available ]
 then
 	if mountpoint /srv/elasticsearch >>/dev/null ; then
@@ -87,9 +93,9 @@ then
 	fi
 fi
 
-# Final number of days to keep indexes
+# Final number of days to keep indexes (-1 day because db.pl is not considering current day)
 # Moloch daily cron
 ESHOSTPORT={{ es }}
-RETAINNUMDAYS=$(( ($available - $logstashSize) / $molochAverageSession ))
+RETAINNUMDAYS=$(( (($available - $logstashSize) / $molochAverageSession) - 1 ))
 
 /data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS
