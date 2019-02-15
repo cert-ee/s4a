@@ -89,7 +89,7 @@ fi
 
 # Final number of days to keep indexes
 # Moloch daily cron
-ESHOSTPORT=http://localhost:9200
+ESHOSTPORT={{ es }}
 RETAINNUMDAYS=$(( ($available - $logstashSize) / $molochAverageSession ))
 
 /data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS
