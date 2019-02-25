@@ -109,6 +109,3 @@ suricata_sevice:
     - name: suricata
     - enable: true
     - full_restart: true
-    - watch:
-      - pkg: suricata_pkg
-      - file: detector_suricata_yaml
