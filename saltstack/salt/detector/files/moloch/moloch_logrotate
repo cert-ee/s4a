@@ -1,5 +1,5 @@
-/nids/moloch/logs/capture.log
-/nids/moloch/logs/viewer.log 
+/data/moloch/logs/capture.log
+/data/moloch/logs/viewer.log 
 /data/moloch/logs/wise.log {
     daily
     rotate 7

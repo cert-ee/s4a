@@ -2,7 +2,7 @@
 {% set int_def = salt['pillar.get']('detector:int_default', 'eth1' ) %}
 {% set connect_test = salt.network.connect(api.host, port=api.port) %}
 {% if connect_test.result == True %}
-{% 	set int = salt.http.query('http://'+api.host+':'+api.port|string+'/api/network_interfaces/listForSalt', decode=true )['dict']['interfaces'] %}
+{% 	set int = salt.http.query('http://'+api.host+':'+api.port|string+'/api/network_interfaces/listForSalt', decode=true )['dict']['interfaces'] | tojson %}
 {% endif %}
 {% if int is not defined or int == "" %}
 {% 	set int = int_def %}
@@ -83,6 +83,14 @@ detector_suricata_file_logrotate:
     - user: root
     - group: root
     - mode: 644
+
+detector_suricata_reload:
+  file.managed:
+    - name: /usr/local/bin/reload_suricata_rules.sh
+    - source: salt://{{ slspath }}/files/suricata/reload_suricata_rules.sh
+    - user: root
+    - group: root
+    - mode: 755
 
 detector_suricata_rules_perms:
   file.directory:
