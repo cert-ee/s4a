@@ -10,11 +10,11 @@
 {% 	set int = int_def %}
 {% endif %}
 {% if result_moloch is defined and result_moloch['dict'] is defined %}
-{% 	set moloch_config = result_moloch['dict'] %}
+{% 	set moloch_config = result_moloch['dict'] | tojson %}
 {% endif %}
 {% if result_settings is defined and result_settings['dict'] is defined %}
-{%	set path_moloch_wise_ini = result_settings['dict']['path_moloch_wise_ini'] %}
-{%	set path_moloch_yara_ini = result_settings['dict']['path_moloch_yara_ini'] %}
+{%	set path_moloch_wise_ini = result_settings['dict']['path_moloch_wise_ini'] | tojson %}
+{%	set path_moloch_yara_ini = result_settings['dict']['path_moloch_yara_ini'] | tojson %}
 {% endif %}
 
 {% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', 'localhost' ) + ':9200' %}
@@ -115,7 +115,7 @@ detector_moloch_rc_local:
     - mode: 755
     - template: jinja
     - defaults:
-        int: {{ int | join(';') }}
+        int: {{ int | tojson }}
 
 detector_moloch_config_ini:
   file.managed:

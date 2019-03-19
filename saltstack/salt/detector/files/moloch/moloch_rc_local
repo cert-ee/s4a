@@ -11,7 +11,9 @@
 #
 # By default this script does nothing.
 
-ifconfig {{ int }} up
-ifconfig {{ int }} promisc
+{% for single_int in int %}
+ifconfig {{ single_int }} up
+ifconfig {{ single_int }} promisc
+{% endfor %}
 
 exit 0
