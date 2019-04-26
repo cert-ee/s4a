@@ -16,4 +16,4 @@ elastic_pkg:
     - refresh: True
     - require:
       - pkgrepo: elastic_repo
-      - pkg: oracle-java8-installer
+      - pkg: openjdk-8-jre
