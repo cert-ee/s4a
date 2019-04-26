@@ -99,3 +99,11 @@ ESHOSTPORT={{ es }}
 RETAINNUMDAYS=$(( (($available - $logstashSize) / $molochAverageSession) - 1 ))
 
 /data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS
+
+# Sync PCAPs
+esNode="$(curl -s http://localhost:9200/_cluster/health | jq -r '.cluster_name')"
+
+if [ ! -z "$esNode" ] && [[ $esNode = "$(echo "$esNode" | grep -oE "^[0-9a-zA-Z\.-]+")" ]]
+then   
+        /data/moloch/db/db.pl 127.0.0.1:9200 sync-files $esNode /srv/pcap/
+fi
