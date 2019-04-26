@@ -16,7 +16,7 @@ elasticsearch:
     - refresh: true
     - require:
       - pkgrepo: elastic5x_repo
-      - pkg: oracle-java8-installer
+      - pkg: openjdk-8-jre
   service.running:
     - enable: true
     - full_restart: true
