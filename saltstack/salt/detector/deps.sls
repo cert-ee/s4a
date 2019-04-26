@@ -79,7 +79,7 @@ s4a_repo:
     - file: /etc/apt/sources.list.d/repo-s4a.list
     - clean_file: True
 
-# Install Oracle Java 8 and other Elasticsearch dependencies
+# Install Elasticsearch dependencies
 dependency_pkgs:
   pkg.installed:
     - refresh: true
@@ -87,26 +87,6 @@ dependency_pkgs:
       - apt-transport-https
       - python-software-properties
       - python-elasticsearch
-
-oracle-ppa:
-  pkgrepo.managed:
-    - humanname: Oracle Java 8 Repo
-    - name: ppa:webupd8team/java
-    - keyid: EEA14886
-    - keyserver: keyserver.ubuntu.com
-
-oracle-license-select:
-  cmd.run:
-    - name: |
-        echo debconf shared/accepted-oracle-license-v1-1 select true | sudo debconf-set-selections
-        echo debconf shared/accepted-oracle-license-v1-1 seen true | sudo debconf-set-selections
-
-oracle-java8-installer:
-  pkg.installed:
-    - refresh: true
-    - require:
-      - pkgrepo: oracle-ppa
-      - cmd: oracle-license-select
 
 esnode_limits:
   file.append:
