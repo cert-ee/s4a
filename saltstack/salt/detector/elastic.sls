@@ -16,7 +16,7 @@ elasticsearch:
     - refresh: true
     - require:
       - pkgrepo: elastic5x_repo
-      - pkg: openjdk-8-jre
+      - pkg: dependency_pkgs
   service.running:
     - enable: true
     - full_restart: true
