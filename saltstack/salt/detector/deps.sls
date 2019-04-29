@@ -87,6 +87,7 @@ dependency_pkgs:
       - apt-transport-https
       - python-software-properties
       - python-elasticsearch
+      - openjdk-8-jre
 
 esnode_limits:
   file.append:
