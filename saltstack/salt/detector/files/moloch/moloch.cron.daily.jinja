@@ -14,12 +14,12 @@ molochAverageSession=""
 apt-get -q -y install bc jq >>/dev/null
 
 # Get number of available indexes
-nr="$(curl --silent -XGET 'localhost:9200/_cat/indices?v&pretty' --stderr - | grep -oE 'sessions.*-[0-9]{6}' | tr '\n' ' ' | sed 's/ $//')"
+nr="$(curl --silent -XGET '$ESHOSTPORT/_cat/indices?v&pretty' --stderr - | grep -oE 'sessions.*-[0-9]{6}' | tr '\n' ' ' | sed 's/ $//')"
 
 # Get index sizes in bytes
 for x in $nr
 do
-    sizes+=" $(curl --silent -XGET "localhost:9200/$x/_stats" | jq ".indices[\"$x\"].total.store.size_in_bytes // empty" 2>/dev/null)"
+    sizes+=" $(curl --silent -XGET "$ESHOSTPORT/$x/_stats" | jq ".indices[\"$x\"].total.store.size_in_bytes // empty" 2>/dev/null)"
 done
 
 # Get average of all returned index sizes
@@ -36,6 +36,36 @@ fi
 
 }
 
+removeEveBoxLogs() {
+
+if [ -z $eveLogsToKeep ]
+then
+	eveLogsToKeep=62
+fi
+
+eveLogs="$(curl --silent -XGET 'http://$ESHOSTPORT/_cat/indices?v&pretty' --stderr - | grep -oE 'logstash.*-[0-9]{4}\.[0-9]{2}\.[0-9]{2}' | sort)"
+eveLogCount=$(wc -w <<< "$eveLogs")
+eveLogsDeleteCount=$(bc <<< "$eveLogCount - $eveLogsToKeep")
+
+if [ $eveLogsDeleteCount -ge 0 ]
+then
+        for log in $(head -n $eveLogsDeleteCount <<< "$eveLogs");
+        do
+                echo -n "Removing $log "
+
+                deleteStatus="$(curl --silent -XDELETE "http://$ESHOSTPORT/$log")"
+
+                if [ $(grep acknowledged <<< "$deleteStatus") ]
+                then
+                echo "done"
+                else
+                echo "fail"
+                fi
+        done
+fi
+
+}
+
 getLogstashSize() {
 
 sum=""
@@ -43,12 +73,12 @@ ngb=""
 logstashSize=""
 sizes=""
 
-logstash="$(curl --silent -XGET 'localhost:9200/_cat/indices?v&pretty' --stderr - | grep -oE 'logstash.*-[0-9]{4}\.[0-9]{2}\.[0-9]{2}' | tr '\n' ' ' | sed 's/ $//')"
+logstash="$(curl --silent -XGET '$ESHOSTPORT/_cat/indices?v&pretty' --stderr - | grep -oE 'logstash.*-[0-9]{4}\.[0-9]{2}\.[0-9]{2}' | tr '\n' ' ' | sed 's/ $//')"
 
 # Get index sizes in bytes
 for x in $logstash
 do
-    sizes+=" $(curl --silent -XGET "localhost:9200/$x/_stats" | jq ".indices[\"$x\"].total.store.size_in_bytes // empty" 2>/dev/null)"
+    sizes+=" $(curl --silent -XGET "$ESHOSTPORT/$x/_stats" | jq ".indices[\"$x\"].total.store.size_in_bytes // empty" 2>/dev/null)"
 done
 
 # Get sum of all returned index sizes
@@ -60,7 +90,18 @@ logstashSize=$(printf "%.0f" $ngb)
 
 }
 
+##################################################3
+
+ESHOSTPORT={{ es }}
+customSettings=/data/moloch/db/daily_custom.settings
+
+if [ -r $customSettings ]
+then
+        source $customSettings
+fi
+
 getMolochSessionsSize
+removeEveBoxLogs
 getLogstashSize
 
 # Get disk size in GB of disk where /srv is mounted
@@ -72,9 +113,7 @@ disk=`df -BG --output=size /srv/elasticsearch | tail -n 1 | grep -oP '\d+(?=G)'`
 # using variable DISK_RESERVE with a value of reserverd Giga Bytes.
 # Example: DISK_RESERVE=500
 
-customSettings=/data/moloch/db/daily_custom.settings
-
-if [ -r $customSettings ]
+if [ $DISK_RESERVE ]
 then
 	source $customSettings
 	if [[ $DISK_RESERVE =~ [0-9] ]] && [[ $DISK_RESERVE -gt 0 ]]
@@ -95,15 +134,14 @@ fi
 
 # Final number of days to keep indexes (-1 day because db.pl is not considering current day)
 # Moloch daily cron
-ESHOSTPORT={{ es }}
 RETAINNUMDAYS=$(( (($available - $logstashSize) / $molochAverageSession) - 1 ))
-
-/data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS
 
 # Sync PCAPs
 esNode="$(curl -s http://localhost:9200/_cluster/health | jq -r '.cluster_name')"
 
 if [ ! -z "$esNode" ] && [[ $esNode = "$(echo "$esNode" | grep -oE "^[0-9a-zA-Z\.-]+")" ]]
 then   
-        /data/moloch/db/db.pl 127.0.0.1:9200 sync-files $esNode /srv/pcap/
+        /data/moloch/db/db.pl $ESHOSTPORT sync-files $esNode /srv/pcap/
 fi
+
+/data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS
