@@ -1,6 +1,15 @@
 #!/bin/bash
 #
 # Custom calculations to set RETAINNUMDAYS
+#
+# Define custom reserved disk space and EveBox logs to keep in /etc/s4a-detector/custom_elastic_cleanup.conf
+# To define custom reserverd disk space use conf parameter elasticFreeSpaceReserved with a value of reserverd GigaBytes.
+# To define custom days to keep EveBox logs use conf parameter eveLogsToKeep with a value of days to keep logs.
+#
+# Example content of /etc/s4a-detector/custom_elastic_cleanup.conf: 
+# elasticFreeSpaceReserved=500
+# eveLogsToKeep=30
+
 # Initalize variables
 export LC_ALL=C
 
@@ -108,10 +117,6 @@ getLogstashSize
 disk=`df -BG --output=size /srv/elasticsearch | tail -n 1 | grep -oP '\d+(?=G)'`
 
 # Add in a reserve
-
-# Define custom reserved disk space in /etc/s4a-detector/custom_elastic_cleanup.conf
-# using variable elasticFreeSpaceReserved with a value of reserverd GigaBytes.
-# Example: elasticFreeSpaceReserved=500
 
 if [ $elasticFreeSpaceReserved ]
 then
