@@ -93,7 +93,7 @@ logstashSize=$(printf "%.0f" $ngb)
 ######################## End of Functions ##########################
 
 ESHOSTPORT={{ es }}
-customSettings=/data/moloch/db/daily_custom.settings
+customSettings=/etc/s4a-detector/custom_elastic_cleanup.conf
 
 if [ -r $customSettings ]
 then
@@ -109,16 +109,16 @@ disk=`df -BG --output=size /srv/elasticsearch | tail -n 1 | grep -oP '\d+(?=G)'`
 
 # Add in a reserve
 
-# Define custom reserve in file /data/moloch/db/daily_custom.settings
-# using variable DISK_RESERVE with a value of reserverd Giga Bytes.
-# Example: DISK_RESERVE=500
+# Define custom reserved disk space in /etc/s4a-detector/custom_elastic_cleanup.conf
+# using variable elasticFreeSpaceReserved with a value of reserverd GigaBytes.
+# Example: elasticFreeSpaceReserved=500
 
-if [ $DISK_RESERVE ]
+if [ $elasticFreeSpaceReserved ]
 then
 	source $customSettings
-	if [[ $DISK_RESERVE =~ [0-9] ]] && [[ $DISK_RESERVE -gt 0 ]]
+	if [[ $elasticFreeSpaceReserved =~ [0-9] ]] && [[ $elasticFreeSpaceReserved -gt 0 ]]
 	then
-		available=$(( $disk - $DISK_RESERVE))
+		available=$(( $disk - $elasticFreeSpaceReserved))
 	fi
 fi
 
