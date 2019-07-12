@@ -8,9 +8,9 @@ central_elastic5x_repo:
 central_mongodb-org_repo:
   pkgrepo.managed:
     - humanname: mongodb-org
-    - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.4 multiverse
-    - key_url: https://www.mongodb.org/static/pgp/server-3.4.asc
-    - file: /etc/apt/sources.list.d/mongodb-org-3.4.list
+    - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/4.0 multiverse
+    - key_url: https://www.mongodb.org/static/pgp/server-4.0.asc
+    - file: /etc/apt/sources.list.d/mongodb-org-4.0.list
 
 central_nodejs_repo:
   pkgrepo.managed:
