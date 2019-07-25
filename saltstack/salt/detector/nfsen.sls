@@ -25,13 +25,13 @@ nfsen_config_yaml:
 
 nfsen_profile_cleanup_1:
   file.line:
-    - name: /usr/local/nfsen/profiles-stat/live/profile.dat
+    - name: /srv/nfsen/profiles-stat/live/profile.dat
     - match: channel = peer[12].*peer[12]
     - mode: delete
 
 nfsen_profile_cleanup_2:
   file.line:
-    - name: /usr/local/nfsen/profiles-stat/live/profile.dat
+    - name: /srv/nfsen/profiles-stat/live/profile.dat
     - match: channel = peer[12].*peer[12]
     - mode: delete
     - watch:

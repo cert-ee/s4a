@@ -24,12 +24,14 @@ sed -i "s|^\$BACKEND_PLUGINDIR.*|\$BACKEND_PLUGINDIR = \"${build_path}/install/u
 sed -i "s|^\$PROFILEDATADIR=.*|\$PROFILEDATADIR=\"${build_path}/install/srv/nfsen/profiles-data\";|" etc/nfsen.conf
 sed -i "s|^\$PROFILESTATDIR=.*|\$PROFILESTATDIR=\"${build_path}/install/srv/nfsen/profiles-stat\";|" etc/nfsen.conf
 sed -i "s|^\$USER.*|\$USER=\"`whoami`\";|" etc/nfsen.conf
-sed -i "s|^\$WWWUSER.*|\$WWWUSER=\"`whoami`\";|" etc/nfsen.conf
-sed -i "s|^\$WWWGROUP.*|\$WWWGROUP=\"`whoami`\";|" etc/nfsen.conf
+sed -i "s|^\$WWWUSER.*|\$WWWUSER=\"www-data\";|" etc/nfsen.conf
+sed -i "s|^\$WWWGROUP.*|\$WWWGROUP=\"www-data\";|" etc/nfsen.conf
 sed -i "s|^[# ]*\$PIDDIR.*|\$PIDDIR=\"${build_path}/install/var/run/nfsend\";|" etc/nfsen.conf
 sed -i "s|^[# ]*\$COMMSOCKET.*|\$COMMSOCKET=\"${build_path}/install/\$PIDDIR/nfsend.comm\";|" etc/nfsen.conf
 
 mkdir -p ${build_path}/install
+# prepare for installation - add to www-data
+sudo usermod -a -G www-data `whoami`
 echo "" | sudo ./install.pl etc/nfsen.conf >/dev/null 2>&1
 
 sudo chown -R `id -u`:`id -g` ${build_path}/install
@@ -72,8 +74,8 @@ adduser --quiet --add_extra_groups netflow www-data
 
 touch /srv/nfsen/profiles-stat/hints
 
-chown -R root:www-data /var/www/nfsen/ /usr/local/nfsen/libexec /usr/local/nfsen/plugins  /etc/{nfsen.conf,nfsen-dist.conf}
-chown -R root:www-data /var/www/nfsen/*
+chown -R www-data:www-data /var/www/nfsen/ /usr/local/nfsen/libexec /usr/local/nfsen/plugins  /etc/{nfsen.conf,nfsen-dist.conf}
+chown -R www-data:www-data /var/www/nfsen/*
 chown -R netflow:www-data /var/{filters,fmt} /srv/nfsen/profiles-data /srv/nfsen/profiles-stat /var/run/nfsend
 
 echo "Enable & start nfsen"
