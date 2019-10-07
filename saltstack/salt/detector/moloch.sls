@@ -234,6 +234,7 @@ detector_moloch_capture_service:
     - watch:
       - pkg: detector_moloch_pkg
       - cmd: detector_moloch_admin_profile
+      - file: detector_moloch_config_ini
 
 detector_moloch_viewer_service:
   service.running:
@@ -245,6 +246,15 @@ detector_moloch_viewer_service:
     - watch:
       - pkg: detector_moloch_pkg
       - cmd: detector_moloch_admin_profile
+
+detector_moloch_drop_tls:
+  file.managed:
+    - name: /data/moloch/etc/drop_tls.yaml
+    - source: salt://{{ slspath }}/files/moloch/drop_tls.yaml.jinja
+    - user: root
+    - group: root
+    - mode: 644
+    - template: jinja
 
 {% if moloch_config is defined and moloch_config['configuration'] is defined and moloch_config['configuration']['wise_enabled'] is defined and moloch_config['configuration']['wise_enabled'] == True %}
 moloch_wise_conf:
