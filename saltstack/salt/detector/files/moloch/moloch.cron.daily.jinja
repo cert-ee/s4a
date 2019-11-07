@@ -150,3 +150,4 @@ then
 fi
 
 /data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS
+curl -XPUT "$ESHOSTPORT/*/_settings?pretty" -H 'Content-Type:application/json' -d'{ "index" : { "number_of_replicas" : 0 }}'
