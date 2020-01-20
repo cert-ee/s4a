@@ -106,6 +106,14 @@ detector_moloch_limits_conf:
     - group: root
     - mode: 644
 
+detector_moloch_update_geo_sh:
+  file.managed:
+    - name: /data/moloch/bin/moloch_update_geo.sh
+    - source: salt://{{ slspath }}/files/moloch/moloch_update_geo_sh
+    - user: root
+    - group: root
+    - mode: 755
+
 detector_moloch_rc_local:
   file.managed:
     - name: /etc/rc.local
