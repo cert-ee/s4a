@@ -109,7 +109,7 @@ detector_moloch_limits_conf:
 detector_moloch_update_geo_sh:
   file.managed:
     - name: /data/moloch/bin/moloch_update_geo.sh
-    - source: salt://{{ slspath }}/files/moloch/moloch_update_geo_sh
+    - source: salt://{{ slspath }}/files/moloch/moloch_update_geo.sh
     - user: root
     - group: root
     - mode: 755
