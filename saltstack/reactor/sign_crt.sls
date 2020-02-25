@@ -1,6 +1,7 @@
 sign_certs:
   runner.state.orchestrate:
-    - kwarg:
-        mods: vpn.easy-rsa.orch_certs
-        pillar:
-          event_data: {{ data | json() }}
+    - name: vpn.easy-rsa.orch_certs
+      args: 
+        - mods: vpn.easy-rsa.orch_certs
+        - pillar:
+            event_data: {{ data | tojson }}
