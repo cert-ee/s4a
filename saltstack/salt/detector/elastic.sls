@@ -10,12 +10,12 @@ include:
 
 elasticsearch:
   pkg.installed:
-    - version: 5.6.0
+    - version: 6.8.6
     - hold: true
     - update_holds: true
     - refresh: true
     - require:
-      - pkgrepo: elastic5x_repo
+      - pkgrepo: elastic6x_repo
       - pkg: dependency_pkgs
   service.running:
     - enable: true
