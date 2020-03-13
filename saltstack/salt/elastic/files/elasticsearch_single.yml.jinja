@@ -1,6 +1,7 @@
 cluster.name: {{ grains['fqdn'] }}
 node.name: "{{ grains['host'] }}"
 path.data: /srv/elasticsearch
+path.logs: /var/log/elasticsearch
 node.master: true
 node.data: true
 bootstrap.memory_lock: true
