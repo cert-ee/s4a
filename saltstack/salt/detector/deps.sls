@@ -6,6 +6,13 @@ elastic5x_repo:
     - key_url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
     - file: /etc/apt/sources.list.d/elastic-5.x.list
 
+elastic6x_repo:
+  pkgrepo.managed:
+    - humanname: Elasticsearch 6.x Repo
+    - name: deb https://artifacts.elastic.co/packages/6.x/apt stable main
+    - key_url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    - file: /etc/apt/sources.list.d/elastic-6.x.list
+
 # Assume that if no version is available, mongo repo is unconfigured and we are in process of installing new detector
 {% set mongodb_version_installed = salt['pkg.version']('mongodb-org') %}
 {% set mongodb_upgrade_available = salt['pkg.upgrade_available']('mongodb-org') %}
