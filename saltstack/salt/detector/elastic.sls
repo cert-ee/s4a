@@ -68,8 +68,8 @@ elasticsearch_defaults:
   file.managed:
     - name: /etc/default/elasticsearch
     - source: salt://{{ slspath }}/files/elastic/default_elasticsearch.jinja
-    - user: root
-    - group: root
+    - user: elasticsearch
+    - group: elasticsearch
     - mode: 750
     - template: jinja
 
