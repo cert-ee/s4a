@@ -3,6 +3,7 @@ node.name: "{{ salt['grains.get']('host', 'node1') }}"
 #node.machine: "{{ salt['grains.get']('fqdn', 'node1') }}"
 node.data: true
 path.data: /srv/elasticsearch
+path.logs: /var/log/elasticsearch
 #bootstrap.mlockall: true
 network.host: _local_
 
