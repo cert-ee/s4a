@@ -50,7 +50,7 @@ suricata_template:
     - name: curl -s -H "Accept: application/json" -H "Content-Type:application/json" -XPUT "http://localhost:9200/_template/suricata" -d '{"index_patterns" : ["suricata*"],"settings" : {"index" : {"number_of_shards" : "1"}},"mappings" : {"doc" : {"properties" : {"@timestamp" : { "type" : "date"},"dest_ip" : {"type" : "ip"},"src_ip" : {"type" : "ip"},"geoip" : {"dynamic" : true,"properties" : {"ip" : {"type" : "ip"},"location" : {"type" : "geo_point"},"latitude" : {"type" : "half_float"},"longitude" : {"type" : "half_float"}}}}}}}' > /dev/null 2>&1
 
 replace_reporting_index:
-  cmd.run
+  cmd.run:
     - name: sed 's/logstash/suricata*/' -i /usr/share/s4a-detector/app/server/common/models/report.js
 
 evebox_agent_conf:
