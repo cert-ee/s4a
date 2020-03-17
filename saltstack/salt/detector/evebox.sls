@@ -66,7 +66,7 @@ import_suricata_template:
     - name: /usr/local/bin/import-suricata-template.sh 
     - runas: root
     - require:
-       -file: import-suricata-template.sh
+       - file: import-suricata-template.sh
   file.replace:
     - path: /usr/share/s4a-detector/app/server/common/models/report.js
     - pattern: logstash
