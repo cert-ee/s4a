@@ -52,6 +52,8 @@ suricata_template:
     - user: root
     - group: root
     - mode: 750
+
+import_suricata_template:
   file.managed:
     - name: /usr/local/bin/import-suricata-template.sh
     - source: salt://{{ slspath }}/files/evebox/import-suricata-template.sh
