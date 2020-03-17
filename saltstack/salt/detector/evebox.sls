@@ -52,13 +52,17 @@ suricata_template:
     - user: root
     - group: root
     - mode: 750
-
-import_template:
+  file.managed:
+    - name: /usr/local/bin/import-suricata-template.sh
+    - source: salt://{{ slspath }}/files/evebox/import-suricata-template.sh
+    - user: root
+    - group: root
+    - mode: 755
   cmd.run:
-    - name: curl -s -H "Accept: application/json" -H "Content-Type:application/json" -XPUT "http://localhost:9200/_template/suricata" -d @/etc/evebox/suricata-template-6.8.json 
+    - name: /usr/local/bin/import-suricata-template.sh 
     - runas: root
-
-replace_reporting_index:
+    - require:
+      -file: import-suricata-template.sh
   file.replace:
     - path: /usr/share/s4a-detector/app/server/common/models/report.js
     - pattern: logstash
