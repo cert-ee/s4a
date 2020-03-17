@@ -51,7 +51,7 @@ fetch_suricata_template:
     - source: salt://{{ slspath }}/files/evebox/suricata-template-6.8.json
     - user: root
     - group: root
-    - mode: 750
+    - mode: 755
 
 fetch_suricata_template_script:
   file.managed:
@@ -65,8 +65,6 @@ import_suricata_template:
   cmd.run:
     - name: /usr/local/bin/import-suricata-template.sh 
     - runas: root
-    - require:
-       - file: import-suricata-template.sh
   file.replace:
     - name: /usr/share/s4a-detector/app/server/common/models/report.js
     - pattern: logstash
