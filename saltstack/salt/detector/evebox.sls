@@ -45,7 +45,7 @@ evebox_conf:
     - source: salt://{{ slspath }}/files/evebox/evebox.yaml.jinja
     - template: jinja
 
-suricata_template:
+fetch_suricata_template:
   file.managed:
     - name: /etc/evebox/suricata-template-6.8.json
     - source: salt://{{ slspath }}/files/evebox/suricata-template-6.8.json
@@ -53,13 +53,15 @@ suricata_template:
     - group: root
     - mode: 750
 
-import_suricata_template:
+fetch_suricata_template_script:
   file.managed:
     - name: /usr/local/bin/import-suricata-template.sh
     - source: salt://{{ slspath }}/files/evebox/import-suricata-template.sh
     - user: root
     - group: root
     - mode: 755
+
+import_suricata_template
   cmd.run:
     - name: /usr/local/bin/import-suricata-template.sh 
     - runas: root
