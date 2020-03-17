@@ -1,5 +1,3 @@
-{% set evebox_es_index_name = "logstash-*" %}
-
 include:
   - detector.elastic
 
@@ -47,56 +45,13 @@ evebox_conf:
     - source: salt://{{ slspath }}/files/evebox/evebox.yaml.jinja
     - template: jinja
 
-evebox_set_template:
-  elasticsearch_index_template.present:
-    - name: "{{ evebox_es_index_name }}"
-    - definition:
-        template: "{{ evebox_es_index_name }}-*"
-        order: 1
-        settings:
-          number_of_shards: 1
-        mappings:
-          '_default_':
-             '_all':
-               enabled: true
-               norms: false
-             dynamic_templates:
-               - message_field:
-                   path_match: message
-                   match_mapping_type: string
-                   mapping:
-                     type: text
-                     norms: false
-               - string_fields:
-                  match: "*"
-                  match_mapping_type: string
-                  mapping:
-                    type: text
-                    norms: false
-                    fields:
-                      keyword:
-                        type: keyword
-                        ignore_above: 256
-             properties:
-               '@timestamp':
-                 type: date
-                 include_in_all: false
-               '@version':
-                 type: keyword
-                 include_in_all: false
-               geoip:
-                 dynamic: true
-                 properties:
-                   ip:
-                     type: ip
-                   location:
-                     type: geo_point
-                   latitude:
-                     type: half_float
-                   longitude:
-                     type: half_float
-    - require:
-      - pkg: evebox_pkgs
+suricata_template:
+  cmd.run:
+    - name: curl -s -H "Accept: application/json" -H "Content-Type:application/json" -XPUT "http://localhost:9200/_template/suricata" -d '{"index_patterns" : ["suricata*"],"settings" : {"index" : {"number_of_shards" : "1"}},"mappings" : {"doc" : {"properties" : {"@timestamp" : { "type" : "date"},"dest_ip" : {"type" : "ip"},"src_ip" : {"type" : "ip"},"geoip" : {"dynamic" : true,"properties" : {"ip" : {"type" : "ip"},"location" : {"type" : "geo_point"},"latitude" : {"type" : "half_float"},"longitude" : {"type" : "half_float"}}}}}}}' > /dev/null 2>&1
+
+replace_reporting_index:
+  cmd.run
+    - name: sed 's/logstash/suricata*/' -i /usr/share/s4a-detector/app/server/common/models/report.js
 
 evebox_agent_conf:
   file.managed:
