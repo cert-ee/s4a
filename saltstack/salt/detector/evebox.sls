@@ -61,7 +61,7 @@ fetch_suricata_template_script:
     - group: root
     - mode: 755
 
-import_suricata_template
+import_suricata_template:
   cmd.run:
     - name: /usr/local/bin/import-suricata-template.sh 
     - runas: root
