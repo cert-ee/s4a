@@ -46,13 +46,24 @@ evebox_conf:
     - template: jinja
 
 suricata_template:
+  file.managed:
+    - name: /etc/evebox/suricata-template-6.8.json
+    - source: salt://{{ slspath }}/files/evebox/suricata-template-6.8.json
+    - user: root
+    - group: root
+    - mode: 750
+
+import_template:
   cmd.run:
-    - name: curl -s -H "Accept: application/json" -H "Content-Type:application/json" -XPUT "http://localhost:9200/_template/suricata" -d '{"index_patterns" : ["suricata*"],"settings" : {"index" : {"number_of_shards" : "1"}},"mappings" : {"doc" : {"properties" : {"@timestamp" : { "type" : "date"},"dest_ip" : {"type" : "ip"},"src_ip" : {"type" : "ip"},"geoip" : {"dynamic" : true,"properties" : {"ip" : {"type" : "ip"},"location" : {"type" : "geo_point"},"latitude" : {"type" : "half_float"},"longitude" : {"type" : "half_float"}}}}}}}' > /dev/null 2>&1
+    - name: curl -s -H "Accept: application/json" -H "Content-Type:application/json" -XPUT "http://localhost:9200/_template/suricata" -d @/etc/evebox/suricata-template-6.8.json 
+    - runas: root
 
 replace_reporting_index:
-  cmd.run:
-    - name: sed 's/logstash/suricata*/' -i /usr/share/s4a-detector/app/server/common/models/report.js
-
+  file.replace:
+    - path: /usr/share/s4a-detector/app/server/common/models/report.js
+    - pattern: logstash
+    - repl: suricata
+  
 evebox_agent_conf:
   file.managed:
     - name: /etc/evebox/agent.yaml
