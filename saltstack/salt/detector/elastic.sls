@@ -10,7 +10,7 @@ include:
 
 elasticsearch:
   pkg.installed:
-    - version: 6.8.6
+    - version: 6.8.7
     - hold: true
     - update_holds: true
     - refresh: true
