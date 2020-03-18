@@ -31,14 +31,14 @@ kibana_dashboard_index_mapping:
     - name: /etc/kibana/s4a-kibana-v6-mapping.json
     - source: salt://{{ slspath }}/files/kibana/s4a-kibana-v6-mapping.json
   cmd.run:
-    - name: elasticdump --quiet --input=/etc/kibana/s4a-kibana-v6-mapping.json --output=http://localhost:9200/kibana --type=mapping
+    - name: elasticdump --quiet --input=/etc/kibana/s4a-kibana-v6-mapping.json --output=http://localhost:9200/.kibana --type=mapping
 
 kibana_dashboard_index_data:
   file.managed:
     - name: /etc/kibana/s4a-kibana-v6-data.json
     - source: salt://{{ slspath }}/files/kibana/s4a-kibana-v6-data.json
   cmd.run: 
-    - name: elasticdump --quiet --input=/etc/kibana/s4a-kibana-v6-data.json --output=http://localhost:9200/kibana --type=data
+    - name: elasticdump --quiet --input=/etc/kibana/s4a-kibana-v6-data.json --output=http://localhost:9200/.kibana --type=data
 {% endif %}
 
 kibana_service_enabled:
