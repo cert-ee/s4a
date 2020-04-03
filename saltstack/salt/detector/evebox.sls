@@ -53,22 +53,14 @@ fetch_suricata_template:
     - group: root
     - mode: 755
 
-fetch_suricata_template_script:
-  file.managed:
-    - name: /usr/local/bin/import-suricata-template.sh
-    - source: salt://{{ slspath }}/files/evebox/import-suricata-template.sh
-    - user: root
-    - group: root
-    - mode: 755
-
-import_suricata_template:
-  cmd.run:
-    - name: /usr/local/bin/import-suricata-template.sh 
-    - runas: root
-  file.replace:
-    - name: /usr/share/s4a-detector/app/server/common/models/report.js
-    - pattern: logstash
-    - repl: suricata
+elasticsearch_suricata_template:
+  http.query:
+    - name: 'http://localhost:9200/_template/suricata'
+    - method: PUT
+    - status: 200
+    - header_dict:
+        Content-Type: "application/json"
+    - data_file: /etc/evebox/suricata-template-6.8.json
 
 evebox_agent_conf:
   file.managed:

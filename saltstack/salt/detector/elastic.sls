@@ -81,3 +81,22 @@ elasticsearch_cron:
     - group: root
     - mode: 750
     - template: jinja
+
+elasticsearch_allocation_settings:
+  file.managed:
+    - name: /etc/elasticsearch/allocation_settings.json
+    - source: salt://{{ slspath }}/files/elastic/allocation_settings.json
+    - user: elasticsearch
+    - group: elasticsearch
+    - mode: 750
+    - require:
+      - file: elasticsearch_dirs
+
+elasticsearch_set_allocation_settings:
+  http.query:
+    - name: 'http://localhost:9200/_cluster/settings'
+    - method: PUT
+    - status: 200
+    - header_dict:
+        Content-Type: "application/json"
+    - data_file: /etc/elasticsearch/allocation_settings.json
