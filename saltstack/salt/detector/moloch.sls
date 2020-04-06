@@ -237,6 +237,7 @@ detector_moloch_capture_service:
     - name: molochcapture
     - enable: true
     - full_restart: true
+    - init_delay: 5
     - require:
       - file: detector_moloch_capture_systemd
     - watch:
@@ -249,6 +250,7 @@ detector_moloch_viewer_service:
     - name: molochviewer
     - enable: true
     - full_restart: true
+    - init_delay: 5
     - require:
       - file: detector_moloch_viewer_systemd
     - watch:
