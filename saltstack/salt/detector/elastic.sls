@@ -93,10 +93,13 @@ elasticsearch_allocation_settings:
       - file: elasticsearch_dirs
 
 elasticsearch_set_allocation_settings:
-  http.query:
+  http.wait_for_successful_query:
     - name: 'http://localhost:9200/_cluster/settings'
     - method: PUT
     - status: 200
+    - request_interval: 5
+    - wait_for: 30
     - header_dict:
         Content-Type: "application/json"
     - data_file: /etc/elasticsearch/allocation_settings.json
+
