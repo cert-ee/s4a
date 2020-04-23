@@ -54,6 +54,10 @@ removeSuricataLogs() {
 if [ -z $eveLogsToKeep ] && [ -z $suricataLogsToKeep ]
 then
 	suricataLogsToKeep=91
+
+elif [ $eveLogsToKeep ]
+then
+        suricataLogsToKeep=$eveLogsToKeep
 fi
 
 suricataLogs="$(curl --silent -XGET "$ESHOSTPORT/_cat/indices?v&pretty" --stderr - | grep -oE 'suricata.*-[0-9]{4}\.[0-9]{2}\.[0-9]{2}' | sort)"
