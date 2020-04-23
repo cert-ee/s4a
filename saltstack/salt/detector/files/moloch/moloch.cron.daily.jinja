@@ -170,7 +170,7 @@ then
 fi
 
 # Optimize Moloch indexes between 5AM and 7AM.
-if [[ "$(date "+%H:%M")" > "05:00" ]] && [[ "$(date "+%H:%M")" < "07:00" ]]
+if [[ "$(date "+%H:%M")" > "05:30" ]] && [[ "$(date "+%H:%M")" < "06:30" ]]
 then
 	/data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS
 fi
