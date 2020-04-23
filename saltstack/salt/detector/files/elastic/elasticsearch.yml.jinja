@@ -15,5 +15,8 @@ discovery.zen.minimum_master_nodes: 1
 indices.breaker.fielddata.limit: 70%
 
 cluster.routing.allocation.disk.threshold_enabled: true
-cluster.routing.allocation.disk.watermark.low: 90%
-cluster.routing.allocation.disk.watermark.high: 95%
+cluster.routing.allocation.disk.watermark.low: 10gb
+cluster.routing.allocation.disk.watermark.high: 5gb
+cluster.routing.allocation.disk.watermark.flood_stage: 2gb
+cluster.info.update.interval: 1m
+

@@ -2,13 +2,18 @@
 #
 # Custom calculations to set RETAINNUMDAYS
 #
-# Define custom reserved disk space and EveBox logs to keep in /etc/s4a-detector/custom_elastic_cleanup.conf
+# Define custom reserved disk space and amount of Suricata logs to keep in /etc/s4a-detector/custom_elastic_cleanup.conf
 # To define custom reserverd disk space use conf parameter elasticFreeSpaceReserved with a value of reserverd GigaBytes.
-# To define custom days to keep EveBox logs use conf parameter eveLogsToKeep with a value of days to keep logs.
+# To define custom days to keep Suricata logs use conf parameter suricataLogsToKeep with a value of days to keep logs.
 #
 # Example content of /etc/s4a-detector/custom_elastic_cleanup.conf: 
 # elasticFreeSpaceReserved=500
-# eveLogsToKeep=30
+# suricataLogsToKeep=30
+
+if [[ "$(ps -ef | grep /data/moloch/db/db.pl | grep -v grep | awk '{print $8}')" == "/data/moloch/db/db.pl" ]]
+then
+	exit 1
+fi
 
 # Initalize variables
 export LC_ALL=C
@@ -42,23 +47,22 @@ molochAverageSession=$(printf "%.0f" $ngb)
 if [ $molochAverageSession -eq 0 ] ; then
     molochAverageSession=1
 fi
-
 }
 
-removeEveBoxLogs() {
+removeSuricataLogs() {
 
-if [ -z $eveLogsToKeep ]
+if [ -z $eveLogsToKeep ] || [ -z $suricataLogsToKeep ]
 then
-	eveLogsToKeep=62
+	suricataLogsToKeep=62
 fi
 
-eveLogs="$(curl --silent -XGET "$ESHOSTPORT/_cat/indices?v&pretty" --stderr - | grep -oE 'suricata.*-[0-9]{4}\.[0-9]{2}\.[0-9]{2}' | sort)"
-eveLogCount=$(wc -w <<< "$eveLogs")
-eveLogsDeleteCount=$(bc <<< "$eveLogCount - $eveLogsToKeep")
+suricataLogs="$(curl --silent -XGET "$ESHOSTPORT/_cat/indices?v&pretty" --stderr - | grep -oE 'suricata.*-[0-9]{4}\.[0-9]{2}\.[0-9]{2}' | sort)"
+suricataLogCount=$(wc -w <<< "$suricataLogs")
+suricataLogsDeleteCount=$(bc <<< "$suricataLogCount - $suricataLogsToKeep")
 
-if [ $eveLogsDeleteCount -ge 0 ]
+if [ $suricataLogsDeleteCount -ge 0 ]
 then
-        for log in $(head -n $eveLogsDeleteCount <<< "$eveLogs");
+        for log in $(head -n $suricataLogsDeleteCount <<< "$suricataLogs");
         do
                 echo -n "Removing $log "
 
@@ -72,7 +76,6 @@ then
                 fi
         done
 fi
-
 }
 
 getSuricataSize() {
@@ -96,7 +99,6 @@ sum=`echo $sizes | jq -s 'add'`
 # Convert sum bytes to GB and round up
 ngb=$(echo $sum | awk '{ byte =$1 /1024/1024/1024; print byte}')
 suricataSize=$(printf "%.0f" $ngb)
-
 }
 
 ######################## End of Functions ##########################
@@ -110,7 +112,7 @@ then
 fi
 
 getMolochSessionsSize
-removeEveBoxLogs
+removeSuricataLogs
 getSuricataSize
 
 # Get disk size in GB of disk where /srv is mounted
@@ -126,14 +128,13 @@ then
 		available=$(( $disk - $elasticFreeSpaceReserved))
 	fi
 fi
-
 # If custom reserve is not defined add 15% or 20% of disk size depending if /srv/elasticsearch is a separate partition or not. 
 if [ -z $available ]
 then
 	if mountpoint /srv/elasticsearch >>/dev/null ; then
 		available=$(( $disk - $(printf "%.0f\n" $(echo "$disk * 0.15" | bc)) ))
 	else
-		available=$(( $disk - $(printf "%.0f\n" $(echo "$disk * 0.2)" | bc)) ))
+		available=$(( $disk - $(printf "%.0f\n" $(echo "$disk * 0.20" | bc)) ))
 	fi
 fi
 
@@ -141,13 +142,45 @@ fi
 # Moloch daily cron
 RETAINNUMDAYS=$(( (($available - $suricataSize) / $molochAverageSession) - 1 ))
 
+# Delete old moloch session indexes
+/data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS --nooptimize
+sessionDeleteSuccess=$?
+
+# Check if indexes are in readonly state
+# then delete old moloch indexes
+# and disable readonly state
+
+if [ "$(curl -s -XGET $ESHOSTPORT/_all/_settings | grep read_only_allow_delete.:.true)" ];
+then
+	echo "WARNING: Elastic is in read only mode"
+	if [[ $sessionDeleteSuccess == 0 ]] && [[ $(df -BG --output=avail /srv/elasticsearch | tail -n 1 | grep -oP '\d+(?=G)') -ge 2 ]]
+	then
+		echo -n "Disabling Elastic read only mode: "
+		curl -s -XPUT -H "Content-Type: application/json" $ESHOSTPORT/_all/_settings -d '{"index.blocks.read_only_allow_delete": null}' >>/dev/null
+		if [ $? == 0 ]
+		then
+			echo "done"
+		else
+			echo "failed"
+		fi
+	else
+		echo "ERROR: Cannot disable read only mode. Not enough free disk space"
+		exit 1
+	fi
+fi
+
+# Optimize Moloch indexes between 5AM and 7AM.
+if [[ "$(date "+%H:%M")" > "05:00" ]] && [[ "$(date "+%H:%M")" < "07:00" ]]
+then
+	/data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS
+fi
+
 # Sync PCAPs
 esNode="$(curl -s $ESHOSTPORT/_cluster/health | jq -r '.cluster_name')"
-
 if [ ! -z "$esNode" ] && [[ $esNode = "$(echo "$esNode" | grep -oE "^[0-9a-zA-Z\.-]+")" ]]
-then   
+then
         /data/moloch/db/db.pl $ESHOSTPORT sync-files $esNode /srv/pcap/
 fi
 
-/data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS
-curl -XPUT "$ESHOSTPORT/*/_settings?pretty" -H 'Content-Type:application/json' -d'{ "index" : { "number_of_replicas" : 0 }}'
+# Set replica count to 0
+curl -s -XPUT "$ESHOSTPORT/*/_settings?pretty" -H 'Content-Type:application/json' -d'{ "index" : { "number_of_replicas" : 0 }}' >>/dev/null

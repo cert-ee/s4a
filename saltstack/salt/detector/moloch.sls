@@ -94,7 +94,7 @@ detector_moloch_daily_cron:
   cron.present:
     - name: /data/moloch/db/daily.sh
     - user: root
-    - special: '@daily'
+    - special: '0 */1 * * *'
     - require:
       - file: detector_moloch_daily_script
 

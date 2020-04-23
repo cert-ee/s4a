@@ -98,8 +98,7 @@ elasticsearch_set_allocation_settings:
     - method: PUT
     - status: 200
     - request_interval: 5
-    - wait_for: 30
+    - wait_for: 120
     - header_dict:
         Content-Type: "application/json"
     - data_file: /etc/elasticsearch/allocation_settings.json
-
