@@ -1,5 +1,7 @@
-{% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', 'localhost' ) + ':9200' %}
 {% set kibana_1_index_status = salt['cmd.run'](cmd='curl -s -XGET http://localhost:9200/.kibana_1 | jq .status', python_shell=True) %}
+
+include:
+  - detector.elastic
 
 detector_kibana_pkg:
   pkg.installed:
