@@ -4,12 +4,16 @@ include:
   - detector.elastic
 
 detector_kibana_pkg:
+  cmd.run:
+    - name: apt-mark unhold kibana
   pkg.installed:
     - name: kibana
-    - version: 6.8.7
+    - version: 6.8.8
     - hold: true
     - update_holds: true
     - refresh: true
+    - require:
+      - pkg: elasticsearch
 
 detector_kibana_conf:
   file.managed:
@@ -22,7 +26,10 @@ detector_kibana_delete_old_index:
   http.query:
     - name: 'http://localhost:9200/.kibana'
     - method: DELETE
-    - status: 200
+    - status:
+      - 200
+      - 404
+    - status_type: list
     - header_dict:
         Content-Type: "application/json"
 
@@ -52,4 +59,4 @@ detector_kibana_service:
       - pkg: detector_kibana_pkg
       - file: detector_kibana_conf
     - enable: true
-    - reload: true
+    - full_restart: true

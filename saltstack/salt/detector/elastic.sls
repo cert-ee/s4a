@@ -9,8 +9,10 @@ include:
   - detector.deps
 
 elasticsearch:
+  cmd.run:
+    - name: apt-mark unhold elasticsearch
   pkg.installed:
-    - version: 6.8.7
+    - version: 6.8.8
     - hold: true
     - update_holds: true
     - refresh: true
