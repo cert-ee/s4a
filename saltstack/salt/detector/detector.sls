@@ -29,7 +29,7 @@ nodejs:
         - yarn
 
 s4a-detector:
-  pkg.installed:
+  pkg.latest:
     - refresh: true
   service.running:
     - name: s4a-detector
