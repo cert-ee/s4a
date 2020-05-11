@@ -171,7 +171,8 @@ confirm "$( gettext -s wish_to_continue )"
 msg_header "* $( gettext -s installing_prequisites ): "
 REPO_CHK=`grep -c "https://$DEB_REPO_HOST xenial universe" /etc/apt/sources.list.d/repo-s4a.list 2>/dev/null`
 if [ ${REPO_CHK:-0} -lt 1 ] ; then
-	echo "deb [arch=amd64 trusted=yes] https://$DEB_REPO_HOST xenial universe" | sudo tee -a /etc/apt/sources.list.d/repo-s4a.list
+	echo "	deb [arch=amd64 trusted=yes] https://$DEB_REPO_HOST xenial universe" | sed 's/^  //'| sudo tee -a /etc/apt/sources.list.d/repo-s4a.list
+	wget -q https://$DEB_REPO_HOST/GPG.pub -O - | apt-key add - >/dev/null 2>&1
 fi
 echo "	$REQUIRED_PKGS"
 apt_result=$( apt-get update && apt-get -q -y install $REQUIRED_PKGS 2>&1 )

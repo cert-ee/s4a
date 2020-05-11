@@ -245,6 +245,12 @@ detector_moloch_capture_service:
       - cmd: detector_moloch_admin_profile
       - file: detector_moloch_config_ini
 
+detector_moloch_capture_component_enable:
+  cmd.run:
+    - name: |
+        source /etc/default/s4a-detector
+        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochcapture"},{ $set: { installed:true } })'
+
 detector_moloch_viewer_service:
   service.running:
     - name: molochviewer
@@ -256,6 +262,12 @@ detector_moloch_viewer_service:
     - watch:
       - pkg: detector_moloch_pkg
       - cmd: detector_moloch_admin_profile
+
+detector_moloch_viewer_component_enable:
+  cmd.run:
+    - name: |
+        source /etc/default/s4a-detector
+        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochviewer"},{ $set: { installed:true } })'
 
 detector_moloch_drop_tls:
   file.managed:
