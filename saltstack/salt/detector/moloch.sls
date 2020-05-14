@@ -175,7 +175,7 @@ detector_moloch_db:
 {% if moloch_db_version == "50" %}
 detector_moloch_db:
   cmd.run:
-    - name: echo UPGRADE | /data/moloch/db/db.pl {{ es }} init
+    - name: echo UPGRADE | /data/moloch/db/db.pl {{ es }} upgrade
     - runas: root
     - require:
       - pkg: detector_moloch_pkg
