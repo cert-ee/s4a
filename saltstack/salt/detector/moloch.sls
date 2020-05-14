@@ -172,16 +172,13 @@ detector_moloch_db:
 {% if salt['file.file_exists' ]('/data/moloch/db/db.pl') %}
 {% set moloch_db_version = salt['cmd.run'](cmd='/data/moloch/db/db.pl ' + es + ' info | grep "DB Version" | awk \{\'print $3\'}', python_shell=True) %}
 {% endif %}
-{% if moloch_db_version == "50" %}
+{% if moloch_db_version == "37" %}
 detector_moloch_db:
   cmd.run:
     - name: echo UPGRADE | /data/moloch/db/db.pl {{ es }} upgrade
     - runas: root
     - require:
       - pkg: detector_moloch_pkg
-    - watch_in:
-      - detector_moloch_capture_service
-      - detector_moloch_viewer_service
 {% endif %}
 
 detector_moloch_admin_profile_sh:
