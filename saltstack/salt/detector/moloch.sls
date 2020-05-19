@@ -169,6 +169,30 @@ detector_moloch_db:
       - detector_moloch_viewer_service
 {% endif %}
 
+{% set moloch_db_version = salt['cmd.run'](cmd='/data/moloch/db/db.pl ' + es + ' info | grep "DB Version" | awk \{\'print $3\'}', python_shell=True) %}
+{% if moloch_db_version == "50" %}
+detector_moloch_check_elastic_up:
+  http.wait_for_successful_query:
+    - name: 'http://localhost:9200/_cluster/health'
+    - method: GET
+    - status: 200
+    - request_interval: 5
+    - wait_for: 120
+    - header_dict:
+        Content-Type: "application/json"
+
+detector_moloch_db_upgrade:
+  service.dead:
+    - names:
+       - molochcapture
+       - molochviewer
+    - require:
+      - pkg: detector_moloch_pkg
+  cmd.run:
+    - name: echo UPGRADE | /data/moloch/db/db.pl {{ es }} upgrade
+    - runas: root
+{% endif %}
+
 detector_moloch_admin_profile_sh:
   file.managed:
     - name: /usr/local/bin/moloch_reset_profile.sh
