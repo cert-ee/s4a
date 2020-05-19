@@ -8,6 +8,13 @@ netdata_conf:
     - watch:
       - pkg: netdata
 
+netdata_plugins_conf:
+  file.managed:
+    - name: /etc/netdata/python.d.conf
+    - source: salt://{{ slspath }}/files/netdata/python.d.conf
+    - watch:
+      - pkg: netdata
+
 netdata:
   pkg.installed:
     - version: 1.6.1
