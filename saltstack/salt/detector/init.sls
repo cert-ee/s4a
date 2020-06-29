@@ -1,5 +1,5 @@
 include:
-  - .ntp
+  - .timesync
   - .snmpd
   - .elastic
   - .moloch

@@ -17,5 +17,6 @@ detector_ntp_conf:
     - name: /etc/ntp.conf
     - source: salt://{{ slspath }}/files/ntp/ntp.conf
     - mode: 644
+    - template: jinja
     - require:
       - pkg: detector_ntp_pkg
