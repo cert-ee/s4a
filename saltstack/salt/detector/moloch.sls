@@ -170,7 +170,7 @@ detector_moloch_db:
 {% endif %}
 
 {% set moloch_db_version = salt['cmd.run'](cmd='/data/moloch/db/db.pl ' + es + ' info | grep "DB Version" | awk \{\'print $3\'}', python_shell=True) %}
-{% if moloch_db_version == "50" %}
+{% if moloch_db_version == "60" %}
 detector_moloch_check_elastic_up:
   http.wait_for_successful_query:
     - name: 'http://localhost:9200/_cluster/health'
