@@ -189,7 +189,7 @@ detector_moloch_db_upgrade:
     - require:
       - pkg: detector_moloch_pkg
   cmd.run:
-    - name: echo UPGRADE | /data/moloch/db/db.pl {{ es }} upgrade
+    - name: sleep 10; echo UPGRADE | /data/moloch/db/db.pl {{ es }} upgrade
     - runas: root
 {% endif %}
 
