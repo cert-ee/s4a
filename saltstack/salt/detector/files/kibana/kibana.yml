@@ -18,8 +18,8 @@ server.basePath: "/kibana"
 #server.name: "your-hostname"
 
 # The URL of the Elasticsearch instance to use for all your queries.
-elasticsearch.url: "http://localhost:9200"
-
+#elasticsearch.url: "http://localhost:9200"
+elasticsearch.hosts: ["http://localhost:9200/"]
 # When this setting's value is true Kibana uses the hostname specified in the server.host
 # setting. When the value of this setting is false, Kibana uses the hostname of the host
 # that connects to this Kibana instance.
@@ -30,7 +30,7 @@ elasticsearch.url: "http://localhost:9200"
 #kibana.index: ".kibana"
 
 # The default application to load.
-kibana.defaultAppId: "dashboard/ae0eb7f0-f708-11e9-ab3b-b717dd266aad"
+kibana.defaultAppId: "dashboard/3f98bbb0-ccc1-11ea-b06e-83060b115079"
 
 # If your Elasticsearch is protected with basic authentication, these settings provide
 # the username and password that the Kibana server uses to perform maintenance on the Kibana

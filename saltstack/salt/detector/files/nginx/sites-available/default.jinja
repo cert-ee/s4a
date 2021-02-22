@@ -47,8 +47,6 @@ server {
 	# HSTS (ngx_http_headers_module is required) (15768000 seconds = 6 months)
 	add_header Strict-Transport-Security max-age=15768000;
 
-	add_header X-Frame-Options SAMEORIGIN;
-
 	root /var/www/html;
 
 	server_name _;
@@ -98,7 +96,6 @@ server {
                 rewrite /[^\/]+(.*) $1  break;
                 proxy_pass http://127.0.0.1:8005;
 		proxy_set_header moloch_user $remote_user;
-		proxy_hide_header x-frame-options;
         }
 
 	location /api {

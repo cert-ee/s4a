@@ -1,23 +1,35 @@
-#
-# Note:
-# Detector most probably runs single node cluster, shouldn't
-# we put reconfigure it right after install?
-#  curl -XPUT 'localhost:9200/_settings' -d '{ "index" : { "number_of_replicas" : 0 } }'
-#
+{% set elastic_version_installed = salt['pkg.version']('elasticsearch') %}
+{% set elastic_nodes = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq .number_of_nodes', python_shell=True) %}
 
+{% if elastic_version_installed is not defined or not elastic_version_installed or elastic_nodes|int == 1 or elastic_nodes is not defined or not elastic_nodes %}
 include:
   - detector.deps
+
+elastic_dependency_pkgs:
+  pkg.installed:
+    - refresh: true
+    - pkgs:
+      - python3-elasticsearch
+      - openjdk-11-jre
+
+esnode_limits:
+  file.append:
+    - name: /etc/security/limits.conf
+    - text:
+      - elasticsearch - nofile 65535
+      - elasticsearch - memlock unlimited
+      - root - memlock unlimited
 
 elasticsearch:
   cmd.run:
     - name: apt-mark unhold elasticsearch
   pkg.installed:
-    - version: 6.8.8
+    - version: 7.10.2
     - hold: true
     - update_holds: true
     - refresh: true
     - require:
-      - pkgrepo: elastic6x_repo
+      - pkgrepo: elastic7x_repo
       - pkg: dependency_pkgs
   service.running:
     - enable: true
@@ -104,3 +116,5 @@ elasticsearch_set_allocation_settings:
     - header_dict:
         Content-Type: "application/json"
     - data_file: /etc/elasticsearch/allocation_settings.json
+
+{% endif %}

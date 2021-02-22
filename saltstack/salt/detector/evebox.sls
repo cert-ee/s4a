@@ -1,11 +1,6 @@
 include:
   - detector.elastic
 
-golang_repo:
-  pkgrepo.managed:
-    - humanname: Golang 1.8 PPA for Ubuntu 16.04 Xenial
-    - ppa: longsleep/golang-backports
-
 evebox_repo:
   pkgrepo.managed:
     - humanname: EveBox Debian Repository
@@ -19,14 +14,11 @@ evebox_pkgs:
     - refresh: true
     - pkgs:
       - git
-      - golang-go
       - evebox
       - curl
-      - python-elasticsearch
+      - python3-elasticsearch
     - require:
-      - pkgrepo: golang_repo
       - pkgrepo: evebox_repo
-      - pkg: elasticsearch
 
 GeoLite2-City:
   file.managed:
@@ -47,8 +39,8 @@ evebox_conf:
 
 fetch_suricata_template:
   file.managed:
-    - name: /etc/evebox/suricata-template-6.8.json
-    - source: salt://{{ slspath }}/files/evebox/suricata-template-6.8.json
+    - name: /etc/evebox/suricata-template-7.x.json
+    - source: salt://{{ slspath }}/files/evebox/suricata-template-7.x.json
     - user: root
     - group: root
     - mode: 755
@@ -60,7 +52,7 @@ elasticsearch_suricata_template:
     - status: 200
     - header_dict:
         Content-Type: "application/json"
-    - data_file: /etc/evebox/suricata-template-6.8.json
+    - data_file: /etc/evebox/suricata-template-7.x.json
 
 evebox_agent_conf:
   file.managed:

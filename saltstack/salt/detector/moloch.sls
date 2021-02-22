@@ -1,6 +1,7 @@
 {% set api = salt['pillar.get']('detector:api', {'host': '127.0.0.1', 'port': 4000}) %}
 {% set int_def = salt['pillar.get']('detector:int_default', ['eth1'] ) %}
 {% set connect_test = salt.network.connect(api.host, port=api.port) %}
+{% set elastic_nodes = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq .number_of_nodes', python_shell=True) %}
 {% if connect_test.result == True %}
 {% 	set int = salt.http.query('http://'+api.host+':'+api.port|string+'/api/network_interfaces/listForSalt', decode=true )['dict']['interfaces'] %}
 {% 	set result_moloch = salt.http.query('http://'+api.host+':'+api.port|string+'/api/components/moloch', decode=true ) %}
@@ -24,8 +25,8 @@
 # /data/moloch/bin/moloch_add_user.sh <user id> <user friendly name> <password> [<options>]
 #
 
-# Elastic includes the rest of the deps as well
 include:
+  - detector.deps
   - detector.elastic
   - detector.capture_interface
 
@@ -42,8 +43,8 @@ detector_moloch_pkg:
     - name: moloch
     - refresh: True
     - require:
-      - pkgrepo: s4a_repo
-      - pkg: elasticsearch
+      - pkgrepo: s4a_repo_focal
+#      - pkg: elasticsearch
 
 # Note:
 # Moloch viewer does not use user from configration, but runs under 'daemon'
@@ -77,6 +78,7 @@ detector_moloch_logrotate:
     - group: root
     - mode: 644
 
+{% if elastic_nodes|int == 1 %}
 detector_moloch_daily_script:
   file.managed:
     - name: /data/moloch/db/daily.sh
@@ -94,9 +96,11 @@ detector_moloch_daily_cron:
   cron.present:
     - name: /data/moloch/db/daily.sh
     - user: root
-    - special: '0 */1 * * *'
+    - minute: 0
+    - hour: '*/1'
     - require:
       - file: detector_moloch_daily_script
+{% endif %}
 
 detector_moloch_limits_conf:
   file.managed:
@@ -109,10 +113,11 @@ detector_moloch_limits_conf:
 detector_moloch_update_geo_sh:
   file.managed:
     - name: /data/moloch/bin/moloch_update_geo.sh
-    - source: salt://{{ slspath }}/files/moloch/moloch_update_geo.sh
+    - source: salt://{{ slspath }}/files/moloch/moloch_update_geo.sh.jinja
     - user: root
     - group: root
     - mode: 755
+    - template: jinja
 
 detector_moloch_rc_local:
   file.managed:
@@ -170,7 +175,7 @@ detector_moloch_db:
 {% endif %}
 
 {% set moloch_db_version = salt['cmd.run'](cmd='/data/moloch/db/db.pl ' + es + ' info | grep "DB Version" | awk \{\'print $3\'}', python_shell=True) %}
-{% if moloch_db_version == "50" %}
+{% if moloch_db_version == "64" %}
 detector_moloch_check_elastic_up:
   http.wait_for_successful_query:
     - name: 'http://localhost:9200/_cluster/health'

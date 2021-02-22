@@ -1,9 +1,9 @@
 cert:
-  group:
-    - present
+#  group:
+#    - present
   user.present:
     - fullname: CERT Access
-    - gid_from_name: True
+    - usergroup: True
     - shell: /bin/bash
     - groups:
       - sudo

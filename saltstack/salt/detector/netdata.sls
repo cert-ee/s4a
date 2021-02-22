@@ -18,6 +18,8 @@ netdata_plugins_conf:
 netdata:
   pkg.installed:
     - version: 1.6.1
+    - hold: true
+    - update_holds: true
     - refresh: true
     - require:
         - pkgrepo: s4a_repo

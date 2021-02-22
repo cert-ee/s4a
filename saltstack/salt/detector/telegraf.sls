@@ -21,8 +21,9 @@ include:
 
 detector_telegraf_pkg:
   pkg.installed:
-    - name: telegraf
     - refresh: true
+    - pkgs:
+      - telegraf: latest
 
 detector_telegraf_service:
   service.running:

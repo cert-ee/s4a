@@ -92,7 +92,7 @@ detector_nginx_service:
   service.running:
     - names:
        - nginx
-       - php7.0-fpm
+       - php7.4-fpm
     - enable: true
     - watch:
       - pkg: detector_nginx_pkg
