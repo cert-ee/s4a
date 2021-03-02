@@ -49,7 +49,7 @@ detector_moloch_pkg:
     - name: moloch
     - refresh: True
     - require:
-      - pkgrepo: s4a_repo
+      - pkgrepo: s4a_repo_focal
 #      - pkg: elasticsearch
 
 # Note:
@@ -172,8 +172,12 @@ detector_moloch_check_elastic_up:
     - header_dict:
         Content-Type: "application/json"
 
-{% if molochDBVersion is not defined or molochDBVersion == "-1" %}
+{% if molochDBVersion is not defined or molochDBVersion == "-1" or molochDBVersion|int < 64 %}
 detector_moloch_db:
+  service.dead:
+    - names:
+       - molochcapture
+       - molochviewer
   cmd.run:
     - name: echo INIT | /data/moloch/db/db.pl {{ es }} init
     - runas: root
@@ -184,6 +188,10 @@ detector_moloch_db:
 
 {% if molochDBVersion is defined and molochDBVersion|int == 64 and elastic_status == "green" %}
 detector_moloch_db_upgrade:
+  service.dead:
+    - names:
+       - molochcapture
+       - molochviewer
   cmd.run:
     - name: echo UPGRADE | /data/moloch/db/db.pl {{ es }} upgrade
     - runas: root
