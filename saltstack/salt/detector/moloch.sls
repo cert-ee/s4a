@@ -1,24 +1,30 @@
 {% set api = salt['pillar.get']('detector:api', {'host': '127.0.0.1', 'port': 4000}) %}
 {% set int_def = salt['pillar.get']('detector:int_default', ['eth1'] ) %}
 {% set connect_test = salt.network.connect(api.host, port=api.port) %}
-{% set elastic_nodes = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq .number_of_nodes', python_shell=True) %}
+
 {% if connect_test.result == True %}
-{% 	set int = salt.http.query('http://'+api.host+':'+api.port|string+'/api/network_interfaces/listForSalt', decode=true )['dict']['interfaces'] %}
-{% 	set result_moloch = salt.http.query('http://'+api.host+':'+api.port|string+'/api/components/moloch', decode=true ) %}
-{% 	set result_settings = salt.http.query('http://'+api.host+':'+api.port|string+'/api/settings/paths', decode=true ) %}
+{% set int = salt.http.query('http://'+api.host+':'+api.port|string+'/api/network_interfaces/listForSalt', decode=true )['dict']['interfaces'] %}
+{% set result_moloch = salt.http.query('http://'+api.host+':'+api.port|string+'/api/components/moloch', decode=true ) %}
+{% set result_settings = salt.http.query('http://'+api.host+':'+api.port|string+'/api/settings/paths', decode=true ) %}
 {% endif %}
+
 {% if int is not defined or int == "" %}
-{% 	set int = int_def %}
+{% set int = int_def %}
 {% endif %}
+
 {% if result_moloch is defined and result_moloch['dict'] is defined %}
-{% 	set moloch_config = result_moloch['dict'] | tojson %}
+{% set moloch_config = result_moloch['dict'] | tojson %}
 {% endif %}
+
 {% if result_settings is defined and result_settings['dict'] is defined %}
-{%	set path_moloch_wise_ini = result_settings['dict']['path_moloch_wise_ini'] | tojson %}
-{%	set path_moloch_yara_ini = result_settings['dict']['path_moloch_yara_ini'] | tojson %}
+{% set path_moloch_wise_ini = result_settings['dict']['path_moloch_wise_ini'] | tojson %}
+{% set path_moloch_yara_ini = result_settings['dict']['path_moloch_yara_ini'] | tojson %}
 {% endif %}
 
 {% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', 'localhost' ) + ':9200' %}
+{% set elastic_status = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq -r .status', python_shell=True) %}
+{% set elastic_nodes = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq .number_of_nodes', python_shell=True) %}
+{% set molochDBVersion = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_template/*sessions2_template?filter_path=**._meta.molochDbVersion | jq -r .sessions2_template.mappings._meta.molochDbVersion', python_shell=True) %}
 
 # Note:
 # After initial installation user needs to be added
@@ -156,26 +162,6 @@ detector_moloch_update_geo:
     - require:
       - pkg: detector_moloch_pkg
 
-{% set moloch_db_status = "-1" %}
-{% if salt['file.file_exists' ]('/data/moloch/db/db.pl') %}
-{% set moloch_db_status = salt['cmd.run'](cmd='/data/moloch/db/db.pl ' + es + ' info | grep "DB Version" | awk \{\'print $3\'}', python_shell=True) %}
-{% endif %}
-{% if not moloch_db_status or moloch_db_status == "-1" %}
-detector_moloch_db:
-  cmd.run:
-    - name: echo INIT | /data/moloch/db/db.pl {{ es }} init
-    - runas: root
-    - require:
-      - pkg: detector_moloch_pkg
-    - require_in:
-      - detector_moloch_admin_profile
-    - watch_in:
-      - detector_moloch_capture_service
-      - detector_moloch_viewer_service
-{% endif %}
-
-{% set moloch_db_version = salt['cmd.run'](cmd='/data/moloch/db/db.pl ' + es + ' info | grep "DB Version" | awk \{\'print $3\'}', python_shell=True) %}
-{% if moloch_db_version == "64" %}
 detector_moloch_check_elastic_up:
   http.wait_for_successful_query:
     - name: 'http://localhost:9200/_cluster/health'
@@ -186,16 +172,24 @@ detector_moloch_check_elastic_up:
     - header_dict:
         Content-Type: "application/json"
 
-detector_moloch_db_upgrade:
-  service.dead:
-    - names:
-       - molochcapture
-       - molochviewer
+{% if molochDBVersion is not defined or molochDBVersion == "-1" %}
+detector_moloch_db:
+  cmd.run:
+    - name: echo INIT | /data/moloch/db/db.pl {{ es }} init
+    - runas: root
     - require:
       - pkg: detector_moloch_pkg
+      - detector_moloch_check_elastic_up
+{% endif %}
+
+{% if molochDBVersion is defined and molochDBVersion|int == 64 and elastic_status == "green" %}
+detector_moloch_db_upgrade:
   cmd.run:
     - name: echo UPGRADE | /data/moloch/db/db.pl {{ es }} upgrade
     - runas: root
+    - require:
+      - pkg: detector_moloch_pkg
+      - detector_moloch_check_elastic_up
 {% endif %}
 
 detector_moloch_admin_profile_sh:
@@ -354,5 +348,4 @@ detector_moloch_wise_service:
     - name: molochwise
     - enable: false
 {% endif %}
-
 {% endif %}
