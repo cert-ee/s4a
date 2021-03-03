@@ -49,7 +49,7 @@ detector_moloch_pkg:
     - name: moloch
     - refresh: True
     - require:
-      - pkgrepo: s4a_repo_focal
+      - pkgrepo: s4a_repo
 #      - pkg: elasticsearch
 
 # Note:
