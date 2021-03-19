@@ -114,7 +114,7 @@ detector_suricata_logs_perms:
     - name: /var/log/suricata
     - user: suricata
     - group: suricata
-    - dir_mode: 775
+    - dir_mode: 755
     - file_mode: 644
     - recurse:
       - user
