@@ -120,7 +120,7 @@ removeSuricataLogs
 getSuricataSize
 
 # Get disk size in GB of disk where /srv is mounted
-if [[ ! "$(mountpoint /srv/elasticsearch > /dev/null 2>&1)" ]] && [[ "$(df | grep -E '/srv/es[0-9]+' -c)" != "0" ]]
+if ! mountpoint /srv/elasticsearch > /dev/null 2>&1 && [[ "$(df | grep -E '/srv/es[0-9]+' -c)" != "0" ]]
 then
 	multinodes="true"
 #	echo -n "Elaticsearch mountpoints: "
@@ -134,13 +134,13 @@ then
 #	echo
 #	echo "Elasticsearch storage available $disk GB"
 
-elif [[ "$(mountpoint /srv/elasticsearch > /dev/null 2>&1)" ]]
+elif mountpoint /srv/elasticsearch > /dev/null 2>&1
 then
 #	echo -n "Elaticsearch mountpoint: "
 	disk=`df -BG --output=size /srv/elasticsearch | tail -n 1 | grep -oP '\d+(?=G)'`
 #	echo "/srv/elasticsearch $disk GB"
 
-elif [[ "$(mountpoint /srv > /dev/null 2>&1)" ]]
+elif mountpoint /srv > /dev/null 2>&1
 then
 #	echo -n "Elaticsearch mountpoint: "
 	disk=`df -BG --output=size /srv | tail -n 1 | grep -oP '\d+(?=G)'`
