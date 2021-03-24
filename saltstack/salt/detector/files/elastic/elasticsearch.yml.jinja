@@ -1,14 +1,14 @@
 cluster.name: {{ salt['grains.get']('host', 'elastic') }}
 node.name: "{{ salt['grains.get']('host', 'node1') }}"
-#node.machine: "{{ salt['grains.get']('fqdn', 'node1') }}"
 node.data: true
 path.data: /srv/elasticsearch
 path.logs: /var/log/elasticsearch
+#network.host: 0.0.0.0
 network.host: _local_
-#bootstrap.memory_lock: true
-#http.port: 9200
-#transport.host: localhost
-#transport.tcp.port: 9300
+bootstrap.memory_lock: true
+http.port: 9200
+transport.host: localhost
+transport.tcp.port: 9300
 
 gateway.expected_nodes: 1
 gateway.recover_after_data_nodes: 1

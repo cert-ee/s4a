@@ -1,8 +1,16 @@
+{%- set mem = (salt['grains.get']('mem_total') / 1000) | int %}
+{%- if mem >= 64 %}
+{%- set heap = '32g' %}
+{%- elif mem >= 16 %}
+{%- set num = ((mem - 8) / 2) | int %}
+{%- set heap = num ~ 'g' %}
+{%- else %}
+{%- set heap = '2g' %}
+{%- endif %}
 
-JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64
 ES_PATH_CONF=/etc/elasticsearch
 CONF_DIR=/etc/elasticsearch
 LOG_DIR=/var/log/elasticsearch
 PID_DIR=/var/run/elasticsearch
-#ES_HEAP_SIZE=30g
+ES_JAVA_OPTS="-Xms{{ heap }} -Xmx{{ heap }}"
 ES_STARTUP_SLEEP_TIME=5

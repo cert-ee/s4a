@@ -28,4 +28,6 @@ capture_interface_{{ val }}:
     - gro: off
     - lro: off
     - required_in: detector_moloch_capture_service
+  cmd.run:
+    - name: ifconfig {{ val }} up
 {% endfor %}

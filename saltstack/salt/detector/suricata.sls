@@ -97,18 +97,6 @@ detector_suricata_rules_perms:
     - require:
       - pkg: suricata_pkg
 
-detector_suricata_systemctl_reload:
-  module.run:
-    - name: service.systemctl_reload
- #   - onchanges:
- #     - file: detector_suricata_file_service
-
-suricata_sevice:
-  service.running:
-    - name: suricata
-    - enable: true
-    - full_restart: true
-
 detector_suricata_logs_perms:
   file.directory:
     - name: /var/log/suricata
@@ -122,3 +110,12 @@ detector_suricata_logs_perms:
       - mode
     - require:
       - pkg: suricata_pkg
+
+suricata_service_dead:
+  service.dead:
+    - name: suricata
+
+suricata_sevice_enable:
+  service.running:
+    - name: suricata
+    - enable: true
