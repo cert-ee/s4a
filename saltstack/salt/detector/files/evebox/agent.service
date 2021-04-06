@@ -1,0 +1,10 @@
+[Unit]
+Description=EveBox Agent
+
+[Service]
+User=evebox
+Group=evebox
+ExecStart=/usr/bin/evebox agent
+
+[Install]
+WantedBy=multi-user.target

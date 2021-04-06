@@ -1,5 +1,9 @@
+{% set elastic_version_installed = salt['pkg.version']('elasticsearch') %}
+
+{% if elastic_version_installed is not defined or not elastic_version_installed %}
 include:
   - detector.elastic
+{% endif %}
 
 evebox_repo:
   pkgrepo.managed:
@@ -25,11 +29,10 @@ GeoLite2-City:
     - name: /etc/evebox/GeoLite2-City.mmdb.gz
     - source: https://repo.s4a.cert.ee/geoip/GeoLite2-City.mmdb.gz
     - skip_verify: true
-  module.run:
-    - name: archive.gunzip
-    - gzipfile: /etc/evebox/GeoLite2-City.mmdb.gz
-    - onchanges: [ { file: /etc/evebox/GeoLite2-City.mmdb.gz } ]
-    - options: -f
+  cmd.run:
+    - name: gunzip -f /etc/evebox/GeoLite2-City.mmdb.gz
+    - require:
+      - file: /etc/evebox/GeoLite2-City.mmdb.gz
 
 evebox_conf:
   file.managed:
@@ -57,8 +60,7 @@ elasticsearch_suricata_template:
 evebox_agent_conf:
   file.managed:
     - name: /etc/evebox/agent.yaml
-    - source: salt://{{ slspath }}/files/evebox/agent.yaml.jinja
-    - template: jinja
+    - source: salt://{{ slspath }}/files/evebox/agent.yaml
 
 evebox_defaults_conf:
   file.managed:
@@ -70,7 +72,11 @@ evebox_sysd_service:
   file.managed:
     - name: /lib/systemd/system/evebox.service
     - source: salt://{{ slspath }}/files/evebox/evebox.service
-    - template: jinja
+
+evebox_agent_sysd_service:
+  file.managed:
+    - name: /lib/systemd/system/evebox-agent.service
+    - source: salt://{{ slspath }}/files/evebox/agent.service
 
 evebox_service_enabled:
   service.enabled:
@@ -88,4 +94,5 @@ evebox_service:
       - pkg: evebox_pkgs
       - file: evebox_conf
       - file: evebox_sysd_service
+      - file: evebox_agent_sysd_service
       - service: evebox_service_enabled

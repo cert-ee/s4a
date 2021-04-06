@@ -1,11 +1,16 @@
 include:
   - detector.user
 
-python3-m2crypto:
+openvpn:
   pkg.installed:
     - refresh: true
 
-openvpn:
+openvpn_service_disabled:
+  service.disabled:
+    - name: openvpn
+
+{% if not salt['file.file_exists' ]('/etc/openvpn/detector.conf') %}
+python3-m2crypto:
   pkg.installed:
     - refresh: true
 
@@ -31,3 +36,4 @@ openvpn_conf_file:
     - group: root
     - mode: 750
     - replace: false
+{% endif %}
