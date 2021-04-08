@@ -125,17 +125,6 @@ detector_moloch_update_geo_sh:
     - mode: 755
     - template: jinja
 
-detector_moloch_rc_local:
-  file.managed:
-    - name: /etc/rc.local
-    - source: salt://{{ slspath }}/files/moloch/moloch_rc_local
-    - user: root
-    - group: root
-    - mode: 755
-    - template: jinja
-    - defaults:
-        int: {{ int | tojson }}
-
 detector_moloch_config_ini:
   file.managed:
     - name: /data/moloch/etc/config.ini

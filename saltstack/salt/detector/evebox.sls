@@ -1,9 +1,5 @@
-{% set elastic_version_installed = salt['pkg.version']('elasticsearch') %}
-
-{% if elastic_version_installed is not defined or not elastic_version_installed %}
 include:
   - detector.elastic
-{% endif %}
 
 evebox_repo:
   pkgrepo.managed:

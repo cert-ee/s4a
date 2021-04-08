@@ -1,8 +1,9 @@
 {% set elastic_version_installed = salt['pkg.version']('elasticsearch') %}
 {% set elastic_nodes = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq .number_of_nodes', python_shell=True) %}
+{% set elastic_status = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq .status', python_shell=True) %}
 {% set elastic_unassigned_shards = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq -r .unassigned_shards', python_shell=True) %}
 
-{% if elastic_version_installed is not defined or not elastic_version_installed or elastic_nodes|int == 1 or elastic_nodes is not defined or not elastic_nodes %}
+{% if elastic_version_installed is not defined or not elastic_version_installed or (elastic_status == "red" and elastic_nodes|int == 1) or elastic_nodes is not defined or not elastic_nodes %}
 include:
   - detector.deps
 
