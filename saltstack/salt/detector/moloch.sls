@@ -246,17 +246,25 @@ detector_moloch_viewer_systemd:
         int: {{ int | join(';') }}
 
 detector_moloch_systemctl_reload:
-  module.run:
-    - name: service.systemctl_reload
+  cmd.run:
+    - name: systemctl daemon-reload
     - onchanges:
       - file: detector_moloch_viewer_systemd
       - file: detector_moloch_capture_systemd
 
+detector_moloch_enable_molochcapture:
+  cmd.run:
+    - name: systemctl enable molochcapture.service
+
+detector_moloch_enable_molochviewer:
+  cmd.run:
+    - name: systemctl enable molochviewer.service
+
 detector_moloch_capture_service:
   service.running:
     - name: molochcapture
-    - enable: true
-    - full_restart: true
+    - enable: True
+    - full_restart: True
     - init_delay: 5
     - require:
       - file: detector_moloch_capture_systemd
@@ -274,8 +282,8 @@ detector_moloch_capture_component_enable:
 detector_moloch_viewer_service:
   service.running:
     - name: molochviewer
-    - enable: true
-    - full_restart: true
+    - enable: True
+    - full_restart: True
     - init_delay: 5
     - require:
       - file: detector_moloch_viewer_systemd

@@ -1,6 +1,6 @@
 [Unit]
 Description=Moloch Capture Service
-After=syslog.target elasticsearch.target
+After=elasticsearch.target
 
 [Service]
 Type=simple
