@@ -1,8 +1,8 @@
-/data/moloch/logs/capture.log
-/data/moloch/logs/viewer.log 
-/data/moloch/logs/wise.log {
+/var/log/moloch/access.log {
     daily
     rotate 7
     notifempty
     copytruncate
+    delaycompress
+    compress
 }

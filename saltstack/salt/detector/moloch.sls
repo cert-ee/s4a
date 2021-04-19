@@ -69,7 +69,7 @@ detector_moloch_dir_perms:
 detector_moloch_log_perms:
   file.directory:
     - names:
-      - /data/moloch/logs
+      - /var/log/moloch
     - user: nobody
     - group: root
     - mode: 755
