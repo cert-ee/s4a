@@ -34,7 +34,7 @@ openvpn_client_key_permissions:
     - name: /etc/openvpn/detector.key
     - user: root
     - group: root
-    - mode: 750
+    - mode: 700
     - replace: false
 
 openvpn_conf_file:
