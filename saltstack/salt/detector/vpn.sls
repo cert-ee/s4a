@@ -29,6 +29,14 @@ ovpn_client_csr:
     - require:
         - x509: ovpn_client_key
 
+openvpn_client_key_permissions:
+  file.managed:
+    - name: /etc/openvpn/detector.key
+    - user: root
+    - group: root
+    - mode: 750
+    - replace: false
+
 openvpn_conf_file:
   file.managed:
     - name: /etc/openvpn/detector.conf
