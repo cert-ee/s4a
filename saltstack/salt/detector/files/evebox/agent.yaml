@@ -15,7 +15,7 @@ server:
 # Directory to store bookmark information. This is optional and not
 # required if the agent has write access to the directory of the log
 # file being reader.
-#bookmark-directory: "/var/lib/evebox"
+bookmark-directory: "/var/lib/evebox"
 
 # If the EveBox server is running behind TLS and the certificate is
 # self signed, certificate validation can be disabled.
@@ -35,4 +35,4 @@ input:
   # The EveBox agent can add the rule to an event. To do so, list the
   # rule files here.
   rules:
-    - /etc/suricata/rules/*.rules
+    - /etc/suricata/rules/all.rules

@@ -1,6 +1,6 @@
 [Unit]
 Description=Moloch Viewer Service
-After=syslog.target elasticsearch.target
+After=elasticsearch.target
 
 [Service]
 Type=simple

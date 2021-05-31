@@ -5,7 +5,9 @@
     missingok
     create
     sharedscripts
+    delaycompress
+    compress
     postrotate
-            systemctl restart suricata
+            /bin/kill -HUP `cat /var/run/suricata.pid 2>/dev/null` 2>/dev/null || true
     endscript
 }

@@ -1,10 +1,9 @@
 [Unit]
 Description=Moloch Capture Service
-After=syslog.target elasticsearch.target
+After=elasticsearch.target
 
 [Service]
 Type=simple
-StandardOutput=syslog.target
 ExecStart=/data/moloch/bin/moloch-capture -c /data/moloch/etc/config.ini -n {{ grains['host'] }}
 Restart=always
 LimitMEMLOCK=infinity

@@ -1,11 +1,6 @@
 include:
   - detector.elastic
 
-golang_repo:
-  pkgrepo.managed:
-    - humanname: Golang 1.8 PPA for Ubuntu 16.04 Xenial
-    - ppa: longsleep/golang-backports
-
 evebox_repo:
   pkgrepo.managed:
     - humanname: EveBox Debian Repository
@@ -19,25 +14,21 @@ evebox_pkgs:
     - refresh: true
     - pkgs:
       - git
-      - golang-go
       - evebox
       - curl
-      - python-elasticsearch
+      - python3-elasticsearch
     - require:
-      - pkgrepo: golang_repo
       - pkgrepo: evebox_repo
-      - pkg: elasticsearch
 
 GeoLite2-City:
   file.managed:
     - name: /etc/evebox/GeoLite2-City.mmdb.gz
     - source: https://repo.s4a.cert.ee/geoip/GeoLite2-City.mmdb.gz
     - skip_verify: true
-  module.run:
-    - name: archive.gunzip
-    - gzipfile: /etc/evebox/GeoLite2-City.mmdb.gz
-    - onchanges: [ { file: /etc/evebox/GeoLite2-City.mmdb.gz } ]
-    - options: -f
+  cmd.run:
+    - name: gunzip -f /etc/evebox/GeoLite2-City.mmdb.gz
+    - require:
+      - file: /etc/evebox/GeoLite2-City.mmdb.gz
 
 evebox_conf:
   file.managed:
@@ -47,8 +38,8 @@ evebox_conf:
 
 fetch_suricata_template:
   file.managed:
-    - name: /etc/evebox/suricata-template-6.8.json
-    - source: salt://{{ slspath }}/files/evebox/suricata-template-6.8.json
+    - name: /etc/evebox/suricata-template-7.x.json
+    - source: salt://{{ slspath }}/files/evebox/suricata-template-7.x.json
     - user: root
     - group: root
     - mode: 755
@@ -60,13 +51,12 @@ elasticsearch_suricata_template:
     - status: 200
     - header_dict:
         Content-Type: "application/json"
-    - data_file: /etc/evebox/suricata-template-6.8.json
+    - data_file: /etc/evebox/suricata-template-7.x.json
 
 evebox_agent_conf:
   file.managed:
     - name: /etc/evebox/agent.yaml
-    - source: salt://{{ slspath }}/files/evebox/agent.yaml.jinja
-    - template: jinja
+    - source: salt://{{ slspath }}/files/evebox/agent.yaml
 
 evebox_defaults_conf:
   file.managed:
@@ -78,7 +68,11 @@ evebox_sysd_service:
   file.managed:
     - name: /lib/systemd/system/evebox.service
     - source: salt://{{ slspath }}/files/evebox/evebox.service
-    - template: jinja
+
+evebox_agent_sysd_service:
+  file.managed:
+    - name: /lib/systemd/system/evebox-agent.service
+    - source: salt://{{ slspath }}/files/evebox/agent.service
 
 evebox_service_enabled:
   service.enabled:
@@ -96,4 +90,5 @@ evebox_service:
       - pkg: evebox_pkgs
       - file: evebox_conf
       - file: evebox_sysd_service
+      - file: evebox_agent_sysd_service
       - service: evebox_service_enabled

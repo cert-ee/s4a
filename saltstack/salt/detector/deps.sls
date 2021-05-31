@@ -1,18 +1,3 @@
-
-elastic5x_repo:
-  pkgrepo.managed:
-    - humanname: Elasticsearch 5.x Repo
-    - name: deb https://artifacts.elastic.co/packages/5.x/apt stable main
-    - key_url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-    - file: /etc/apt/sources.list.d/elastic-5.x.list
-
-elastic6x_repo:
-  pkgrepo.managed:
-    - humanname: Elasticsearch 6.x Repo
-    - name: deb https://artifacts.elastic.co/packages/6.x/apt stable main
-    - key_url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-    - file: /etc/apt/sources.list.d/elastic-6.x.list
-
 # Assume that if no version is available, mongo repo is unconfigured and we are in process of installing new detector
 {% set mongodb_version_installed = salt['pkg.version']('mongodb-org') %}
 {% set mongodb_upgrade_available = salt['pkg.upgrade_available']('mongodb-org') %}
@@ -51,22 +36,22 @@ mongodb-org-upgrade-preps:
 mongodb-org_repo:
   pkgrepo.managed:
     - humanname: mongodb-org
-    - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/4.0 multiverse
-    - key_url: https://www.mongodb.org/static/pgp/server-4.0.asc
+    - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4 multiverse
+    - key_url: https://www.mongodb.org/static/pgp/server-4.4.asc
     - file: /etc/apt/sources.list.d/mongodb-org-4.0.list
 {% endif %}
 
 nodejs_repo:
   pkgrepo.managed:
     - humanname: nodejs
-    - name: deb https://deb.nodesource.com/node_10.x xenial main
+    - name: deb https://deb.nodesource.com/node_10.x focal main
     - key_url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
     - file: /etc/apt/sources.list.d/nodesource.list
 
 influxdata_repo:
   pkgrepo.managed:
     - humanname: influxdata
-    - name: deb https://repos.influxdata.com/ubuntu xenial stable
+    - name: deb https://repos.influxdata.com/ubuntu focal stable
     - keyserver: ha.pool.sks-keyservers.net
     - key_url: https://repos.influxdata.com/influxdb.key
     - file: /etc/apt/sources.list.d/influxdata.list
@@ -81,28 +66,24 @@ yarn_repo:
 s4a_repo:
   pkgrepo.managed:
     - humanname: repo-s4a
-    - name: deb [trusted=yes arch=amd64] {{ salt['pillar.get']('detector:repo') }} xenial universe
+    - name: deb [trusted=yes arch=amd64] {{ salt['pillar.get']('detector:repo') }} focal universe
     - key_url: {{ salt['pillar.get']('detector:repo') }}/GPG.pub
     - file: /etc/apt/sources.list.d/repo-s4a.list
     - clean_file: True
 
-# Install Elasticsearch dependencies
+elastic7x_repo:
+  pkgrepo.managed:
+    - humanname: Elasticsearch 7.x Repo
+    - name: deb https://artifacts.elastic.co/packages/7.x/apt stable main
+    - key_url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    - file: /etc/apt/sources.list.d/elastic-7.x.list
+
 dependency_pkgs:
   pkg.installed:
     - refresh: true
     - pkgs:
       - apt-transport-https
-      - python-software-properties
-      - python-elasticsearch
-      - openjdk-8-jre
-
-esnode_limits:
-  file.append:
-    - name: /etc/security/limits.conf
-    - text:
-      - elasticsearch - nofile 65535
-      - elasticsearch - memlock unlimited
-      - root - memlock unlimited
+      - software-properties-common
 
 vm.swappiness:
   sysctl.present:
@@ -111,4 +92,3 @@ vm.swappiness:
 vm.max_map_count:
   sysctl.present:
     - value: 262144
-

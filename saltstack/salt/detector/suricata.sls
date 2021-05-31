@@ -41,6 +41,19 @@ detector_suricata_yaml:
       - user: suricata_user
       - pkg: suricata_pkg
 
+suricata_repo:
+  pkgrepo.managed:
+    - ppa: oisf/suricata-stable
+
+suricata_pkg:
+  pkg.installed:
+    - refresh: true
+    - pkgs:
+        - libhtp2
+        - suricata
+    - require:
+        - pkgrepo: suricata_repo
+
 detector_suricata_default:
   file.managed:
     - name: /etc/default/suricata
@@ -53,28 +66,6 @@ detector_suricata_default:
         int: {{ int }}
     - watch:
       - user: suricata_user
-
-suricata_pkg:
-  pkg.installed:
-    - refresh: true
-    - pkgs:
-        - suricata
-        - pfring-dkms
-        - pfring-tcpdump
-        - pfring-lib
-    - require:
-        - pkgrepo: s4a_repo
-
-detector_suricata_file_service:
-  file.managed:
-    - name: /etc/systemd/system/suricata.service
-    - source: salt://{{ slspath }}/files/suricata/suricata.service
-    - user: root
-    - group: root
-    - mode: 644
-    - template: jinja
-    - defaults:
-        int: {{ int }}
 
 detector_suricata_file_logrotate:
   file.managed:
@@ -106,14 +97,25 @@ detector_suricata_rules_perms:
     - require:
       - pkg: suricata_pkg
 
-detector_suricata_systemctl_reload:
-  module.run:
-    - name: service.systemctl_reload
-    - onchanges:
-      - file: detector_suricata_file_service
+detector_suricata_logs_perms:
+  file.directory:
+    - name: /var/log/suricata
+    - user: suricata
+    - group: suricata
+    - dir_mode: 755
+    - file_mode: 644
+    - recurse:
+      - user
+      - group
+      - mode
+    - require:
+      - pkg: suricata_pkg
 
-suricata_sevice:
+suricata_service_dead:
+  service.dead:
+    - name: suricata
+
+suricata_sevice_enable:
   service.running:
     - name: suricata
     - enable: true
-    - full_restart: true

@@ -3,7 +3,7 @@ include:
 
 openvpn_pkg:
   service.dead:
-    - name: openvpn@detector
+    - name: openvpn
     - enable: false
   pkg.purged:
     - name: openvpn

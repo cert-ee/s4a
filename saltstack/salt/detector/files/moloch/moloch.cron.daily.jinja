@@ -120,7 +120,36 @@ removeSuricataLogs
 getSuricataSize
 
 # Get disk size in GB of disk where /srv is mounted
-disk=`df -BG --output=size /srv/elasticsearch | tail -n 1 | grep -oP '\d+(?=G)'`
+if ! mountpoint /srv/elasticsearch > /dev/null 2>&1 && [[ "$(df | grep -E '/srv/es[0-9]+' -c)" != "0" ]]
+then
+	multinodes="true"
+	echo -n "Elaticsearch mountpoints: "
+	disk=0
+        for espart in $(df | grep /srv/es | awk '{print $6}')
+        do
+                echo -n "$espart "
+                disk=$(( $(df -BG --output=size $espart | tail -n 1 | grep -oP '\d+(?=G)') + $disk ))
+        done
+
+	echo
+	echo "Elasticsearch storage available $disk GB"
+
+elif mountpoint /srv/elasticsearch > /dev/null 2>&1
+then
+	echo -n "Elaticsearch mountpoint: "
+	disk=`df -BG --output=size /srv/elasticsearch | tail -n 1 | grep -oP '\d+(?=G)'`
+	echo "/srv/elasticsearch $disk GB"
+
+elif mountpoint /srv > /dev/null 2>&1
+then
+	echo -n "Elaticsearch mountpoint: "
+	disk=`df -BG --output=size /srv | tail -n 1 | grep -oP '\d+(?=G)'`
+	echo "/srv $disk GB"
+else
+        echo -n "Free disk space - /srv/elasticsearch folder: "
+        disk="$(( $(df -BG --output=size / | tail -n 1 | grep -oP '\d+(?=G)') - $(df -BG --output=avail / | tail -n 1 | grep -oP '\d+(?=G)') - $(du -s --block-size=1G /srv/elasticsearch/ | awk '{print $1}') ))"
+        echo "$disk GB"
+fi
 
 # Add in a reserve
 
@@ -132,12 +161,19 @@ then
 		available=$(( $disk - $elasticFreeSpaceReserved))
 	fi
 fi
+
 # If custom reserve is not defined add 15% or 20% of disk size depending if /srv/elasticsearch is a separate partition or not. 
 if [ -z $available ]
 then
-	if mountpoint /srv/elasticsearch >>/dev/null ; then
+	if mountpoint /srv/elasticsearch > /dev/null 2>&1
+	then
+		replicas=0
+		available=$(( $disk - $(printf "%.0f\n" $(echo "$disk * 0.15" | bc)) ))
+	elif [[ "$multinodes" == "true" ]]; then
+		replicas=1
 		available=$(( $disk - $(printf "%.0f\n" $(echo "$disk * 0.15" | bc)) ))
 	else
+		replicas=0
 		available=$(( $disk - $(printf "%.0f\n" $(echo "$disk * 0.20" | bc)) ))
 	fi
 fi
@@ -186,5 +222,5 @@ then
         /data/moloch/db/db.pl $ESHOSTPORT sync-files $esNode /srv/pcap/
 fi
 
-# Set replica count to 0
-curl -s -XPUT "$ESHOSTPORT/*/_settings?pretty" -H 'Content-Type:application/json' -d'{ "index" : { "number_of_replicas" : 0 }}' >>/dev/null
+# Set replica count
+curl -s -XPUT "$ESHOSTPORT/*/_settings?pretty" -H 'Content-Type:application/json' -d'{ "index" : { "number_of_replicas" : '$replicas' }}' >/dev/null
