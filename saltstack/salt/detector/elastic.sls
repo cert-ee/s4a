@@ -1,9 +1,8 @@
 {% set elastic_version_installed = salt['pkg.version']('elasticsearch') %}
 {% set elastic_nodes = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq .number_of_nodes', python_shell=True) %}
-{% set elastic_status = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq .status', python_shell=True) %}
-{% set elastic_unassigned_shards = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq -r .unassigned_shards', python_shell=True) %}
+{% set elastic_status = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq -r .status', python_shell=True) %}
 
-{% if elastic_version_installed is not defined or not elastic_version_installed or (elastic_status == "red" and elastic_nodes|int == 1) or elastic_nodes is not defined or not elastic_nodes %}
+{% if elastic_version_installed is not defined or not elastic_version_installed or elastic_nodes|int == 1 or elastic_nodes is not defined or not elastic_nodes == "null" %}
 include:
   - detector.deps
 
@@ -12,7 +11,6 @@ elastic_dependency_pkgs:
     - refresh: true
     - pkgs:
       - python3-elasticsearch
-#      - openjdk-11-jre
 
 esnode_limits:
   file.append:
@@ -123,7 +121,7 @@ elasticsearch_set_allocation_settings:
         Content-Type: "application/json"
     - data_file: /etc/elasticsearch/allocation_settings.json
 
-{% if elastic_unassigned_shards|int > 0 %}
+{% if elastic_status == "yellow" %}
 elasticsearch_replicas_settings:
   file.managed:
     - name: /etc/elasticsearch/no_replicas.json
@@ -143,5 +141,4 @@ elasticsearch_disable_replicas:
         Content-Type: "application/json"
     - data_file: /etc/elasticsearch/no_replicas.json
 {% endif %}
-
 {% endif %}

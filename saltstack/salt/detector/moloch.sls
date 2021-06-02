@@ -23,7 +23,6 @@
 
 {% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', 'localhost' ) + ':9200' %}
 {% set elastic_status = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq -r .status', python_shell=True) %}
-{% set elastic_nodes = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq .number_of_nodes', python_shell=True) %}
 {% set molochDBVersion = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_template/*sessions2_template?filter_path=**._meta.molochDbVersion | jq -r .sessions2_template.mappings._meta.molochDbVersion', python_shell=True) %}
 
 # Note:
@@ -33,7 +32,6 @@
 
 include:
   - detector.deps
-  - detector.elastic
   - detector.capture_interface
 
 # ttyname failed: Inappropriate ioctl for device
@@ -84,7 +82,6 @@ detector_moloch_logrotate:
     - group: root
     - mode: 644
 
-{% if elastic_nodes|int == 1 %}
 detector_moloch_daily_script:
   file.managed:
     - name: /data/moloch/db/daily.sh
@@ -106,7 +103,6 @@ detector_moloch_daily_cron:
     - hour: '*/1'
     - require:
       - file: detector_moloch_daily_script
-{% endif %}
 
 detector_moloch_limits_conf:
   file.managed:
@@ -161,7 +157,7 @@ detector_moloch_check_elastic_up:
     - header_dict:
         Content-Type: "application/json"
 
-{% if molochDBVersion is not defined or molochDBVersion == "-1" or molochDBVersion|int < 64 %}
+{% if elastic_status == "green" and (molochDBVersion == "null" or molochDBVersion|int < 64) %}
 detector_moloch_db:
   service.dead:
     - names:

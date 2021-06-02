@@ -1,6 +1,3 @@
-include:
-  - detector.elastic
-
 evebox_repo:
   pkgrepo.managed:
     - humanname: EveBox Debian Repository
@@ -92,3 +89,9 @@ evebox_service:
       - file: evebox_sysd_service
       - file: evebox_agent_sysd_service
       - service: evebox_service_enabled
+
+evebox-agent_component_enable:
+  cmd.run:
+    - name: |
+        source /etc/default/s4a-detector
+        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "evebox"},{ $set: { installed:true } })'

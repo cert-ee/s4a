@@ -3,7 +3,6 @@
 
 include:
   - detector.deps
-#  - detector.elastic
 
 detector_kibana_pkg:
   cmd.run:
@@ -15,7 +14,6 @@ detector_kibana_pkg:
     - update_holds: true
     - refresh: true
     - require:
-#      - pkg: elasticsearch
       - pkgrepo: elastic7x_repo
 
 detector_kibana_conf:

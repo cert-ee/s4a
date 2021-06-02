@@ -15,6 +15,19 @@ netdata_plugins_conf:
     - watch:
       - pkg: netdata
 
+netdata_dirs:
+  file.directory:
+    - user: netdata
+    - group: netdata
+    - makedirs: false
+    - names:
+      - /var/lib/netdata
+    - recurse:
+      - user
+      - group
+    - require:
+      - pkg: netdata
+
 netdata:
   pkg.installed:
     - version: 1.6.1
