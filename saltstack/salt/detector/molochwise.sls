@@ -2,7 +2,7 @@
 {% set wise_enabled = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/components/moloch | jq -r .configuration.wise_enabled', python_shell=True) %}
 {% set wise_installed = salt['cmd.run'](cmd='source /etc/default/s4a-detector && mongo --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval \'db.component.find({"_id" : "molochwise"})\'|jq -r .installed', python_shell=True) %}
 
-{% if wise_enabled is defined and path_moloch_wise_ini is defined and wise_enabled == "true" and salt['file.file_exists'](path_moloch_wise_ini)%}
+{% if wise_enabled is defined and path_moloch_wise_ini is defined and wise_enabled == "true" %}
 moloch_wise_conf:
   file.managed:
     - name: /data/moloch/etc/wise.ini
@@ -11,12 +11,14 @@ moloch_wise_conf:
     - group: root
     - mode: 755
 
+{% if salt['file.file_exists'](path_moloch_wise_ini) %}
 moloch_wise_conf_sources:
    file.append:
    - name: /data/moloch/etc/wise.ini
    - source: {{ path_moloch_wise_ini }}
    - watch:
      - file: moloch_wise_conf
+{% endif %}
 
 detector_moloch_wise_check_variable:
   cmd.run:
