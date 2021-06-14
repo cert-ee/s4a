@@ -36,5 +36,6 @@ s4a ALL = NOPASSWD:SETENV: /usr/bin/salt-call state.apply detector/kibana
 s4a ALL = NOPASSWD:SETENV: /usr/bin/salt-call state.apply detector/kibana_disabled
 s4a ALL = NOPASSWD:SETENV: /usr/bin/salt-call state.apply detector/kibana_enabled
 s4a ALL = NOPASSWD:SETENV: /usr/bin/salt-call state.apply detector/kibana_uninstall
+s4a ALL = NOPASSWD:SETENV: /usr/bin/salt-call state.apply detector/molochwise
 s4a ALL = NOPASSWD:SETENV: /usr/bin/apt-cache policy *
 s4a ALL = NOPASSWD:SETENV: /usr/bin/apt-mark showhold
