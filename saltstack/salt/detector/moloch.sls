@@ -5,7 +5,10 @@
 {% if connect_test.result == True %}
 {% set int = salt.http.query('http://'+api.host+':'+api.port|string+'/api/network_interfaces/listForSalt', decode=true )['dict']['interfaces'] %}
 {% set result_moloch = salt.http.query('http://'+api.host+':'+api.port|string+'/api/components/moloch', decode=true ) %}
-{% set result_settings = salt.http.query('http://'+api.host+':'+api.port|string+'/api/settings/paths', decode=true ) %}
+
+{% set path_moloch_wise_ini = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/settings/paths | jq -r .path_moloch_wise_ini', python_shell=True) %}
+{% set path_moloch_yara_ini = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/settings/paths | jq -r .path_moloch_yara_ini', python_shell=True) %}
+{% set wise_enabled = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/components/moloch | jq -r .configuration.wise_enabled', python_shell=True) %}
 {% endif %}
 
 {% if int is not defined or int == "" %}
@@ -14,11 +17,6 @@
 
 {% if result_moloch is defined and result_moloch['dict'] is defined %}
 {% set moloch_config = result_moloch['dict'] | tojson %}
-{% endif %}
-
-{% if result_settings is defined and result_settings['dict'] is defined %}
-{% set path_moloch_wise_ini = result_settings['dict']['path_moloch_wise_ini'] | tojson %}
-{% set path_moloch_yara_ini = result_settings['dict']['path_moloch_yara_ini'] | tojson %}
 {% endif %}
 
 {% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', 'localhost' ) + ':9200' %}
@@ -33,6 +31,7 @@
 include:
   - detector.deps
   - detector.capture_interface
+  - detector.molochwise
 
 # ttyname failed: Inappropriate ioctl for device
 neutralize_annoying_message:
@@ -269,12 +268,6 @@ detector_moloch_capture_service:
       - cmd: detector_moloch_admin_profile
       - file: detector_moloch_config_ini
 
-detector_moloch_capture_component_enable:
-  cmd.run:
-    - name: |
-        source /etc/default/s4a-detector
-        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochcapture"},{ $set: { installed:true } })'
-
 detector_moloch_viewer_service:
   service.running:
     - name: molochviewer
@@ -287,12 +280,6 @@ detector_moloch_viewer_service:
       - pkg: detector_moloch_pkg
       - cmd: detector_moloch_admin_profile
 
-detector_moloch_viewer_component_enable:
-  cmd.run:
-    - name: |
-        source /etc/default/s4a-detector
-        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochviewer"},{ $set: { installed:true } })'
-
 detector_moloch_drop_tls:
   file.managed:
     - name: /data/moloch/etc/drop_tls.yaml
@@ -302,51 +289,13 @@ detector_moloch_drop_tls:
     - mode: 644
     - template: jinja
 
-{% if moloch_config is defined and moloch_config['configuration'] is defined and moloch_config['configuration']['wise_enabled'] is defined and moloch_config['configuration']['wise_enabled'] == True %}
-moloch_wise_conf:
-  file.managed:
-    - name: /data/moloch/etc/wise.ini
-    - source: salt://{{ slspath }}/files/moloch/wise.ini.jinja
-    - user: root
-    - group: root
-    - mode: 755
-    - template: jinja
-    - defaults:
-       moloch_config: {{ moloch_config }}
-
-{% if path_moloch_wise_ini is defined and salt['file.file_exists' ](path_moloch_wise_ini) %}
-moloch_wise_conf_sources:
-   file.append:
-   - name: /data/moloch/etc/wise.ini
-   - source: {{ path_moloch_wise_ini }}
-   - watch:
-     - file: moloch_wise_conf
-{% endif %}
-
-detector_moloch_wise_systemd:
-  file.managed:
-    - name: /etc/systemd/system/molochwise.service
-    - source: salt://{{ slspath }}/files/moloch/molochwise.service
-    - user: root
-    - group: root
-    - mode: 644
-    - template: jinja
-
-{% if moloch_config is defined and moloch_config['configuration'] is defined and moloch_config['configuration']['wise_enabled'] is defined and moloch_config['configuration']['wise_enabled'] == True %}
-detector_moloch_wise_service:
-  service.running:
-    - name: molochwise
-    - enable: true
-    - full_restart: true
-    - require:
-      - file: detector_moloch_wise_systemd
-      - file: moloch_wise_conf
-    - watch:
-      - pkg: detector_moloch_pkg
-{% else %}
-detector_moloch_wise_service:
-  service.dead:
-    - name: molochwise
-    - enable: false
-{% endif %}
-{% endif %}
+detector_moloch_component_enable:
+  cmd.run:
+    - name: |
+        source /etc/default/s4a-detector
+        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "moloch"},{ $set: { installed:true } })'
+        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochviewer"},{ $set: { installed:true } })'
+        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochcapture"},{ $set: { installed:true } })'
+        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "moloch"},{ $set: { enabled:true } })'
+        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochviewer"},{ $set: { enabled:true } })'
+        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochcapture"},{ $set: { enabled:true } })'

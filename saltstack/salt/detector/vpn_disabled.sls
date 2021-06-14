@@ -3,7 +3,7 @@ openvpn_service:
     - name: openvpn
     - enable: false
 
-evebox-agent_component_enable:
+vpn_component_enable:
   cmd.run:
     - name: |
         source /etc/default/s4a-detector
