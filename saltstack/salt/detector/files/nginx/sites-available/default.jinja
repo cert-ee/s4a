@@ -1,3 +1,4 @@
+{% set multiviewer_enabled = salt['cmd.run'](cmd='grep -i MULTIVIEWER_ENABLED=True /etc/default/s4a-detector|cut -d= -f2', python_shell=True) %}
 {% set api = salt['pillar.get']('detector:api', {'host': '127.0.0.1', 'port': 4000}) %}
 {% set connect_test = salt.network.connect(api.host, port=api.port) %}
 {% if connect_test.result == True %}
@@ -46,6 +47,7 @@ server {
 {% endif %}
 	# HSTS (ngx_http_headers_module is required) (15768000 seconds = 6 months)
 	add_header Strict-Transport-Security max-age=15768000;
+        add_header X-Frame-Options SAMEORIGIN;
 
 	root /var/www/html;
 
@@ -94,25 +96,17 @@ server {
 
         location /moloch {
                 rewrite /[^\/]+(.*) $1  break;
-                proxy_pass http://127.0.0.1:8005;
+{% if multiviewer_enabled is defined and multiviewer_enabled == "True" or multiviewer_enabled == "true" %}
+                proxy_pass https://127.0.0.1:8005;
+{% else %}
+		proxy_pass http://127.0.0.1:8005;
+{% endif %}
 		proxy_set_header moloch_user $remote_user;
+		proxy_hide_header x-frame-options;
         }
 
 	location /api {
 		proxy_pass http://127.0.0.1:4000;
-	}
-
-	location /nfsen {
-		alias /var/www/nfsen;
-
-		index nfsen.php;
-		try_files $uri $uri/ =404;
-
-		location ~ \.php$ {
-			include snippets/fastcgi-php.conf;
-			fastcgi_param SCRIPT_FILENAME /var/www/$fastcgi_script_name;
-			fastcgi_pass unix:/run/php/php7.0-fpm.sock;
-		}
 	}
 
 	location / {

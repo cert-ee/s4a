@@ -20,11 +20,6 @@ moloch_wise_conf_sources:
      - file: moloch_wise_conf
 {% endif %}
 
-detector_moloch_wise_check_variable:
-  cmd.run:
-    - name: |
-        echo "enabled {{ wise_enabled  }} installed {{ wise_installed  }}"
-
 {% if wise_installed == "false" and wise_enabled == "true"%}
 detector_moloch_wise_systemd:
   file.managed:
