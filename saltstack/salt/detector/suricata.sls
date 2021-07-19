@@ -46,8 +46,8 @@ suricata_repo:
     - ppa: oisf/suricata-stable
 
 suricata_pkg:
-  pkg.installed:
-    - refresh: true
+  pkg.latest:
+    - refresh: True
     - pkgs:
         - libhtp2
         - suricata
