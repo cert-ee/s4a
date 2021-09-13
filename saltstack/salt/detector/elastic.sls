@@ -142,3 +142,7 @@ elasticsearch_disable_replicas:
     - data_file: /etc/elasticsearch/no_replicas.json
 {% endif %}
 {% endif %}
+
+elasticsearch_skip_installation:
+  cmd.run:
+    - name: echo "Skipping Elastic install."
