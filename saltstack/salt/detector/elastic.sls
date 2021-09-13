@@ -2,7 +2,7 @@
 {% set elastic_nodes = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq .number_of_nodes', python_shell=True) %}
 {% set elastic_status = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq -r .status', python_shell=True) %}
 
-{% if elastic_version_installed is not defined or elastic_nodes|int == 1 or elastic_nodes is not defined or not elastic_nodes == "null" %}
+{% if elastic_version_installed is not defined or not elastic_version_installed or elastic_nodes|int == 1 or elastic_nodes is not defined %}
 include:
   - detector.deps
 
