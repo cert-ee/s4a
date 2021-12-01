@@ -22,6 +22,7 @@
 {% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', 'localhost' ) + ':9200' %}
 {% set elastic_status = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq -r .status', python_shell=True) %}
 {% set molochDBVersion = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_template/*sessions2_template?filter_path=**._meta.molochDbVersion | jq -r .sessions2_template.mappings._meta.molochDbVersion', python_shell=True) %}
+{% set arkimeDBVersion = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_template/*arkime_sessions3_template?filter_path=**._meta.molochDbVersion | jq -r .arkime_sessions3_template.mappings._meta.molochDbVersion', python_shell=True) %}
 
 # Note:
 # After initial installation user needs to be added
@@ -156,28 +157,28 @@ detector_moloch_check_elastic_up:
     - header_dict:
         Content-Type: "application/json"
 
-{% if elastic_status == "green" and (molochDBVersion == "null" or molochDBVersion|int < 64) %}
+{% if elastic_status == "green" and (molochDBVersion == "null" or molochDBVersion|int < 64) and ( arkimeDBVersion == "null" ) %}
 detector_moloch_db:
   service.dead:
     - names:
        - molochcapture
        - molochviewer
   cmd.run:
-    - name: echo INIT | /data/moloch/db/db.pl {{ es }} init
+    - name: echo INIT | /data/moloch/db/db.pl {{ es }} init --replicas 0
     - runas: root
     - require:
       - pkg: detector_moloch_pkg
       - detector_moloch_check_elastic_up
 {% endif %}
 
-{% if molochDBVersion is defined and molochDBVersion|int == 64 and elastic_status == "green" %}
+{% if molochDBVersion is defined and molochDBVersion|int == 66 and elastic_status == "green" %}
 detector_moloch_db_upgrade:
   service.dead:
     - names:
        - molochcapture
        - molochviewer
   cmd.run:
-    - name: echo UPGRADE | /data/moloch/db/db.pl {{ es }} upgrade
+    - name: echo UPGRADE | /data/moloch/db/db.pl {{ es }} upgrade --replicas 0
     - runas: root
     - require:
       - pkg: detector_moloch_pkg

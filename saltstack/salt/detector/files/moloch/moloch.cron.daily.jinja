@@ -28,7 +28,7 @@ molochAverageSession=""
 apt-get -q -y install bc jq >>/dev/null
 
 # Get number of available indexes
-nr="$(curl --silent -XGET "$ESHOSTPORT/_cat/indices?v&pretty" --stderr - | grep -oE 'sessions.*-[0-9]{6}' | tr '\n' ' ' | sed 's/ $//')"
+nr="$(curl --silent -XGET "$ESHOSTPORT/_cat/indices?v&pretty" --stderr - | grep -oE '(arkime_sessions.*|sessions.*)-[0-9]{6}' | tr '\n' ' ' | sed 's/ $//')"
 
 # Get index sizes in bytes
 for x in $nr
@@ -187,18 +187,13 @@ fi
 # Moloch daily cron
 RETAINNUMDAYS=$(( (($available - $suricataSize) / $molochAverageSession) - 1 ))
 
-# Delete old moloch session indexes
-/data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS --nooptimize
-sessionDeleteSuccess=$?
-
 # Check if indexes are in readonly state
-# then delete old moloch indexes
-# and disable readonly state
+# and disable readonly state if 2GB or more disk space is available
 
 if [ "$(curl -s -XGET $ESHOSTPORT/_all/_settings | grep read_only_allow_delete.:.true)" ];
 then
 	echo "WARNING: Elastic is in read only mode"
-	if [[ $sessionDeleteSuccess == 0 ]] && [[ $(df -BG --output=avail /srv/elasticsearch | tail -n 1 | grep -oP '\d+(?=G)') -ge 2 ]]
+	if [[ $(df -BG --output=avail /srv/elasticsearch | tail -n 1 | grep -oP '\d+(?=G)') -ge 2 ]]
 	then
 		echo -n "Disabling Elastic read only mode: "
 		curl -s -XPUT -H "Content-Type: application/json" $ESHOSTPORT/_all/_settings -d '{"index.blocks.read_only_allow_delete": null}' >>/dev/null
@@ -213,6 +208,10 @@ then
 		exit 1
 	fi
 fi
+
+# Delete old moloch session indexes
+/data/moloch/db/db.pl $ESHOSTPORT expire daily $RETAINNUMDAYS --nooptimize
+sessionDeleteSuccess=$?
 
 # Optimize Moloch indexes between 5AM and 7AM.
 if [[ "$(date "+%H:%M")" > "05:30" ]] && [[ "$(date "+%H:%M")" < "06:30" ]]
