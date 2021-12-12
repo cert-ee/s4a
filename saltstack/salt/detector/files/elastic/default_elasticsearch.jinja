@@ -12,5 +12,5 @@ ES_PATH_CONF=/etc/elasticsearch
 CONF_DIR=/etc/elasticsearch
 LOG_DIR=/var/log/elasticsearch
 PID_DIR=/var/run/elasticsearch
-ES_JAVA_OPTS="-Xms{{ heap }} -Xmx{{ heap }}"
+ES_JAVA_OPTS="-Xms{{ heap }} -Xmx{{ heap }} -Dlog4j2.formatMsgNoLookups=true"
 ES_STARTUP_SLEEP_TIME=5
