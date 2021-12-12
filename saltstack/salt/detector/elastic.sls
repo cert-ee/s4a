@@ -82,6 +82,16 @@ elasticsearch_jvm_options:
     - watch_in:
       - service: elasticsearch
 
+elasticsearch_disable_log4j:
+  file.managed:
+    - name: /etc/elasticsearch/jvm.options.d/disable-log4j-MsgNoLookups.options
+    - source: salt://{{ slspath }}/files/elastic/disable-log4j-MsgNoLookups.options
+    - user: elasticsearch
+    - group: elasticsearch
+    - mode: 750
+    - require:
+      - file: elasticsearch_dirs
+
 elasticsearch_defaults:
   file.managed:
     - name: /etc/default/elasticsearch
