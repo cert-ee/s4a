@@ -1,4 +1,4 @@
-{% set kibana_index_status = salt['cmd.run'](cmd='curl -s -XGET http://localhost:9200/.kibana* | jq .status', python_shell=True) %}
+{% set kibana_index_status = salt['cmd.run'](cmd='curl -s -XGET http://localhost:9200/.kibana | jq .status', python_shell=True) %}
 
 {% if kibana_index_status == "404" %}
 include:
@@ -20,17 +20,6 @@ detector_kibana_conf:
   file.managed:
     - name: /etc/kibana/kibana.yml
     - source: salt://{{ slspath }}/files/kibana/kibana.yml
-
-detector_kibana_delete_old_index:
-  http.query:
-    - name: 'http://localhost:9200/.kibana'
-    - method: DELETE
-    - status:
-      - 200
-      - 404
-    - status_type: list
-    - header_dict:
-        Content-Type: "application/json"
 
 elasticdump:
   npm.installed:
