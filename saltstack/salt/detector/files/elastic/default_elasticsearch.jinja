@@ -1,5 +1,7 @@
 {%- set mem = (salt['grains.get']('mem_total') / 1000) | int %}
-{%- if mem >= 64 %}
+{%- if mem >= 96 %}
+{%- set heap = '64g' %}
+{%- elif mem >= 64 %}
 {%- set heap = '32g' %}
 {%- elif mem >= 16 %}
 {%- set num = ((mem - 8) / 2) | int %}

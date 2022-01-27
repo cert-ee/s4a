@@ -24,19 +24,16 @@ elasticsearch:
   cmd.run:
     - name: apt-mark unhold elasticsearch
   pkg.installed:
-    - version: 7.15.1
+    - version: 7.16.3
     - hold: true
     - update_holds: true
     - refresh: true
     - require:
       - pkgrepo: elastic7x_repo
       - pkg: dependency_pkgs
-  service.running:
-    - enable: true
-    - full_restart: true
-    - watch:
-      - pkg: elasticsearch
-      - file: elasticsearch_yml
+  service.dead:
+    - name:
+      - elasticsearch
 
 elasticsearch_dirs:
   file.directory:
@@ -48,13 +45,17 @@ elasticsearch_dirs:
     - names:
       - /etc/elasticsearch
       - /etc/elasticsearch/scripts
-      - /srv/elasticsearch
       - /var/log/elasticsearch
       - /var/run/elasticsearch
     - recurse:
       - user
       - group
       - mode
+    - cmd.run:
+      - name: |
+          chown elasticsearch -R /srv/elasticsearch
+          chgrp elasticsearch -R /srv/elasticsearch
+      - runas: root
     - require:
       - pkg: elasticsearch
 
@@ -82,16 +83,6 @@ elasticsearch_jvm_options:
     - watch_in:
       - service: elasticsearch
 
-elasticsearch_disable_log4j:
-  file.managed:
-    - name: /etc/elasticsearch/jvm.options.d/disable-log4j-MsgNoLookups.options
-    - source: salt://{{ slspath }}/files/elastic/disable-log4j-MsgNoLookups.options
-    - user: elasticsearch
-    - group: elasticsearch
-    - mode: 750
-    - require:
-      - file: elasticsearch_dirs
-
 elasticsearch_defaults:
   file.managed:
     - name: /etc/default/elasticsearch
@@ -109,6 +100,17 @@ elasticsearch_cron:
     - group: root
     - mode: 750
     - template: jinja
+
+elasticsearch_service:
+  service.running:
+    - names:
+      - elasticsearch
+    - enable: true
+    - full_restart: true
+    - watch:
+      - pkg: elasticsearch
+      - file: elasticsearch_yml
+      - file: elasticsearch_jvm_options
 
 elasticsearch_allocation_settings:
   file.managed:
@@ -131,8 +133,26 @@ elasticsearch_set_allocation_settings:
         Content-Type: "application/json"
     - data_file: /etc/elasticsearch/allocation_settings.json
 
-{% if elastic_status == "yellow" %}
-elasticsearch_replicas_settings:
+elasticsearch_no_replicas_template:
+  file.managed:
+    - name: /etc/elasticsearch/no_replicas_template.json
+    - source: salt://{{ slspath }}/files/elastic/no_replicas_template.json
+    - user: elasticsearch
+    - group: elasticsearch
+    - mode: 750
+    - require:
+      - file: elasticsearch_dirs
+
+elasticsearch_enable_no_replicas_template:
+  http.query:
+    - name: 'http://localhost:9200/_template/.no_replicas'
+    - method: PUT
+    - status: 200
+    - header_dict:
+        Content-Type: "application/json"
+    - data_file: /etc/elasticsearch/no_replicas_template.json
+
+elasticsearch_no_replicas:
   file.managed:
     - name: /etc/elasticsearch/no_replicas.json
     - source: salt://{{ slspath }}/files/elastic/no_replicas.json
@@ -142,7 +162,7 @@ elasticsearch_replicas_settings:
     - require:
       - file: elasticsearch_dirs
 
-elasticsearch_disable_replicas:
+elasticsearch_set_no_replicas:
   http.query:
     - name: 'http://localhost:9200/*/_settings'
     - method: PUT
@@ -150,9 +170,17 @@ elasticsearch_disable_replicas:
     - header_dict:
         Content-Type: "application/json"
     - data_file: /etc/elasticsearch/no_replicas.json
-{% endif %}
-{% endif %}
 
+elasticsearch_set_deprecation_log_no_replicas:
+  http.query:
+    - name: 'http://localhost:9200/.logs-deprecation.elasticsearch-default/_settings'
+    - method: PUT
+    - status: 200
+    - header_dict:
+        Content-Type: "application/json"
+    - data_file: /etc/elasticsearch/no_replicas.json
+{% else %}
 elasticsearch_skip_installation:
   cmd.run:
     - name: echo "Skipping Elastic install."
+{% endif %}

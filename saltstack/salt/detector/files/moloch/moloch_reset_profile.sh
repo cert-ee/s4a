@@ -16,6 +16,6 @@ if [ "x$username" == "x" ] ; then
 	exit
 fi
 
-curl -s -XPOST -H "Content-Type: application/x-ndjson" http://localhost:9200/_bulk --data-binary '{"index": {"_index": "users", "_type": "user", "_id": "'$username'"}}
-{"removeEnabled":false,"userName":"'$username'","emailSearch":false,"enabled":'$enabled',"webEnabled":true,"headerAuthEnabled":true,"createEnabled":'${admin}',"settings":{},"passStore":"","userId":"'$username'"}
+curl -s -XPOST -H "Content-Type: application/x-ndjson" http://localhost:9200/_bulk --data-binary '{"index": {"_index": "arkime_users", "_type": "_doc", "_id": "'$username'"}}
+{"removeEnabled":false,"userName":"'$username'","emailSearch":true,"enabled":'$enabled',"webEnabled":true,"headerAuthEnabled":true,"createEnabled":'${admin}',"settings":{},"passStore":"","userId":"'$username'"}
 ' | jq ''

@@ -42,17 +42,17 @@ neutralize_annoying_message:
     - mode: replace
     - content: tty -s && mesg n || true
 
-detector_moloch_pkg:
-  pkg.latest:
-    - name: moloch
+moloch:
+  cmd.run:
+    - name: apt-mark unhold moloch
+  pkg.installed:
+    - version: 3.2.1-1
+    - hold: true
+    - update_holds: true
     - refresh: True
     - require:
       - pkgrepo: s4a_repo
-#      - pkg: elasticsearch
 
-# Note:
-# Moloch viewer does not use user from configration, but runs under 'daemon'
-# instead.
 detector_moloch_dir_perms:
   file.directory:
     - names:
@@ -62,7 +62,7 @@ detector_moloch_dir_perms:
     - group: root
     - mode: 755
     - require:
-      - pkg: detector_moloch_pkg
+      - pkg: moloch
 
 detector_moloch_log_perms:
   file.directory:
@@ -72,7 +72,7 @@ detector_moloch_log_perms:
     - group: root
     - mode: 755
     - require:
-      - pkg: detector_moloch_pkg
+      - pkg: moloch
 
 detector_moloch_logrotate:
   file.managed:
@@ -91,7 +91,7 @@ detector_moloch_daily_script:
     - mode: 755
     - template: jinja
     - require:
-      - pkg: detector_moloch_pkg
+      - pkg: moloch
     - defaults:
         es: {{ es }}
 
@@ -137,7 +137,7 @@ detector_moloch_config_ini:
         path_moloch_yara_ini: {{ path_moloch_yara_ini }}
 {% endif %}
     - require:
-      - pkg: detector_moloch_pkg
+      - pkg: moloch
 
 detector_moloch_update_geo:
   cmd.run:
@@ -145,7 +145,7 @@ detector_moloch_update_geo:
     - cwd: /data/moloch/bin
     - runas: root
     - require:
-      - pkg: detector_moloch_pkg
+      - pkg: moloch
 
 detector_moloch_check_elastic_up:
   http.wait_for_successful_query:
@@ -167,11 +167,11 @@ detector_moloch_db:
     - name: echo INIT | /data/moloch/db/db.pl {{ es }} init --replicas 0
     - runas: root
     - require:
-      - pkg: detector_moloch_pkg
+      - pkg: moloch
       - detector_moloch_check_elastic_up
 {% endif %}
 
-{% if molochDBVersion is defined and molochDBVersion|int == 66 and elastic_status == "green" %}
+{% if (molochDBVersion is defined and molochDBVersion|int == 66 or arkimeDBVersion|int < 71) and elastic_status == "green" %}
 detector_moloch_db_upgrade:
   service.dead:
     - names:
@@ -181,7 +181,7 @@ detector_moloch_db_upgrade:
     - name: echo UPGRADE | /data/moloch/db/db.pl {{ es }} upgrade --replicas 0
     - runas: root
     - require:
-      - pkg: detector_moloch_pkg
+      - pkg: moloch
       - detector_moloch_check_elastic_up
 {% endif %}
 
@@ -193,7 +193,7 @@ detector_moloch_admin_profile_sh:
     - group: root
     - mode: 755
     - require:
-      - pkg: detector_moloch_pkg
+      - pkg: moloch
 
 detector_moloch_admin_profile:
   cmd.run:
@@ -210,7 +210,7 @@ detector_moloch_reset_users_sh:
     - group: root
     - mode: 755
     - require:
-      - pkg: detector_moloch_pkg
+      - pkg: moloch
 
 detector_moloch_reset_users:
   cmd.run:
@@ -265,7 +265,7 @@ detector_moloch_capture_service:
     - require:
       - file: detector_moloch_capture_systemd
     - watch:
-      - pkg: detector_moloch_pkg
+      - pkg: moloch
       - cmd: detector_moloch_admin_profile
       - file: detector_moloch_config_ini
 
@@ -278,7 +278,7 @@ detector_moloch_viewer_service:
     - require:
       - file: detector_moloch_viewer_systemd
     - watch:
-      - pkg: detector_moloch_pkg
+      - pkg: moloch
       - cmd: detector_moloch_admin_profile
 
 detector_moloch_drop_tls:

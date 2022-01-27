@@ -14,10 +14,11 @@ http.port: 9200
 transport.host: localhost
 transport.tcp.port: 9300
 
-gateway.expected_nodes: 1
+gateway.expected_data_nodes: 1
 gateway.recover_after_data_nodes: 1
 
-discovery.zen.minimum_master_nodes: 1
+discovery.type: single-node
+discovery.seed_hosts: ["127.0.0.1", "[::1]"]
 
 indices.breaker.fielddata.limit: 70%
 
