@@ -1,6 +1,7 @@
 {% set elastic_version_installed = salt['pkg.version']('elasticsearch') %}
 {% set elastic_nodes = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq .number_of_nodes', python_shell=True) %}
 {% set elastic_status = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq -r .status', python_shell=True) %}
+{% set elastic_deprecationLog = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/.logs-deprecation.elasticsearch-default|jq -r .status', python_shell=True) %}
 
 {% if elastic_version_installed is not defined or not elastic_version_installed or elastic_nodes|int == 1 or elastic_nodes is not defined %}
 include:
@@ -171,6 +172,7 @@ elasticsearch_set_no_replicas:
         Content-Type: "application/json"
     - data_file: /etc/elasticsearch/no_replicas.json
 
+{% if elastic_deprecationLog is defined and elastic_deprecationLog == "null" %}
 elasticsearch_set_deprecation_log_no_replicas:
   http.query:
     - name: 'http://localhost:9200/.logs-deprecation.elasticsearch-default/_settings'
@@ -179,6 +181,7 @@ elasticsearch_set_deprecation_log_no_replicas:
     - header_dict:
         Content-Type: "application/json"
     - data_file: /etc/elasticsearch/no_replicas.json
+{% endif %}
 {% else %}
 elasticsearch_skip_installation:
   cmd.run:
