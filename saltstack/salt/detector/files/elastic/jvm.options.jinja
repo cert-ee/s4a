@@ -1,7 +1,7 @@
 ## JVM configuration
 
 {%- set mem = (salt['grains.get']('mem_total') / 1000) | int %}
-{%- if mem >= 96 %}
+{%- if mem >= 128 %}
 {%- set heap = '64g' %}
 {%- elif mem >= 64 %}
 {%- set heap = '32g' %}
