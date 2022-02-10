@@ -1,6 +1,7 @@
 {% set elastic_version_installed = salt['pkg.version']('elasticsearch') %}
 {% set elastic_nodes = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq .number_of_nodes', python_shell=True) %}
 {% set elastic_status = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq -r .status', python_shell=True) %}
+{% set elastic_indices = salt['cmd.run'](cmd='curl -s http://localhost:9200/*/_search|jq .hits.total.value', python_shell=True) %}
 {% set elastic_deprecationLog = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/.logs-deprecation.elasticsearch-default|jq -r .status', python_shell=True) %}
 
 {% if elastic_version_installed is not defined or not elastic_version_installed or elastic_nodes|int == 1 or elastic_nodes is not defined %}
@@ -48,6 +49,9 @@ elasticsearch_dirs:
       - /etc/elasticsearch/scripts
       - /var/log/elasticsearch
       - /var/run/elasticsearch
+{% if not salt['file.directory_exists']('/srv/elasticsearch') %}
+      - /srv/elasticsearch
+{% endif %}
     - recurse:
       - user
       - group
@@ -163,6 +167,7 @@ elasticsearch_no_replicas:
     - require:
       - file: elasticsearch_dirs
 
+{% if elastic_indices is defined and elastic_indices|int > 0 %}
 elasticsearch_set_no_replicas:
   http.query:
     - name: 'http://localhost:9200/*/_settings'
@@ -171,7 +176,7 @@ elasticsearch_set_no_replicas:
     - header_dict:
         Content-Type: "application/json"
     - data_file: /etc/elasticsearch/no_replicas.json
-
+{% endif %}
 {% if elastic_deprecationLog is defined and elastic_deprecationLog == "null" %}
 elasticsearch_set_deprecation_log_no_replicas:
   http.query:
