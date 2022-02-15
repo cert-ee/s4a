@@ -171,7 +171,7 @@ detector_moloch_db:
       - detector_moloch_check_elastic_up
 {% endif %}
 
-{% if (molochDBVersion is defined and molochDBVersion|int == 66 or arkimeDBVersion|int < 72) and elastic_status == "green" %}
+{% if (molochDBVersion is defined and arkimeDBVersion|int < 72) and elastic_status == "green" %}
 detector_moloch_db_upgrade:
   service.dead:
     - names:
