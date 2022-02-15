@@ -46,7 +46,7 @@ moloch:
   cmd.run:
     - name: apt-mark unhold moloch
   pkg.installed:
-    - version: 3.3.0-1
+    - version: 3.3.1-1
     - hold: true
     - update_holds: true
     - refresh: True
