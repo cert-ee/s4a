@@ -8,37 +8,28 @@
 {% 	set mongodb_version_patch = mongodb_version[2] %}
 {% endif %}
 
-{% if mongodb_version_major is defined and mongodb_version_major|int == 3 and mongodb_version_minor|int == 4 and mongodb_upgrade_available == True %}
-mongodb-org_repo:
-  pkgrepo.managed:
-    - humanname: mongodb-org
-    - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.4 multiverse
-    - key_url: https://www.mongodb.org/static/pgp/server-3.4.asc
-    - file: /etc/apt/sources.list.d/mongodb-org-3.4.list
-{% elif mongodb_version_major is defined and (mongodb_version_major|int == 3 and mongodb_version_minor|int == 4) or (mongodb_version_major|int == 3 and mongodb_version_minor|int == 6 and mongodb_upgrade_available == True) %}
-mongodb-org_repo:
-  pkgrepo.managed:
-    - humanname: mongodb-org
-    - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.6 multiverse
-    - key_url: https://www.mongodb.org/static/pgp/server-3.6.asc
-    - file: /etc/apt/sources.list.d/mongodb-org-3.6.list
-{% elif mongodb_version_major is not defined or not mongodb_version_major or (mongodb_version_major|int == 3 and mongodb_version_minor|int == 6) or mongodb_version_major|int == 4 %}
-
-{% if mongodb_version_major is defined and mongodb_version_major|int == 3 %}
-# We have mongo installed, doesn't hurt to upgrade
-mongodb-org-upgrade-preps:
-  cmd.run:
-    - name: |
-        source /root/.mongodb.passwd
-        mongo -u $MONGODB_USER -p $MONGODB_PASS --authenticationDatabase=admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"3.6\" } )"
-{% endif %}
-
+{% if mongodb_version_major is defined and mongodb_version_major|int == 4 and mongodb_version_minor|int == 4 and mongodb_upgrade_available == True %}
 mongodb-org_repo:
   pkgrepo.managed:
     - humanname: mongodb-org
     - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4 multiverse
     - key_url: https://www.mongodb.org/static/pgp/server-4.4.asc
-    - file: /etc/apt/sources.list.d/mongodb-org-4.0.list
+    - file: /etc/apt/sources.list.d/mongodb-org-4.4.list
+{% elif mongodb_version_major is not defined or not mongodb_version_major or (mongodb_version_major is defined and (mongodb_version_major|int == 4 and mongodb_version_minor|int == 4) or (mongodb_version_major|int == 5 and mongodb_version_minor|int == 0)) %}
+mongodb-org_repo:
+  pkgrepo.managed:
+    - humanname: mongodb-org
+    - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse
+    - key_url: https://www.mongodb.org/static/pgp/server-5.0.asc
+    - file: /etc/apt/sources.list.d/mongodb-org-5.0.list
+{% endif %}
+
+{% if mongodb_version_major is defined and mongodb_version_major|int == 4 %}
+mongodb-org-upgrade-preps:
+  cmd.run:
+    - name: |
+        source /root/.mongodb.passwd
+        mongo -u $MONGODB_USER -p $MONGODB_PASS --authenticationDatabase=admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"4.4\" } )"
 {% endif %}
 
 nodejs_repo:
