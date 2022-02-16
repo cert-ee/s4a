@@ -1,12 +1,38 @@
-#!/bin/sh
+#!/bin/bash
 
 repo_url={{ salt['pillar.get']('detector:repo') }}
 files="ipv4-address-space.csv oui.txt GeoLite2-Country.mmdb GeoLite2-ASN.mmdb"
 path=/data/moloch/etc
+service=molochcapture.service
+saltRunning="$(ps -ef | grep "/usr/bin/python3.*.state.apply.detector.moloch" | grep -v grep| wc -l)"
+
+error=()
+
+echo "Updating ipv4 GeoIP Database, ipv4 addressspace and known devices:"
 
 for file in $files
 do
-	/bin/rm -vf $path/$file
-	/usr/bin/wget -nv "$repo_url/geoip/$file" -O $path/$file
-	chmod -c 644 $path/$file
+        /usr/bin/wget -nv "$repo_url/geoip/$file" -O $path/$file.tmp
+
+        if [ -s $path/$file.tmp ]
+        then
+                mv $path/$file.tmp $path/$file
+        fi
+
+        if [ -s $path/$file ]
+        then
+                chmod -c 644 $path/$file
+        else
+                error+="$path/$file "
+        fi
 done
+
+if [ ${#error[@]} -eq 0 ] && [[ "$saltRunning" == "0" ]]
+then
+        echo "Restarting $service"
+        systemctl restart $service
+elif [ ${#error[@]} -ne 0 ]
+then
+        echo "Missing file: ${error[@]}"
+        exit 2
+fi
