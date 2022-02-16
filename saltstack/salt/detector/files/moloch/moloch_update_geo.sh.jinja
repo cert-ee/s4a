@@ -27,11 +27,11 @@ do
         fi
 done
 
-if [ ${#error[@]} -eq 0 ] && [[ "$saltRunning" == "0" ]]
+if [ $'{'#error[@]'}' -eq 0 ] && [[ "$saltRunning" == "0" ]]
 then
         echo "Restarting $service"
         systemctl restart $service
-elif [ ${#error[@]} -ne 0 ]
+elif [ $'{'#error[@]'}' -ne 0 ]
 then
         echo "Missing file: ${error[@]}"
         exit 2
