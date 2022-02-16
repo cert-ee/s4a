@@ -6,6 +6,7 @@ path=/data/moloch/etc
 service=molochcapture.service
 saltRunning="$(ps -ef | grep "/usr/bin/python3.*.state.apply.detector.moloch" | grep -v grep| wc -l)"
 
+{% raw %}
 error=()
 
 echo "Updating ipv4 GeoIP Database, ipv4 addressspace and known devices:"
@@ -36,3 +37,4 @@ then
         echo "Missing file: ${error[@]}"
         exit 2
 fi
+{% endraw %}
