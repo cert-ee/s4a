@@ -21,6 +21,14 @@ mongodb-org:
     - watch:
       - pkg: mongodb-org
 
+mongodb_logrotate:
+  file.managed:
+    - name: /etc/logrotate.d/mongodb
+    - source: salt://{{ slspath }}/files/detector/mongodb_logrotate
+    - user: root
+    - group: root
+    - mode: 644
+
 nodejs:
   pkg.latest:
     - refresh: true

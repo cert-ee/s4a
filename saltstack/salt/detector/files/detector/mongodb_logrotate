@@ -1,7 +1,7 @@
-/var/log/moloch/*.log {
+/var/log/mongodb/*.log {
     daily
     rotate 5
     notifempty
-    copytruncate  
+    copytruncate
     compress
 }
