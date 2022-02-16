@@ -104,6 +104,16 @@ detector_moloch_daily_cron:
     - require:
       - file: detector_moloch_daily_script
 
+detector_moloch_geo_cron:
+  cron.present:
+    - name: /data/moloch/bin/moloch_update_geo.sh > /dev/null 2>&1
+    - user: root
+    - minute: 5
+    - hour: '0'
+    - dayweek: '*/3'
+    - require:
+      - file: detector_moloch_update_geo_sh
+
 detector_moloch_limits_conf:
   file.managed:
     - name: /etc/security/limits.d/99-moloch.conf
