@@ -1,7 +1,7 @@
 #!/bin/bash
 
 repo_url={{ salt['pillar.get']('detector:repo') }}
-files="ipv4-address-space.csv oui.txt GeoLite2-Country.mmdb GeoLite2-ASN.mmdb"
+files="ipv4-address-space.csv.gz oui.txt.gz GeoLite2-Country.mmdb.gz GeoLite2-ASN.mmdb.gz"
 path=/data/moloch/etc
 service=molochcapture.service
 saltRunning="$(ps -ef | grep "/usr/bin/python3.*.state.apply.detector.moloch" | grep -v grep| wc -l)"
@@ -22,6 +22,12 @@ do
 
         if [ -s $path/$file ]
         then
+		if $(grep gz$ <<< $file > /dev/null)
+	        then
+                	gunzip -q $path/$file
+                	file=$(sed 's/.gz//' <<< $file)
+        	fi
+
                 chmod -c 644 $path/$file
         else
                 error+="$path/$file "
