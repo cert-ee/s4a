@@ -24,7 +24,7 @@ do
         then
 		if $(grep gz$ <<< $file > /dev/null)
 	        then
-                	gunzip -q $path/$file
+                	gunzip -fq $path/$file
                 	file=$(sed 's/.gz//' <<< $file)
         	fi
 
