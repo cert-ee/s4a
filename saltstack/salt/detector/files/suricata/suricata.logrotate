@@ -5,7 +5,6 @@
     missingok
     create
     sharedscripts
-    delaycompress
     compress
     postrotate
 		systemctl restart suricata
