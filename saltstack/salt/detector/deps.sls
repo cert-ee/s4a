@@ -7,8 +7,9 @@
 {% 	set mongodb_version_minor = mongodb_version[1] %}
 {% 	set mongodb_version_patch = mongodb_version[2] %}
 {% endif %}
+{% set cpu_family = salt['cmd.run'](cmd='cat /sys/devices/cpu/caps/pmu_name', python_shell=True) %}
 
-{% if mongodb_version_major is defined and mongodb_version_major|int == 4 and mongodb_version_minor|int == 4 and mongodb_upgrade_available == True %}
+{% if (mongodb_version_major is defined and mongodb_version_major|int == 4 and mongodb_version_minor|int == 4 and mongodb_upgrade_available == True) or cpu_family == "westmere" %}
 mongodb-org_repo:
   pkgrepo.managed:
     - humanname: mongodb-org
