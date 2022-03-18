@@ -1,0 +1,12 @@
+/var/log/kibana/*.log
+{
+    rotate 1
+    daily
+    missingok
+    create
+    sharedscripts
+    compress
+    postrotate
+		systemctl restart kibana
+    endscript
+}

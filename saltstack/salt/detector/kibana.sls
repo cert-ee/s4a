@@ -8,7 +8,7 @@ detector_kibana_pkg:
     - name: apt-mark unhold kibana
   pkg.installed:
     - name: kibana
-    - version: 7.17.0
+    - version: 7.17.1
     - hold: true
     - update_holds: true
     - refresh: true
@@ -19,6 +19,14 @@ detector_kibana_conf:
   file.managed:
     - name: /etc/kibana/kibana.yml
     - source: salt://{{ slspath }}/files/kibana/kibana.yml
+
+detector_kibana_logrotate:
+  file.managed:
+    - name: /etc/logrotate.d/kibana
+    - source: salt://{{ slspath }}/files/kibana/kibana_logrotate
+    - user: root
+    - group: root
+    - mode: 644
 
 {% if kibana_index_status == "0" %}
 elasticdump:
