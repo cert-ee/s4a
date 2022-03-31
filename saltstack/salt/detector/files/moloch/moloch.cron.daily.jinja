@@ -228,3 +228,5 @@ fi
 
 # Set replica count
 curl -s -XPUT "$ESHOSTPORT/*/_settings?pretty" -H 'Content-Type:application/json' -d'{ "index" : { "number_of_replicas" : '$replicas' }}' >/dev/null
+curl -s -XPUT "$ESHOSTPORT/.logs-deprecation.elasticsearch-default/_settings" -H 'Content-Type: application/json' -d'{ "index" : { "number_of_replicas" : '$replicas' } }' >/dev/null
+
