@@ -76,13 +76,9 @@ netdata_dirs:
     - require:
       - pkg: netdata-core_pkg
 
-#netdata_service_start:
-#  service.running:
-#    - name: netdata
-#    - enable: true
-#    - full_restart: true
-
 netdata_service_start:
   cmd.run:
-    - name: systemctl restart netdata
+    - name: |
+        systemctl enable netdata
+        systemctl restart netdata
     - runas: root
