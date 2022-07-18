@@ -49,18 +49,11 @@ elasticsearch_dirs:
       - /etc/elasticsearch/scripts
       - /var/log/elasticsearch
       - /var/run/elasticsearch
-{% if not salt['file.directory_exists']('/srv/elasticsearch') %}
       - /srv/elasticsearch
-{% endif %}
     - recurse:
       - user
       - group
       - mode
-    - cmd.run:
-      - name: |
-          chown elasticsearch -R /srv/elasticsearch
-          chgrp elasticsearch -R /srv/elasticsearch
-      - runas: root
     - require:
       - pkg: elasticsearch
 
