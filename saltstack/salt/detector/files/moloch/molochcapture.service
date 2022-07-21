@@ -1,10 +1,15 @@
+{% set cluster_name_exists = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health?pretty|jq -r .cluster_name', python_shell=True) %}
+{% if cluster_name_exists is not defined or cluster_name_exists == "" %}
+{% set cluster_name_exists = grains['host'] %}
+{% endif %}
+
 [Unit]
 Description=Moloch Capture Service
 After=elasticsearch.target
 
 [Service]
 Type=simple
-ExecStart=/data/moloch/bin/moloch-capture -c /data/moloch/etc/config.ini -n {{ grains['host'] }}
+ExecStart=/data/moloch/bin/moloch-capture -c /data/moloch/etc/config.ini -n {{ cluster_name_exists }}
 Restart=always
 LimitMEMLOCK=infinity
 WorkingDirectory=/data/moloch
