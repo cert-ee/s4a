@@ -960,7 +960,7 @@ defrag:
 # in bytes.
 
 flow:
-  memcap: 128mb
+  memcap: 256mb
   hash-size: 65536
   prealloc: 10000
   emergency-recovery: 30
@@ -1077,7 +1077,7 @@ flow-timeouts:
 #                               # on directly.
 #
 stream:
-  memcap: 128mb
+  memcap: 256mb
   checksum-validation: yes      # reject wrong csums
   inline: auto                  # auto will use inline mode in IPS mode, yes or no set it statically
   reassembly:
