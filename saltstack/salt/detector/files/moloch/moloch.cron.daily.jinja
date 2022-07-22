@@ -166,19 +166,20 @@ fi
 if [ -z $available ] && [[ "$multinodes" == "true" ]]
 then
         replicas=1
+	available=$(( $disk - $(printf "%.0f\n" $(echo "$disk * 0.15" | bc)) ))
 elif [ -z $available ]
 then
         if mountpoint /srv/elasticsearch > /dev/null 2>&1
         then
                 replicas=0
                 available=$(( $disk - $(printf "%.0f\n" $(echo "$disk * 0.15" | bc)) ))
-        elif [[ "$multinodes" == "true" ]]; then
-                replicas=1
-                available=$(( $disk - $(printf "%.0f\n" $(echo "$disk * 0.15" | bc)) ))
         else
                 replicas=0
                 available=$(( $disk - $(printf "%.0f\n" $(echo "$disk * 0.20" | bc)) ))
         fi
+elif [[ "$multinodes" == "true" ]]
+	then
+	replicas=1
 else
         replicas=0
 fi
