@@ -3,6 +3,7 @@
 {% set elastic_status = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq -r .status', python_shell=True) %}
 {% set elastic_indices = salt['cmd.run'](cmd='curl -s http://localhost:9200/*/_search|jq .hits.total.value', python_shell=True) %}
 {% set elastic_deprecationLog = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/.logs-deprecation.elasticsearch-default|jq -r .status', python_shell=True) %}
+{% set elastic_data_path_ok = salt['cmd.run'](cmd='if [ -d /srv/elasticsearch ] && [ "$(ls -l /srv/ | grep -o elasticsearch | wc -l)" == "3" ]; then echo True; else echo False; fi', python_shell=True) %}
 
 {% if elastic_version_installed is not defined or not elastic_version_installed or elastic_nodes|int == 1 or elastic_nodes is not defined %}
 include:
@@ -49,7 +50,9 @@ elasticsearch_dirs:
       - /etc/elasticsearch/scripts
       - /var/log/elasticsearch
       - /var/run/elasticsearch
+{% if elastic_data_path_ok == "False" %}
       - /srv/elasticsearch
+{% endif %}
     - recurse:
       - user
       - group
