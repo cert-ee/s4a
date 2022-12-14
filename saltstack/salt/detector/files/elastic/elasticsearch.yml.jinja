@@ -1,4 +1,4 @@
-{% set organization_name = salt['cmd.run'](cmd='curl -s http://'+api.host+':'+api.port|string+'/api/registration| jq -r .[].organization_name|sed 's/\ /\_/g'', python_shell=True) %}
+{% set organization_name = salt['cmd.run'](cmd='curl -s http://'+api.host+':'+api.port|string+'/api/registration| jq -r .[].organization_name|sed "s/\ /\_/g"', python_shell=True) %}
 {% if salt['file.file_exists']('/etc/default/s4a-detector') %}
 {% set multiviewer_enabled = salt['cmd.run'](cmd='grep -i MULTIVIEWER_ENABLED=True /etc/default/s4a-detector|cut -d= -f2', python_shell=True) %}
 {% endif %}
