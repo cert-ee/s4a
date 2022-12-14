@@ -1,3 +1,4 @@
+{% set organization_name = salt['cmd.run'](cmd='curl -s http://'+api.host+':'+api.port|string+'/api/registration| jq -r .[].organization_name|sed 's/\ /\_/g'', python_shell=True) %}
 {% if salt['file.file_exists']('/etc/default/s4a-detector') %}
 {% set multiviewer_enabled = salt['cmd.run'](cmd='grep -i MULTIVIEWER_ENABLED=True /etc/default/s4a-detector|cut -d= -f2', python_shell=True) %}
 {% endif %}
@@ -5,13 +6,12 @@
 {% set cluster_name_exists = salt['cmd.run'](cmd='cat /etc/elasticsearch/elasticsearch.yml |grep cluster.name| cut -d" " -f2', python_shell=True) %}
 {% endif %}
 
-{% if cluster_name_exists is not defined or cluster_name_exists == "" %}
-cluster.name: {{ salt['grains.get']('host', 'elastic') }}
-node.name: "{{ salt['grains.get']('host', 'node1') }}"
+{% if cluster_name_exists is not defined or cluster_name_exists == "" or cluster_name_exists == "my-application" %}
+cluster.name: {{ organization_name }}
 {% else %}
 cluster.name: {{ cluster_name_exists }}
-node.name: {{ cluster_name_exists }}
 {% endif %}
+node.name: "{{ salt['grains.get']('host', 'node1') }}"
 node.data: true
 path.data: /srv/elasticsearch
 path.logs: /var/log/elasticsearch
