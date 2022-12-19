@@ -29,7 +29,11 @@ detector_moloch_wise_systemd:
     - group: root
     - mode: 644
 
-detector_moloch_wise_service:
+detector_moloch_wise_enable_service:
+  cmd.run:
+    - name: systemctl enable molochwise.service
+
+detector_moloch_wise_start_service:
   service.running:
     - name: molochwise
     - enable: true
