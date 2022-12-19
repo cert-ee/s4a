@@ -9,6 +9,8 @@
 {% set path_moloch_wise_ini = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/settings/paths | jq -r .path_moloch_wise_ini', python_shell=True) %}
 {% set path_moloch_yara_ini = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/settings/paths | jq -r .path_moloch_yara_ini', python_shell=True) %}
 {% set wise_enabled = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/components/moloch | jq -r .configuration.wise_enabled', python_shell=True) %}
+{% set wise_installed = salt['cmd.run'](cmd='source /etc/default/s4a-detector && mongo --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval \'db.component.find({"_id" : "molochwise"})\'|jq -r .installed', python_shell=True) %}
+{% set path_moloch_wise_ini = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/settings/paths | jq -r .path_moloch_wise_ini', python_shell=True) %}
 {% endif %}
 
 {% if int is not defined or int == "" %}
@@ -32,7 +34,6 @@
 include:
   - detector.deps
   - detector.capture_interface
-  - detector.molochwise
 
 # ttyname failed: Inappropriate ioctl for device
 neutralize_annoying_message:
@@ -257,6 +258,61 @@ detector_moloch_systemctl_reload:
     - onchanges:
       - file: detector_moloch_viewer_systemd
       - file: detector_moloch_capture_systemd
+
+{% if wise_enabled is defined and path_moloch_wise_ini is defined and wise_enabled == "true" %}
+moloch_wise_conf:
+  file.managed:
+    - name: /data/moloch/etc/wise.ini
+    - source: salt://{{ slspath }}/files/moloch/wise.ini
+    - user: root
+    - group: root
+    - mode: 755
+
+{% if salt['file.file_exists'](path_moloch_wise_ini) %}
+moloch_wise_conf_sources:
+   file.append:
+   - name: /data/moloch/etc/wise.ini
+   - source: {{ path_moloch_wise_ini }}
+   - watch:
+     - file: moloch_wise_conf
+{% endif %}
+
+detector_moloch_wise_systemd:
+  file.managed:
+    - name: /etc/systemd/system/molochwise.service
+    - source: salt://{{ slspath }}/files/moloch/molochwise.service
+    - user: root
+    - group: root
+    - mode: 644
+
+detector_moloch_wise_enable_service:
+  cmd.run:
+    - name: systemctl enable molochwise.service
+
+detector_moloch_wise_start_service:
+  service.running:
+    - name: molochwise
+
+detector_moloch_wise_component_enabled:
+  cmd.run:
+    - name: |
+        source /etc/default/s4a-detector
+        mongo --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochwise"},{ $set: { installed:true } })'
+        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochwise"},{ $set: { enabled:true } })'
+
+{% elif wise_enabled is defined and wise_installed is defined and wise_installed == "true" and wise_enabled == "false"%}
+detector_moloch_wise_service:
+  service.dead:
+    - name: molochwise
+    - enable: false
+
+detector_moloch_wise_component_disable:
+  cmd.run:
+    - name: |
+        source /etc/default/s4a-detector
+        mongo --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochwise"},{ $set: { installed:false } })'
+        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "moloch"},{ $set: { "configuration.wise_enabled" : false } })'
+{% endif %}
 
 detector_moloch_enable_molochcapture:
   cmd.run:
