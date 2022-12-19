@@ -1,4 +1,4 @@
-{% set organization_name = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/registration| jq -r .[].organization_name|sed "s/\ /\_/g"', python_shell=True) %}
+{% set detector_name = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/registration| jq -r .[].unique_name', python_shell=True) %}
 {% if salt['file.file_exists']('/etc/default/s4a-detector') %}
 {% set multiviewer_enabled = salt['cmd.run'](cmd='grep -i MULTIVIEWER_ENABLED=True /etc/default/s4a-detector|cut -d= -f2', python_shell=True) %}
 {% endif %}
@@ -7,7 +7,7 @@
 {% endif %}
 
 {% if cluster_name_exists is not defined or cluster_name_exists == "" or cluster_name_exists == "my-application" %}
-cluster.name: {{ organization_name }}
+cluster.name: {{ detector_name }}
 {% else %}
 cluster.name: {{ cluster_name_exists }}
 {% endif %}
