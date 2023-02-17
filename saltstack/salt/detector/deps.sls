@@ -45,7 +45,7 @@ influxdata_repo:
     - humanname: influxdata
     - name: deb https://repos.influxdata.com/ubuntu focal stable
     - keyserver: ha.pool.sks-keyservers.net
-    - key_url: https://repos.influxdata.com/influxdb.key
+    - key_url: https://repos.influxdata.com/influxdata-archive_compat.key
     - file: /etc/apt/sources.list.d/influxdata.list
 
 yarn_repo:

@@ -6,7 +6,9 @@
 {% set cluster_name_exists = salt['cmd.run'](cmd='cat /etc/elasticsearch/elasticsearch.yml |grep cluster.name| cut -d" " -f2', python_shell=True) %}
 {% endif %}
 
-{% if cluster_name_exists is not defined or cluster_name_exists == "" or cluster_name_exists == "my-application" or cluster_name_exists == "Unregistered"%}
+{% if detector_name is not defined or detector_name == "" %}
+cluster.name: Unregistered
+{% elif cluster_name_exists is not defined or cluster_name_exists == "" or cluster_name_exists == "my-application" or cluster_name_exists == "Unregistered"%}
 cluster.name: {{ detector_name }}
 {% else %}
 cluster.name: {{ cluster_name_exists }}
