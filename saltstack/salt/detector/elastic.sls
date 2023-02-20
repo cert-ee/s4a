@@ -84,6 +84,18 @@ elasticsearch_jvm_options:
     - watch_in:
       - service: elasticsearch
 
+elasticsearch_log4j2.properties:
+  file.managed:
+    - name: /etc/elasticsearch/log4j2.properties
+    - source: salt://{{ slspath }}/files/elastic/log4j2.properties
+    - user: elasticsearch
+    - group: elasticsearch
+    - mode: 750
+    - require:
+      - file: elasticsearch_dirs
+    - watch_in:
+      - service: elasticsearch
+
 elasticsearch_defaults:
   file.managed:
     - name: /etc/default/elasticsearch
