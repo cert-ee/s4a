@@ -27,7 +27,7 @@ elasticsearch:
   cmd.run:
     - name: apt-mark unhold elasticsearch
   pkg.installed:
-    - version: 7.17.6
+    - version: 7.17.9
     - hold: true
     - update_holds: true
     - refresh: true
