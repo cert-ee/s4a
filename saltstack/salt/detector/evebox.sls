@@ -6,16 +6,24 @@ evebox_repo:
     - file: /etc/apt/sources.list.d/evebox.list
     - clean_file: true
 
+evebox:
+  cmd.run:
+    - name: apt-mark unhold evebox
+  pkg.installed:
+    - version: 1:0.17.1
+    - hold: true
+    - update_holds: true
+    - refresh: true
+    - require:
+      - pkgrepo: evebox_repo
+
 evebox_pkgs:
   pkg.latest:
     - refresh: true
     - pkgs:
       - git
-      - evebox
       - curl
       - python3-elasticsearch
-    - require:
-      - pkgrepo: evebox_repo
 
 GeoLite2-City:
   file.managed:
