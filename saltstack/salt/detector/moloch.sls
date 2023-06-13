@@ -276,6 +276,16 @@ moloch_wise_conf_sources:
      - file: moloch_wise_conf
 {% endif %}
 
+{% if not salt['file.file_exists' ]('/srv/s4a-detector/moloch/wise_lan_ips.txt') %}
+local_network_tags:
+  file.managed:
+    - name: /srv/s4a-detector/moloch/wise_lan_ips.txt
+    - source: salt://{{ slspath }}/files/moloch/wise_lan_ips.txt
+    - user: s4a
+    - group: s4a
+    - mode: 644
+{% endif %}
+
 detector_moloch_wise_systemd:
   file.managed:
     - name: /etc/systemd/system/molochwise.service
