@@ -43,7 +43,7 @@ detector_suricata_yaml:
 
 suricata_repo:
   pkgrepo.managed:
-    - ppa: oisf/suricata-stable
+    - ppa: oisf/suricata-6.0
 
 suricata_pkg:
   pkg.latest:
