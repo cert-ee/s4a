@@ -28,6 +28,7 @@ capture_interface_{{ val }}:
     - gso: off
     - gro: off
     - lro: off
+    - mtu: 9000
     - required_in: detector_moloch_capture_service
   cmd.run:
     - name: ifconfig {{ val }} up
