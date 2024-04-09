@@ -46,7 +46,7 @@ moloch:
   cmd.run:
     - name: apt-mark unhold moloch
   pkg.installed:
-    - version: 5.0.2-GIT-8546996661
+    - version: 5.1.0-1
     - hold: true
     - update_holds: true
     - refresh: True
