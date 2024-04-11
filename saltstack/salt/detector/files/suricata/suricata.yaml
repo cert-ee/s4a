@@ -1,3 +1,7 @@
+{% set bpf_conf_enabled = salt['cmd.run'](cmd='grep -i ^suricata= /etc/s4a-detector/bpf.conf 2> /dev/null | cut -d= -f1', python_shell=True) %}
+{% if bpf_conf_enabled is defined and bpf_conf_enabled == "suricata" %}
+{% set bpf_filter = salt['cmd.run'](cmd='grep ^suricata= /etc/s4a-detector/bpf.conf | cut -d= -f2-', python_shell=True) %}
+{% endif %}
 %YAML 1.1
 ---
 
@@ -500,6 +504,9 @@ af-packet:
     #checksum-checks: kernel
     # BPF filter to apply to this interface. The pcap filter syntax apply here.
     #bpf-filter: port 80 or udp
+{% if bpf_conf_enabled is defined and bpf_conf_enabled == "suricata" %}
+    bpf-filter: {{ bpf_filter }}
+{% endif %}
     # You can use the following variables to activate AF_PACKET tap or IPS mode.
     # If copy-mode is set to ips or tap, the traffic coming to the current
     # interface will be copied to the copy-iface interface. If 'tap' is set, the
