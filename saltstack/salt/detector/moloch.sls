@@ -46,7 +46,7 @@ moloch:
   cmd.run:
     - name: apt-mark unhold moloch
   pkg.installed:
-    - version: 5.1.0-1
+    - version: 5.2.0-1
     - hold: true
     - update_holds: true
     - refresh: True
@@ -181,7 +181,7 @@ detector_moloch_db:
       - detector_moloch_check_elastic_up
 {% endif %}
 
-{% if (molochDBVersion is defined and arkimeDBVersion|int < 79) and elastic_status == "green" %}
+{% if (molochDBVersion is defined and arkimeDBVersion|int < 80) and elastic_status == "green" %}
 detector_moloch_db_upgrade:
   service.dead:
     - names:
