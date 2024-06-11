@@ -48,7 +48,7 @@ install_moloch_4x:
     - sources:
       - moloch_4x: {{ salt['pillar.get']('detector:repo') }}/pool/universe/m/moloch/moloch_4.3.2-1_amd64.deb
 
-detector_moloch_db_upgrade:
+detector_moloch_4x_db_upgrade:
   service.dead:
     - names:
        - molochcapture
