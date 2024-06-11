@@ -42,6 +42,22 @@ neutralize_annoying_message:
     - mode: replace
     - content: tty -s && mesg n || true
 
+{% if (molochDBVersion is defined and arkimeDBVersion|int < 78) and elastic_status == "green" %}
+install_moloch_4x:
+  pkg.installed:
+    - sources:
+      - moloch_4x: {{ salt['pillar.get']('detector:repo') }}/pool/universe/m/moloch/moloch_4.3.2-1_amd64.deb
+
+detector_moloch_db_upgrade:
+  service.dead:
+    - names:
+       - molochcapture
+       - molochviewer
+  cmd.run:
+    - name: echo UPGRADE | /data/moloch/db/db.pl {{ es }} upgrade --replicas 0
+    - runas: root
+{% endif %}
+
 moloch:
   cmd.run:
     - name: apt-mark unhold moloch
