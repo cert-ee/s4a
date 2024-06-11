@@ -52,7 +52,7 @@ neutralize_annoying_message:
 install_moloch_4x:
   pkg.installed:
     - sources:
-      - moloch_4.3.2-1_amd64: {{ salt['pillar.get']('detector:repo') }}/pool/universe/m/moloch/moloch_4.3.2-1_amd64.deb
+      - moloch: {{ salt['pillar.get']('detector:repo') }}/pool/universe/m/moloch/moloch_4.3.2-1_amd64.deb
 
 detector_moloch_4x_db_upgrade:
   service.dead:
