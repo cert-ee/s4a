@@ -21,9 +21,15 @@
 {% endif %}
 
 {% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', 'localhost' ) + ':9200' %}
-{% set elastic_status = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq -r .status', python_shell=True) %}
-{% set molochDBVersion = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_template/*sessions2_template?filter_path=**._meta.molochDbVersion | jq -r .sessions2_template.mappings._meta.molochDbVersion', python_shell=True) %}
-{% set arkimeDBVersion = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_template/*arkime_sessions3_template?filter_path=**._meta.molochDbVersion | jq -r .arkime_sessions3_template.mappings._meta.molochDbVersion', python_shell=True) %}
+{% set elastic_status = salt['cmd.run'](cmd='curl -s {{ es }}/_cluster/health | jq -r .status', python_shell=True) %}
+{% set elastic_node_count salt['cmd.run'](cmd='curl -s {{ es }}/_cluster/health | jq -r .number_of_nodes', python_shell=True) %}
+{% set molochDBVersion = salt['cmd.run'](cmd='curl -s {{ es }}/_template/*sessions2_template?filter_path=**._meta.molochDbVersion | jq -r .sessions2_template.mappings._meta.molochDbVersion', python_shell=True) %}
+{% set arkimeDBVersion = salt['cmd.run'](cmd='curl -s {{ es }}/_template/*arkime_sessions3_template?filter_path=**._meta.molochDbVersion | jq -r .arkime_sessions3_template.mappings._meta.molochDbVersion', python_shell=True) %}
+{% set arkimeShards = salt['cmd.run'](cmd='curl -s {{ es }}/_template/*arkime_sessions3_template | jq -r .[].settings.index.number_of_shards', python_shell=True) %}
+{% set arkimeShardsPerNode = salt['cmd.run'](cmd='curl -s {{ es }}/_template/*arkime_sessions3_template | jq -r .[].settings.index.routing.allocation.total_shards_per_node', python_shell=True) %}
+{% set arkimeReplicas = salt['cmd.run'](cmd='curl -s {{ es }}/_template/*arkime_sessions3_template | jq -r .[].settings.index.number_of_replicas', python_shell=True) %}
+
+
 
 # Note:
 # After initial installation user needs to be added
@@ -46,7 +52,7 @@ neutralize_annoying_message:
 install_moloch_4x:
   pkg.installed:
     - sources:
-      - moloch_4x: {{ salt['pillar.get']('detector:repo') }}/pool/universe/m/moloch/moloch_4.3.2-1_amd64.deb
+      - moloch_4.3.2-1_amd64: {{ salt['pillar.get']('detector:repo') }}/pool/universe/m/moloch/moloch_4.3.2-1_amd64.deb
 
 detector_moloch_4x_db_upgrade:
   service.dead:
@@ -54,7 +60,7 @@ detector_moloch_4x_db_upgrade:
        - molochcapture
        - molochviewer
   cmd.run:
-    - name: echo UPGRADE | /data/moloch/db/db.pl {{ es }} upgrade --replicas 0
+    - name: echo UPGRADE | /data/moloch/db/db.pl {{ es }} upgrade --shardsPerNode {{ arkimeShardsPerNode }}  --shards {{ arkimeShards }} --replicas {{ arkimeReplicas }}
     - runas: root
 {% endif %}
 
@@ -190,7 +196,11 @@ detector_moloch_db:
        - molochcapture
        - molochviewer
   cmd.run:
+{% if elastic_node_count|int ==  1 %}
     - name: echo INIT | /data/moloch/db/db.pl {{ es }} init --replicas 0
+{% else %}
+    - name: echo INIT | /data/moloch/db/db.pl {{ es }} init --shardsPerNode 3 --shards {{ elastic_node_count }} --replicas 1
+{% endif %}
     - runas: root
     - require:
       - pkg: moloch
@@ -204,7 +214,7 @@ detector_moloch_db_upgrade:
        - molochcapture
        - molochviewer
   cmd.run:
-    - name: echo UPGRADE | /data/moloch/db/db.pl {{ es }} upgrade --replicas 0
+    - name: echo UPGRADE | /data/moloch/db/db.pl {{ es }} upgrade --shardsPerNode {{ arkimeShardsPerNode }}  --shards {{ arkimeShards }} --replicas {{ arkimeReplicas }}
     - runas: root
     - require:
       - pkg: moloch
