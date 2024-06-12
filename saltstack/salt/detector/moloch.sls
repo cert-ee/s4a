@@ -65,7 +65,6 @@ detector_moloch_4x_db_upgrade:
     - runas: root
 {% endif %}
 
-{% if (arkimeDBVersion is defined and arkimeDBVersion|int >= 78) and elastic_status == "green" %}
 moloch:
   cmd.run:
     - name: apt-mark unhold moloch
@@ -76,7 +75,6 @@ moloch:
     - refresh: True
     - require:
       - pkgrepo: s4a_repo
-{% endif %}
 
 detector_moloch_dir_perms:
   file.directory:
