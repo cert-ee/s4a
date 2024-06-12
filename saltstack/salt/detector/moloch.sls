@@ -6,9 +6,9 @@
 {% set int = salt.http.query('http://'+api.host+':'+api.port|string+'/api/network_interfaces/listForSalt', decode=true )['dict']['interfaces'] %}
 {% set result_moloch = salt.http.query('http://'+api.host+':'+api.port|string+'/api/components/moloch', decode=true ) %}
 
-{% set path_moloch_wise_ini = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/settings/paths | jq -r .path_moloch_wise_ini', python_shell=True) %}
-{% set path_moloch_yara_ini = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/settings/paths | jq -r .path_moloch_yara_ini', python_shell=True) %}
-{% set wise_enabled = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/components/moloch | jq -r .configuration.wise_enabled', python_shell=True) %}
+{% set path_moloch_wise_ini = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/settings/paths | jq -r .path_moloch_wise_ini', python_shell=True) %}
+{% set path_moloch_yara_ini = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/settings/paths | jq -r .path_moloch_yara_ini', python_shell=True) %}
+{% set wise_enabled = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/components/moloch | jq -r .configuration.wise_enabled', python_shell=True) %}
 {% set wise_installed = salt['cmd.run'](cmd='source /etc/default/s4a-detector && mongo --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval \'db.component.find({"_id" : "molochwise"})\'|jq -r .installed', python_shell=True) %}
 {% endif %}
 
@@ -20,7 +20,7 @@
 {% set moloch_config = result_moloch['dict'] | tojson %}
 {% endif %}
 
-#{% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', 'localhost' ) + ':9200' %}
+#{% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', '127.0.0.1' ) + ':9200' %}
 {% set es = 'http://127.0.0.1:9200' %}
 {% set elastic_status = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_cluster/health | jq -r .status', python_shell=True) %}
 {% set elastic_node_count = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_cluster/health | jq -r .number_of_nodes', python_shell=True) %}
@@ -182,7 +182,7 @@ detector_moloch_update_geo:
 
 detector_moloch_check_elastic_up:
   http.wait_for_successful_query:
-    - name: 'http://localhost:9200/_cluster/health'
+    - name: {{ es }}/_cluster/health
     - method: GET
     - status: 200
     - request_interval: 5
@@ -208,7 +208,7 @@ detector_moloch_db:
       - detector_moloch_check_elastic_up
 {% endif %}
 
-{% if (arkimeDBVersion is defined and arkimeDBVersion|int >= 78 and arkimeDBVersion|int < 80) and elastic_status == "green" %}
+{% if (arkimeDBVersion is defined and arkimeDBVersion|int >= 78) and elastic_status == "green" %}
 detector_moloch_db_upgrade:
   service.dead:
     - names:
