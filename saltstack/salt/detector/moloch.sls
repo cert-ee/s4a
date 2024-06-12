@@ -64,7 +64,7 @@ detector_moloch_4x_db_upgrade:
     - runas: root
 {% endif %}
 
-{% if (arkimeDBVersion is defined and arkimeDBVersion|int => 78) and elastic_status == "green" %}
+{% if (arkimeDBVersion is defined and arkimeDBVersion|int >= 78) and elastic_status == "green" %}
 moloch:
   cmd.run:
     - name: apt-mark unhold moloch
@@ -209,7 +209,7 @@ detector_moloch_db:
       - detector_moloch_check_elastic_up
 {% endif %}
 
-{% if (arkimeDBVersion is defined and arkimeDBVersion|int => 78 and arkimeDBVersion|int < 80) and elastic_status == "green" %}
+{% if (arkimeDBVersion is defined and arkimeDBVersion|int >= 78 and arkimeDBVersion|int < 80) and elastic_status == "green" %}
 detector_moloch_db_upgrade:
   service.dead:
     - names:
