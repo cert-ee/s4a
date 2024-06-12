@@ -20,7 +20,8 @@
 {% set moloch_config = result_moloch['dict'] | tojson %}
 {% endif %}
 
-{% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', 'localhost' ) + ':9200' %}
+#{% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', 'localhost' ) + ':9200' %}
+{% set es = 'http://'127.0.0.1:9200' %}
 {% set elastic_status = salt['cmd.run'](cmd='curl -s {{ es }}/_cluster/health | jq -r .status', python_shell=True) %}
 {% set elastic_node_count = salt['cmd.run'](cmd='curl -s {{ es }}/_cluster/health | jq -r .number_of_nodes', python_shell=True) %}
 {% set molochDBVersion = salt['cmd.run'](cmd='curl -s {{ es }}/_template/*sessions2_template?filter_path=**._meta.molochDbVersion | jq -r .sessions2_template.mappings._meta.molochDbVersion', python_shell=True) %}
