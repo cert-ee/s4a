@@ -48,7 +48,7 @@ neutralize_annoying_message:
     - mode: replace
     - content: tty -s && mesg n || true
 
-{% if (molochDBVersion is defined and arkimeDBVersion|int < 78) and elastic_status == "green" %}
+{% if (arkimeDBVersion is defined and arkimeDBVersion|int < 78) and elastic_status == "green" %}
 install_moloch_4x:
   pkg.installed:
     - sources:
@@ -64,6 +64,7 @@ detector_moloch_4x_db_upgrade:
     - runas: root
 {% endif %}
 
+{% if (arkimeDBVersion is defined and arkimeDBVersion|int => 78) and elastic_status == "green" %}
 moloch:
   cmd.run:
     - name: apt-mark unhold moloch
@@ -74,6 +75,7 @@ moloch:
     - refresh: True
     - require:
       - pkgrepo: s4a_repo
+{% endif %}
 
 detector_moloch_dir_perms:
   file.directory:
@@ -207,7 +209,7 @@ detector_moloch_db:
       - detector_moloch_check_elastic_up
 {% endif %}
 
-{% if (molochDBVersion is defined and arkimeDBVersion|int < 80) and elastic_status == "green" %}
+{% if (arkimeDBVersion is defined and arkimeDBVersion|int => 78 and arkimeDBVersion|int < 80) and elastic_status == "green" %}
 detector_moloch_db_upgrade:
   service.dead:
     - names:
