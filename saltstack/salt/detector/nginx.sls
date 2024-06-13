@@ -3,7 +3,6 @@ detector_nginx_pkg:
     - refresh: true
     - pkgs:
         - nginx
-        - php-fpm
         - ssl-cert
 
 detector_nginx_conf:
@@ -92,7 +91,6 @@ detector_nginx_service:
   service.running:
     - names:
        - nginx
-       - php7.4-fpm
     - enable: true
     - watch:
       - pkg: detector_nginx_pkg
