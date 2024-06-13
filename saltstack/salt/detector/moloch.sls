@@ -49,7 +49,7 @@ neutralize_annoying_message:
     - mode: replace
     - content: tty -s && mesg n || true
 
-{% if (arkimeDBVersion is defined and arkimeDBVersion|int < 78) and elastic_status == "green" %}
+{% if (arkimeDBVersion is defined and arkimeDBVersion != "null" and arkimeDBVersion|int < 78) and elastic_status == "green" %}
 install_moloch_4x:
   pkg.installed:
     - sources:
