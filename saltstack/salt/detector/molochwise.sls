@@ -15,15 +15,12 @@ moloch_wise_conf:
     - group: root
     - mode: 755
 
-#{% if salt['file.file_exists'](path_moloch_wise_ini) %}
 moloch_wise_conf_sources:
    file.append:
    - name: /data/moloch/etc/wise.ini
    - source: {{ path_moloch_wise_ini }}
-#{% endif %}
 
-{% if wise_reversedns_enabled == 1 %}
-#{% if salt['file.file_exists'](path_moloch_wise_ini) %}
+{% if wise_reversedns_enabled == "1" %}
 moloch_wise_reversedns_conf_sources:
    file.append:
    - name: /data/moloch/etc/wise.ini
