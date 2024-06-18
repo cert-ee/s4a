@@ -21,7 +21,6 @@ export LC_ALL=C
 getMolochSessionsSize() {
 sizes=""
 nr=""
-ngb=""
 molochAverageSession=""
 
 # We need bc for non integer calculations and jq for parsing json
@@ -39,14 +38,13 @@ done
 # Get average of all returned index sizes
 average=`echo $sizes | jq -s 'add/length'`
 
-# Convert average to GB and round up
-ngb=$(echo $average | awk '{ byte =$1 /1024/1024/1024; print byte}')
-molochAverageSession=$(printf "%.0f" $ngb)
+# Convert average to GB
+molochAverageSession=$(echo $average | awk '{ byte =$1 /1024/1024/1024; print byte}')
 
 # Make sure that molochAverageSession is not zero
-if [ $molochAverageSession -eq 0 ] ; then
-    molochAverageSession=1
-fi
+#if [ $molochAverageSession -eq 0 ] ; then
+#    molochAverageSession=1
+#fi
 }
 
 removeSuricataLogs() {
@@ -85,7 +83,6 @@ fi
 getSuricataSize() {
 
 sum=""
-ngb=""
 suricataSize=""
 sizes=""
 
@@ -100,9 +97,8 @@ done
 # Get sum of all returned index sizes
 sum=`echo $sizes | jq -s 'add'`
 
-# Convert sum bytes to GB and round up
-ngb=$(echo $sum | awk '{ byte =$1 /1024/1024/1024; print byte}')
-suricataSize=$(printf "%.0f" $ngb)
+# Convert sum bytes to GB
+suricataSize=$(echo $sum | awk '{ byte =$1 /1024/1024/1024; print byte}')
 }
 
 ######################## End of Functions ##########################
@@ -186,7 +182,7 @@ fi
 
 # Final number of days to keep indexes (-1 day because db.pl is not considering current day)
 # Moloch daily cron
-RETAINNUMDAYS=$(( (($available - $suricataSize) / $molochAverageSession) - 1 ))
+RETAINNUMDAYS=$(echo "($available - $suricataSize) / $molochAverageSession - 1"|bc)
 
 # Check if indexes are in readonly state
 # and disable readonly state if 2GB or more disk space is available
@@ -230,4 +226,3 @@ fi
 # Set replica count
 curl -s -XPUT "$ESHOSTPORT/*/_settings?pretty" -H 'Content-Type:application/json' -d'{ "index" : { "number_of_replicas" : '$replicas' }}' >/dev/null
 curl -s -XPUT "$ESHOSTPORT/.logs-deprecation.elasticsearch-default/_settings" -H 'Content-Type: application/json' -d'{ "index" : { "number_of_replicas" : '$replicas' } }' >/dev/null
-

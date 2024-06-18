@@ -6,9 +6,9 @@
 {% set int = salt.http.query('http://'+api.host+':'+api.port|string+'/api/network_interfaces/listForSalt', decode=true )['dict']['interfaces'] %}
 {% set result_moloch = salt.http.query('http://'+api.host+':'+api.port|string+'/api/components/moloch', decode=true ) %}
 
-{% set path_moloch_wise_ini = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/settings/paths | jq -r .path_moloch_wise_ini', python_shell=True) %}
-{% set path_moloch_yara_ini = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/settings/paths | jq -r .path_moloch_yara_ini', python_shell=True) %}
-{% set wise_enabled = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/components/moloch | jq -r .configuration.wise_enabled', python_shell=True) %}
+{% set path_moloch_wise_ini = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/settings/paths | jq -r .path_moloch_wise_ini', python_shell=True) %}
+{% set path_moloch_yara_ini = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/settings/paths | jq -r .path_moloch_yara_ini', python_shell=True) %}
+{% set wise_enabled = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/components/moloch | jq -r .configuration.wise_enabled', python_shell=True) %}
 {% set wise_installed = salt['cmd.run'](cmd='source /etc/default/s4a-detector && mongo --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval \'db.component.find({"_id" : "molochwise"})\'|jq -r .installed', python_shell=True) %}
 {% endif %}
 
@@ -20,10 +20,17 @@
 {% set moloch_config = result_moloch['dict'] | tojson %}
 {% endif %}
 
-{% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', 'localhost' ) + ':9200' %}
-{% set elastic_status = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq -r .status', python_shell=True) %}
-{% set molochDBVersion = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_template/*sessions2_template?filter_path=**._meta.molochDbVersion | jq -r .sessions2_template.mappings._meta.molochDbVersion', python_shell=True) %}
-{% set arkimeDBVersion = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_template/*arkime_sessions3_template?filter_path=**._meta.molochDbVersion | jq -r .arkime_sessions3_template.mappings._meta.molochDbVersion', python_shell=True) %}
+#{% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', '127.0.0.1' ) + ':9200' %}
+{% set es = 'http://127.0.0.1:9200' %}
+{% set elastic_status = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_cluster/health | jq -r .status', python_shell=True) %}
+{% set elastic_node_count = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_cluster/health | jq -r .number_of_nodes', python_shell=True) %}
+{% set molochDBVersion = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_template/*sessions2_template?filter_path=**._meta.molochDbVersion | jq -r .sessions2_template.mappings._meta.molochDbVersion', python_shell=True) %}
+{% set arkimeDBVersion = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_template/*arkime_sessions3_template?filter_path=**._meta.molochDbVersion | jq -r .arkime_sessions3_template.mappings._meta.molochDbVersion', python_shell=True) %}
+{% set arkimeShards = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_template/*arkime_sessions3_template | jq -r .[].settings.index.number_of_shards', python_shell=True) %}
+{% set arkimeShardsPerNode = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_template/*arkime_sessions3_template | jq -r .[].settings.index.routing.allocation.total_shards_per_node', python_shell=True) %}
+{% set arkimeReplicas = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_template/*arkime_sessions3_template | jq -r .[].settings.index.number_of_replicas', python_shell=True) %}
+
+
 
 # Note:
 # After initial installation user needs to be added
@@ -42,11 +49,27 @@ neutralize_annoying_message:
     - mode: replace
     - content: tty -s && mesg n || true
 
+{% if (arkimeDBVersion is defined and arkimeDBVersion != "null" and arkimeDBVersion|int < 78) and elastic_status == "green" %}
+install_moloch_4x:
+  pkg.installed:
+    - sources:
+      - moloch: {{ salt['pillar.get']('detector:repo') }}/pool/universe/m/moloch/moloch_4.3.2-1_amd64.deb
+
+detector_moloch_4x_db_upgrade:
+  service.dead:
+    - names:
+       - molochcapture
+       - molochviewer
+  cmd.run:
+    - name: echo UPGRADE | /data/moloch/db/db.pl {{ es }} upgrade --shardsPerNode {{ arkimeShardsPerNode }}  --shards {{ arkimeShards }} --replicas {{ arkimeReplicas }}
+    - runas: root
+{% endif %}
+
 moloch:
   cmd.run:
     - name: apt-mark unhold moloch
   pkg.installed:
-    - version: 3.4.2-1
+    - version: 5.2.0-1
     - hold: true
     - update_holds: true
     - refresh: True
@@ -159,7 +182,7 @@ detector_moloch_update_geo:
 
 detector_moloch_check_elastic_up:
   http.wait_for_successful_query:
-    - name: 'http://localhost:9200/_cluster/health'
+    - name: {{ es }}/_cluster/health
     - method: GET
     - status: 200
     - request_interval: 5
@@ -174,21 +197,25 @@ detector_moloch_db:
        - molochcapture
        - molochviewer
   cmd.run:
+{% if elastic_node_count|int ==  1 %}
     - name: echo INIT | /data/moloch/db/db.pl {{ es }} init --replicas 0
+{% else %}
+    - name: echo INIT | /data/moloch/db/db.pl {{ es }} init --shardsPerNode 3 --shards {{ elastic_node_count }} --replicas 1
+{% endif %}
     - runas: root
     - require:
       - pkg: moloch
       - detector_moloch_check_elastic_up
 {% endif %}
 
-{% if (molochDBVersion is defined and arkimeDBVersion|int < 72) and elastic_status == "green" %}
+{% if (arkimeDBVersion is defined and arkimeDBVersion != "null" and arkimeDBVersion|int < 80) and elastic_status == "green" %}
 detector_moloch_db_upgrade:
   service.dead:
     - names:
        - molochcapture
        - molochviewer
   cmd.run:
-    - name: echo UPGRADE | /data/moloch/db/db.pl {{ es }} upgrade --replicas 0
+    - name: echo UPGRADE | /data/moloch/db/db.pl {{ es }} upgrade --shardsPerNode {{ arkimeShardsPerNode }}  --shards {{ arkimeShards }} --replicas {{ arkimeReplicas }}
     - runas: root
     - require:
       - pkg: moloch
@@ -276,11 +303,21 @@ moloch_wise_conf_sources:
      - file: moloch_wise_conf
 {% endif %}
 
-{% if not salt['file.file_exists' ]('/srv/s4a-detector/moloch/wise_lan_ips.txt') %}
+{% if not salt['file.file_exists' ]('/etc/s4a-detector/wise_lan_ips.ini') %}
 local_network_tags:
   file.managed:
-    - name: /srv/s4a-detector/moloch/wise_lan_ips.txt
-    - source: salt://{{ slspath }}/files/moloch/wise_lan_ips.txt
+    - name: /etc/s4a-detector/wise_lan_ips.ini
+    - source: salt://{{ slspath }}/files/moloch/wise_lan_ips.ini
+    - user: s4a
+    - group: s4a
+    - mode: 644
+{% endif %}
+
+{% if not salt['file.file_exists' ]('/etc/s4a-detector/wise_lan_ips_dns.ini') %}
+local_network_tags:
+  file.managed:
+    - name: /etc/s4a-detector/wise_lan_ips_dns.ini
+    - source: salt://{{ slspath }}/files/moloch/wise_lan_ips_dns.ini
     - user: s4a
     - group: s4a
     - mode: 644
