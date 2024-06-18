@@ -15,7 +15,7 @@ moloch_wise_conf:
     - group: root
     - mode: 755
 
-{% if salt['file.file_exists'](path_moloch_wise_ini) %}
+#{% if salt['file.file_exists'](path_moloch_wise_ini) %}
 moloch_wise_conf_sources:
    file.append:
    - name: /data/moloch/etc/wise.ini
