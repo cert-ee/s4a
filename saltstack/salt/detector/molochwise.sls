@@ -26,7 +26,7 @@ moloch_wise_conf_sources:
 moloch_wise_reversedns_conf_sources:
    file.append:
    - name: /data/moloch/etc/wise.ini
-   - source: salt://{{ slspath }}/files/moloch/wise_lan_ips_dns.ini
+   - source: /etc/s4a-detector/wise_lan_ips_dns.ini
 {% endif %}
 
 molochwise_stop:
