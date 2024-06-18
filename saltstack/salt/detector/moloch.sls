@@ -303,11 +303,21 @@ moloch_wise_conf_sources:
      - file: moloch_wise_conf
 {% endif %}
 
-{% if not salt['file.file_exists' ]('/srv/s4a-detector/moloch/wise_lan_ips.txt') %}
+{% if not salt['file.file_exists' ]('/etc/s4a-detector/wise_lan_ips.ini') %}
 local_network_tags:
   file.managed:
-    - name: /srv/s4a-detector/moloch/wise_lan_ips.txt
-    - source: salt://{{ slspath }}/files/moloch/wise_lan_ips.txt
+    - name: /etc/s4a-detector/wise_lan_ips.ini
+    - source: salt://{{ slspath }}/files/moloch/wise_lan_ips.ini
+    - user: s4a
+    - group: s4a
+    - mode: 644
+{% endif %}
+
+{% if not salt['file.file_exists' ]('/etc/s4a-detector/wise_lan_ips_dns.ini') %}
+local_network_tags:
+  file.managed:
+    - name: /etc/s4a-detector/wise_lan_ips_dns.ini
+    - source: salt://{{ slspath }}/files/moloch/wise_lan_ips_dns.ini
     - user: s4a
     - group: s4a
     - mode: 644
