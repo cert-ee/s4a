@@ -31,6 +31,9 @@
 {% set arkimeReplicas = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_template/*arkime_sessions3_template | jq -r .[].settings.index.number_of_replicas', python_shell=True) %}
 
 
+{% if salt['file.file_exists' ]('/etc/s4a-detector/wise_lan_ips_dns.ini') %}
+{% set wise_reversedns_enabled = salt['cmd.run'](cmd='cat /etc/s4a-detector/wise_lan_ips_dns.ini | sed -r "/^(\ * |)#/d" | xargs | sed "/^$/d" | wc -l', python_shell=True) %}
+{% endif %}
 
 # Note:
 # After initial installation user needs to be added
@@ -311,6 +314,13 @@ local_network_tags:
     - user: s4a
     - group: s4a
     - mode: 644
+{% endif %}
+
+{% if wise_reversedns_enabled == "1" %}
+moloch_wise_reversedns_conf_sources:
+   file.append:
+   - name: /data/moloch/etc/wise.ini
+   - source: /etc/s4a-detector/wise_lan_ips_dns.ini
 {% endif %}
 
 {% if not salt['file.file_exists' ]('/etc/s4a-detector/wise_lan_ips_dns.ini') %}
