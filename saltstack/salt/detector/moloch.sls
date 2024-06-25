@@ -345,9 +345,6 @@ detector_moloch_wise_enable_service:
   cmd.run:
     - name: systemctl enable molochwise.service
 
-detector_moloch_wise_start_service:
-  service.running:
-    - name: molochwise
 
 detector_moloch_wise_component_enabled:
   cmd.run:
@@ -355,6 +352,18 @@ detector_moloch_wise_component_enabled:
         source /etc/default/s4a-detector
         mongo --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochwise"},{ $set: { installed:true } })'
         mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochwise"},{ $set: { enabled:true } })'
+
+detector_moloch_wise_service:
+  service.running:
+    - name: molochwise
+    - enable: True
+    - full_restart: True
+    - init_delay: 5
+    - require:
+      - file: detector_moloch_wise_systemd
+    - watch:
+      - pkg: moloch
+      - file: moloch_wise_conf
 
 {% elif wise_enabled is defined and wise_installed is defined and wise_installed == "true" and wise_enabled == "false"%}
 detector_moloch_wise_service:
