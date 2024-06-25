@@ -2,6 +2,10 @@
 {% if bpf_conf_enabled is defined and bpf_conf_enabled == "suricata" %}
 {% set bpf_filter = salt['cmd.run'](cmd='grep ^suricata= /etc/s4a-detector/bpf.conf | cut -d= -f2-', python_shell=True) %}
 {% endif %}
+{% set cpu_count = salt['cmd.run'](cmd='grep processor -c /proc/cpuinfo 2> /dev/null | cut -d= -f1', python_shell=True) %}
+{% set span_count = salt['cmd.run'](cmd='curl -s localhost:4000/api/network_interfaces/listForSalt | jq .interfaces[] | wc -l', python_shell=True) %}
+{% set stream_memcap = salt['cmd.run'](cmd='echo $(( ' ~ span_count ~ ' * 128 ))mb', python_shell=True) %}
+
 %YAML 1.1
 ---
 
@@ -434,6 +438,8 @@ logging:
 ##
 
 # Linux high speed capture support
+# interfaces: {{ int }}
+
 af-packet:
 {% for val in int %}
   - interface: {{ val }}
@@ -967,7 +973,7 @@ defrag:
 # in bytes.
 
 flow:
-  memcap: 256mb
+  memcap: 128mb
   hash-size: 65536
   prealloc: 10000
   emergency-recovery: 30
@@ -1084,7 +1090,7 @@ flow-timeouts:
 #                               # on directly.
 #
 stream:
-  memcap: 256mb
+  memcap: {{ stream_memcap }}
   checksum-validation: yes      # reject wrong csums
   inline: auto                  # auto will use inline mode in IPS mode, yes or no set it statically
   reassembly:
@@ -1224,7 +1230,11 @@ spm-algo: auto
 
 # Suricata is multi-threaded. Here the threading can be influenced.
 threading:
+{% if cpu_count is defined and cpu_count|int >= 50 %}
+  set-cpu-affinity: yes
+{% else %}
   set-cpu-affinity: no
+{% endif %}
   # Tune cpu affinity of threads. Each family of threads can be bound
   # on specific CPUs.
   #
@@ -1236,6 +1246,7 @@ threading:
   # receive-cpu-set is used for capture threads
   # verdict-cpu-set is used for IPS verdict threads
   #
+{% if cpu_count is defined and cpu_count|int < 50 %}
   cpu-affinity:
     - management-cpu-set:
         cpu: [ 0 ]  # include only these cpus in affinity settings
@@ -1252,6 +1263,42 @@ threading:
           medium: [ "1-2" ]
           high: [ 3 ]
           default: "medium"
+{% elif cpu_count is defined and cpu_count|int > 50 and cpu_count|int < 90 %}
+  cpu-affinity:
+    - management-cpu-set:
+        cpu: [ "1-5" ]  # include only these cpus in affinity settings
+    - receive-cpu-set:
+        cpu: [ "6-10" ]  # include only these cpus in affinity settings
+    - worker-cpu-set:
+        cpu: [ "11-25" ]
+        mode: "exclusive"
+        # Use explicitely 3 threads and don't compute number by using
+        # detect-thread-ratio variable:
+        # threads: 3
+        prio:
+          low: [ 0 ]
+          medium: [ "1-2" ]
+          high: [ "11-25" ]
+          default: "high"
+{% elif cpu_count is defined and cpu_count|int > 90 %}
+  cpu-affinity:
+    - management-cpu-set:
+        cpu: [ "1-10" ]  # include only these cpus in affinity settings
+    - receive-cpu-set:
+        cpu: [ "11-20" ]  # include only these cpus in affinity settings
+    - worker-cpu-set:
+        cpu: [ "21-50" ]
+        mode: "exclusive"
+        # Use explicitely 3 threads and don't compute number by using
+        # detect-thread-ratio variable:
+        # threads: 3
+        prio:
+          low: [ 0 ]
+          medium: [ "1-2" ]
+          high: [ "21-50" ]
+          default: "high"
+{% endif %}
+
     #- verdict-cpu-set:
     #    cpu: [ 0 ]
     #    prio:
