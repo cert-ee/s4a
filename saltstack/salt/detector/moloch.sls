@@ -324,7 +324,7 @@ moloch_wise_reversedns_conf_sources:
 {% endif %}
 
 {% if not salt['file.file_exists' ]('/etc/s4a-detector/wise_lan_ips_dns.ini') %}
-local_network_tags:
+local_network_reverse_dns:
   file.managed:
     - name: /etc/s4a-detector/wise_lan_ips_dns.ini
     - source: salt://{{ slspath }}/files/moloch/wise_lan_ips_dns.ini
