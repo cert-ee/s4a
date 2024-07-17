@@ -15,7 +15,7 @@ mongodb-org_repo:
     - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse
     - key_url: https://www.mongodb.org/static/pgp/server-5.0.asc
     - file: /etc/apt/sources.list.d/mongodb-org-5.0.list
-{% elif (mongodb_version_major is defined and mongodb_version_major|int == 6 and mongodb_version_minor|int == 0 and mongodb_upgrade_available == True) %}
+{% elif (mongodb_version_major is defined and mongodb_version_major|int == 6 and mongodb_version_minor|int == 0 and mongodb_upgrade_available == True) or (mongodb_version_major|int == 5 and mongodb_version_minor|int == 0) %}
 mongodb-org_repo:
   pkgrepo.managed:
     - humanname: mongodb-org
