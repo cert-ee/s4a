@@ -8,21 +8,21 @@
 {%	set mongodb_version_patch = mongodb_version[2] %}
 {% endif %}
 
-{% if (mongodb_version_major is defined and mongodb_version_major|int == 5 and mongodb_version_minor|int == 0 and mongodb_upgrade_available == True) %}
+{% if (mongodb_version_major is defined and mongodb_version_major|int == 5 and mongodb_upgrade_available == True) %}
 mongodb-org_repo:
   pkgrepo.managed:
     - humanname: mongodb-org
     - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse
     - key_url: https://www.mongodb.org/static/pgp/server-5.0.asc
     - file: /etc/apt/sources.list.d/mongodb-org-5.0.list
-{% elif (mongodb_version_major is defined and mongodb_version_major|int == 6 and mongodb_version_minor|int == 0 and mongodb_upgrade_available == True) or (mongodb_version_major|int == 5 and mongodb_version_minor|int == 0) %}
+{% elif (mongodb_version_major is defined and mongodb_version_major|int == 6 and mongodb_upgrade_available == True) or mongodb_version_major|int == 5 %}
 mongodb-org_repo:
   pkgrepo.managed:
     - humanname: mongodb-org
     - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse
     - key_url: https://www.mongodb.org/static/pgp/server-6.0.asc
     - file: /etc/apt/sources.list.d/mongodb-org-6.0.list
-{% elif mongodb_version_major is not defined or not mongodb_version_major or (mongodb_version_major is defined and (mongodb_version_major|int == 6 and mongodb_version_minor|int == 0) or (mongodb_version_major|int == 7 and mongodb_version_minor|int == 0)) %}
+{% else %}
 mongodb-org_repo:
   pkgrepo.managed:
     - humanname: mongodb-org
