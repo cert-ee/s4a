@@ -1,6 +1,6 @@
 # Assume that if no version is available, mongo repo is unconfigured and we are in process of installing new detector
-{% set mongodb_version_installed = salt['pkg.version']('mongodb-org') %}
-{% set mongodb_upgrade_available = salt['pkg.upgrade_available']('mongodb-org') %}
+{% set mongodb_version_installed = salt['pkg.version']('mongodb-org-database') %}
+{% set mongodb_upgrade_available = salt['pkg.upgrade_available']('mongodb-org-database') %}
 {% if mongodb_version_installed is defined %}
 {%	set mongodb_version = mongodb_version_installed.split('.') %}
 {%	set mongodb_version_major = mongodb_version[0] %}
@@ -36,13 +36,13 @@ mongodb-org-upgrade-preps:
   cmd.run:
     - name: |
         source /root/.mongodb.passwd
-        mongo -u $MONGODB_USER -p $MONGODB_PASS --authenticationDatabase=admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"6.0\" } )"
+        mongosh -u $MONGODB_USER -p $MONGODB_PASS --authenticationDatabase=admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"6.0\" } )"
 {% elif mongodb_version_major is defined and mongodb_version_major|int == 5 %}
 mongodb-org-upgrade-preps:
   cmd.run:
     - name: |
         source /root/.mongodb.passwd
-        mongo -u $MONGODB_USER -p $MONGODB_PASS --authenticationDatabase=admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"5.0\" } )"
+        mongosh -u $MONGODB_USER -p $MONGODB_PASS --authenticationDatabase=admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"5.0\" } )"
 {% endif %}
 
 nodejs_repo:
