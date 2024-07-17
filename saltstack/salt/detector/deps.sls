@@ -19,7 +19,7 @@ mongodb-org_repo:
 mongodb-org_repo:
   pkgrepo.managed:
     - humanname: mongodb-org
-    - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse
+    - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse
     - key_url: https://www.mongodb.org/static/pgp/server-6.0.asc
     - file: /etc/apt/sources.list.d/mongodb-org-6.0.list
 {% endif %}
