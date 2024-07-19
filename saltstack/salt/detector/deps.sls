@@ -1,6 +1,6 @@
 # Assume that if no version is available, mongo repo is unconfigured and we are in process of installing new detector
-{% set mongodb_version_installed = salt['pkg.version']('mongodb-org-database') %}
-{% set mongodb_upgrade_available = salt['pkg.upgrade_available']('mongodb-org-database') %}
+{% set mongodb_version_installed = salt['pkg.version']('mongodb-org-server') %}
+{% set mongodb_upgrade_available = salt['pkg.upgrade_available']('mongodb-org-server') %}
 {% if mongodb_version_installed is defined %}
 {%	set mongodb_version = mongodb_version_installed.split('.') %}
 {%	set mongodb_version_major = mongodb_version[0] %}
