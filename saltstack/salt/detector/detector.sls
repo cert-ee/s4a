@@ -8,6 +8,8 @@ mongodb-org:
     - refresh: true
     - pkgs:
         - mongodb-org: latest
+        - mongodb-org-database: latest
+        - mongodb-mongosh: latest
         - mongodb-org-mongos: latest
         - mongodb-org-server: latest
         - mongodb-org-shell: latest
