@@ -46,10 +46,11 @@ suricata_repo:
     - ppa: oisf/suricata-6.0
 
 suricata:
-  pkg.latest:
-    - refresh: True
+  pkg.installed:
+    - version: 6.0.20-0ubuntu0
     - hold: true
     - update_holds: true
+    - refresh: True
     - require:
         - pkgrepo: suricata_repo
 
