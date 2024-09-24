@@ -39,7 +39,7 @@ detector_suricata_yaml:
         int: {{ int }}
     - watch:
       - user: suricata_user
-      - pkg: suricata_pkg
+      - pkg: suricata
 
 suricata_repo:
   pkgrepo.managed:
@@ -96,7 +96,7 @@ detector_suricata_rules_perms:
       - group
       - mode
     - require:
-      - pkg: suricata_pkg
+      - pkg: suricata
 
 detector_suricata_logs_perms:
   file.directory:
@@ -110,7 +110,7 @@ detector_suricata_logs_perms:
       - group
       - mode
     - require:
-      - pkg: suricata_pkg
+      - pkg: suricata
 
 suricata_service_dead:
   service.dead:
