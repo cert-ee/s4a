@@ -1,7 +1,6 @@
 suricata_uninstall:
   pkg.unheld:
-    - pkgs:
-      - suricata
+     - name suricata
   service.dead:
     - name: suricata
     - enable: false
