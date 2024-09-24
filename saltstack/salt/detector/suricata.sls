@@ -45,12 +45,13 @@ suricata_repo:
   pkgrepo.managed:
     - ppa: oisf/suricata-6.0
 
-suricata_pkg:
-  pkg.latest:
+suricata:
+  cmd.run:
+    - name: apt-mark unhold suricata
+  pkg.installed:
     - refresh: True
-    - pkgs:
-        - libhtp2
-        - suricata
+    - hold: true
+    - update_holds: true
     - require:
         - pkgrepo: suricata_repo
 
