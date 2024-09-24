@@ -1,4 +1,4 @@
-suricata_uninstall:
+suricata_pkg:
   pkg.unheld:
      - name suricata
   service.dead:
