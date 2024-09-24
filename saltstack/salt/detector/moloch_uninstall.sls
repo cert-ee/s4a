@@ -1,4 +1,6 @@
 detector_moloch_pkg:
+  cmd.run:
+    - name: apt-mark unhold moloch
   service.dead:
     - names:
        - molochcapture
@@ -21,3 +23,5 @@ detector_disable_moloch_components:
         mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochviewer"},{ $set: { enabled:false } })'
         mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochwise"},{ $set: { enabled:false } })'
         mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "moloch"},{ $set: { "configuration.wise_enabled" : false } })'
+  require:
+    - pkg.purged: moloch
