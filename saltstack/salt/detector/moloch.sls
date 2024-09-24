@@ -69,8 +69,6 @@ detector_moloch_4x_db_upgrade:
 {% endif %}
 
 moloch:
-  cmd.run:
-    - name: apt-mark unhold moloch
   pkg.installed:
     - version: 5.4.0-1
     - hold: true
