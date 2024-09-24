@@ -12,7 +12,7 @@ mongo_query='
 		{ $unwind: { path: "$roles", preserveNullAndEmptyArrays: true } }
 	]).forEach( function (doc) { if (doc.roles) print (doc.username + " " + doc.roles.name); else print (doc.username + " none"); });'
 
-mongo_result=`mongo --quiet --authenticationDatabase $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD $MONGODB_DATABASE --eval "$mongo_query"`
+mongo_result=`mongosh --quiet --authenticationDatabase $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD $MONGODB_DATABASE --eval "$mongo_query"`
 
 if [ $? == 0 ] ; then
 	for user in `awk {'print $1'} <<< "$mongo_result" | sort -u`
