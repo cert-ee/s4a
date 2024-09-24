@@ -1,6 +1,9 @@
-suricata_pkg:
+suricata_unhold:
   pkg.unheld:
-     - name suricata
+    - pkgs:
+      - suricata
+
+suricata_pkg:
   service.dead:
     - name: suricata
     - enable: false
