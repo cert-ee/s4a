@@ -46,9 +46,7 @@ suricata_repo:
     - ppa: oisf/suricata-6.0
 
 suricata:
-  cmd.run:
-    - name: apt-mark unhold suricata
-  pkg.installed:
+  pkg.latest:
     - refresh: True
     - hold: true
     - update_holds: true
