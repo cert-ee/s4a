@@ -1,6 +1,7 @@
-suricata_pkg:
-  cmd.run:
-    - name: apt-mark unhold suricata
+suricata_uninstall:
+  pkg.unheld:
+    - pkgs:
+      - suricata
   service.dead:
     - name: suricata
     - enable: false
