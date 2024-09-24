@@ -45,14 +45,21 @@ suricata_repo:
   pkgrepo.managed:
     - ppa: oisf/suricata-6.0
 
+suricata_unhold:
+  pkg.unheld:
+    - pkgs:
+      - suricata
+
 suricata:
-  pkg.installed:
-    - version: 6.0.20-0ubuntu0
-    - hold: true
-    - update_holds: true
+  pkg.latest:
     - refresh: True
     - require:
         - pkgrepo: suricata_repo
+
+suricata_hold:
+  pkg.held:
+    - pkgs:
+      - suricata
 
 detector_suricata_default:
   file.managed:
