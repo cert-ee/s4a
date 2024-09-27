@@ -14,6 +14,7 @@ mongodb-org:
         - mongodb-org-server: latest
         - mongodb-org-shell: latest
         - mongodb-org-tools: latest
+    - force_conf_new: true
     - require:
         - pkgrepo: mongodb-org_repo
   service.running:
