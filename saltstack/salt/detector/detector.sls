@@ -14,15 +14,26 @@ mongodb-org:
         - mongodb-org-server: latest
         - mongodb-org-shell: latest
         - mongodb-org-tools: latest
-    - force_conf_new: true
     - require:
         - pkgrepo: mongodb-org_repo
+
+mongod_conf:
+  file.managed:
+    - name: /etc/mongod.conf
+    - source: salt://{{ slspath }}/files/mongodb/mongod.conf
+    - user: root
+    - group: root
+    - mode: 644
+
+mongod_service:
   service.running:
     - name: mongod
     - full_restart: true
     - enable: true
+    - require:
+      - mongod_conf
     - watch:
-      - pkg: mongodb-org
+      - pkg: mongodb-org-server
 
 mongodb_logrotate:
   file.managed:
