@@ -32,7 +32,7 @@ mongod_service:
     - enable: true
     - require:
       - mongod_conf
-    - watch:
+    - require:
       - pkg: mongodb-org-server
 
 mongodb_logrotate:
