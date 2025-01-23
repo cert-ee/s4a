@@ -32,8 +32,7 @@ mongod_service:
     - enable: true
     - require:
       - mongod_conf
-    - require:
-      - pkg: mongodb-org-server
+      - mongodb-org
 
 mongodb_logrotate:
   file.managed:
