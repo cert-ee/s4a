@@ -28,13 +28,11 @@ mongod_conf:
 mongod_service:
   service.running:
     - name: mongod
-    - full_restart: true
+    - restart: true
     - enable: true
     - require:
       - mongod_conf
       - mongodb-org
-    - watch:
-      - pkg: mongodb-org-server
 
 mongodb_logrotate:
   file.managed:
