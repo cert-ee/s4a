@@ -33,6 +33,8 @@ mongod_service:
     - require:
       - mongod_conf
       - mongodb-org
+    - watch:
+      - pkg: mongodb-org-server
 
 mongodb_logrotate:
   file.managed:
