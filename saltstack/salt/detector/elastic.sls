@@ -150,7 +150,7 @@ elasticsearch_set_allocation_settings:
 {% if elastic_tls is defined and elastic_tls|int >= 1 %}
     - name: 'https://127.0.0.1:9200/_cluster/settings'
 {% else %}
-    - name: 'http://127.0.0.1:9200/_cluster/settings
+    - name: 'http://127.0.0.1:9200/_cluster/settings'
 {% endif %}
     - method: PUT
     - status: 200
