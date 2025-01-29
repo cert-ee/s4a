@@ -1,5 +1,5 @@
 {% set elastic_version_installed = salt['pkg.version']('elasticsearch') %}
-{% set elastic_tls = salt['cmd.run'](cmd='curl -sk https://127.0.0.1:9200/_cluster/health|jq .number_of_node', python_shell=True) %}
+{% set elastic_tls = salt['cmd.run'](cmd='curl -sk https://127.0.0.1:9200/_cluster/health|jq .number_of_nodes', python_shell=True) %}
 
 {% if elastic_tls is defined and elastic_tls|int >= 1 %}
 {% set elastic_nodes = salt['cmd.run'](cmd='curl -sk https://127.0.0.1:9200/_cluster/health | jq .number_of_nodes', python_shell=True) %}
