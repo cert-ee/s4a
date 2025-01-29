@@ -8,12 +8,12 @@ detector_kibana_pkg:
     - name: apt-mark unhold kibana
   pkg.installed:
     - name: kibana
-    - version: 7.17.22
+    - version: 8.17.1
     - hold: true
     - update_holds: true
     - refresh: true
     - require:
-      - pkgrepo: elastic7x_repo
+      - pkgrepo: elastic8x_repo
 
 detector_kibana_conf:
   file.managed:

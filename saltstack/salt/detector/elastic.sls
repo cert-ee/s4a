@@ -27,12 +27,12 @@ elasticsearch:
   cmd.run:
     - name: apt-mark unhold elasticsearch
   pkg.installed:
-    - version: 7.17.22
+    - version: 8.17.1
     - hold: true
     - update_holds: true
     - refresh: true
     - require:
-      - pkgrepo: elastic7x_repo
+      - pkgrepo: elastic8x_repo
       - pkg: dependency_pkgs
   service.dead:
     - name:
