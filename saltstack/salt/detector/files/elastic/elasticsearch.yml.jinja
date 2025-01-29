@@ -14,7 +14,6 @@ cluster.name: {{ detector_name }}
 cluster.name: {{ cluster_name_exists }}
 {% endif %}
 node.name: "{{ salt['grains.get']('host', 'node1') }}"
-node.data: true
 path.data: /srv/elasticsearch
 path.logs: /var/log/elasticsearch
 {% if multiviewer_enabled == "True" or multiviewer_enabled == "true" %}
