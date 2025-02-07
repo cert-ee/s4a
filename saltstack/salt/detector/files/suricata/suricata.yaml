@@ -6,7 +6,7 @@
 {% set mem_avail = salt['cmd.run'](cmd='echo $(($(grep MemTotal /proc/meminfo |grep -oE [0-9]+)/1000000))', python_shell=True) %}
 {% set span_count = salt['cmd.run'](cmd='curl -s localhost:4000/api/network_interfaces/listForSalt | jq .interfaces[] | wc -l', python_shell=True) %}
 #{% set stream_memcap = salt['cmd.run'](cmd='echo $(( ' ~ span_count ~ ' * 128 ))mb', python_shell=True) %}
-{% set interface_cluster_id == 99 %}
+{% set interface_cluster_id = 99 %}
 
 {% if mem_avail is defined and mem_avail|int > 200 %}
 {% set stream_memcap = 12gb %}
