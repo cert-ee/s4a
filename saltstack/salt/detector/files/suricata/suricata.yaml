@@ -5,17 +5,23 @@
 {% set cpu_count = salt['cmd.run'](cmd='grep processor -c /proc/cpuinfo 2> /dev/null | cut -d= -f1', python_shell=True) %}
 {% set mem_avail = salt['cmd.run'](cmd='echo $(($(grep MemTotal /proc/meminfo |grep -oE [0-9]+)/1000000))', python_shell=True) %}
 {% set span_count = salt['cmd.run'](cmd='curl -s localhost:4000/api/network_interfaces/listForSalt | jq .interfaces[] | wc -l', python_shell=True) %}
-#{% set stream_memcap = salt['cmd.run'](cmd='echo $(( ' ~ span_count ~ ' * 128 ))mb', python_shell=True) %}
 {% set interface_cluster_id = 99 %}
 
 {% if mem_avail is defined and mem_avail|int > 200 %}
 {% set stream_memcap = '12gb' %}
 {% set flow_memcap = '12gb' %}
 {% set interface_threads = '12' %}
+{% defrag_memcap == '1gb' %}
 {% elif mem_avail is defined and mem_avail|int > 100 and mem_avail|int < 200 %}
-% set stream_memcap = '4gb' %}
+{% set stream_memcap = '4gb' %}
 {% set flow_memcap = '4gb' %}
+{% defrag_memcap == '1gb' %}
 {% set interface_threads = '4' %}
+{% elif %}
+{% set stream_memcap = salt['cmd.run'](cmd='echo $(( ' ~ span_count ~ ' * 128 ))mb', python_shell=True) %}
+{% set flow_memcap = stream_memcap %}
+{% defrag_memcap == '32mb' %}
+{% set interface_threads = 'auto' %}
 {% endif %}
 
 %YAML 1.1
@@ -463,7 +469,7 @@ af-packet:
     tpacket-v3: yes
     ring-size: 50000
     block-size: 1048576
-{% set interface_cluster_id = salt['cmd.run'](cmd='echo $(( ' ~ interface_cluster_id ~ ' - 1 ))', python_shell=True) %}
+{% set interface_cluster_id = interface_cluster_id - 1 %}
 {% endfor %}
     # Number of receive threads. "auto" uses the number of cores
     #threads: auto
@@ -954,12 +960,12 @@ host-os-policy:
 # Defrag settings:
 
 defrag:
-  memcap: 32mb
+  memcap: {{ defrag_memcap }}
   hash-size: 65536
   trackers: 65535 # number of defragmented flows to follow
   max-frags: 65535 # number of fragments to keep (higher than trackers)
   prealloc: yes
-  timeout: 60
+  timeout: 30
 
 # Enable defrag per host settings
 #  host-config:
@@ -1008,7 +1014,7 @@ flow:
 # setups where both sides of a flow are not tagged with the same vlan
 # tag, we can ignore the vlan id's in the flow hashing.
 vlan:
-  use-for-tracking: true
+  use-for-tracking: false
 
 # Specific timeouts for flows. Here you can specify the timeouts that the
 # active flows will wait to transit from the current state to another, on each
