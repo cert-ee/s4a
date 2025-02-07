@@ -17,7 +17,7 @@
 {% set flow_memcap = '4gb' %}
 {% set defrag_memcap = '1gb' %}
 {% set interface_threads = '4' %}
-{% elif %}
+{% else %}
 {% set stream_memcap = salt['cmd.run'](cmd='echo $(( ' ~ span_count ~ ' * 128 ))mb', python_shell=True) %}
 {% set flow_memcap = stream_memcap %}
 {% set defrag_memcap = '32mb' %}
