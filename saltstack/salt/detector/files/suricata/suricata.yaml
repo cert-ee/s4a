@@ -11,16 +11,16 @@
 {% set stream_memcap = '12gb' %}
 {% set flow_memcap = '12gb' %}
 {% set interface_threads = '12' %}
-{% set defrag_memcap == '1gb' %}
+{% set defrag_memcap = '1gb' %}
 {% elif mem_avail is defined and mem_avail|int > 100 and mem_avail|int < 200 %}
 {% set stream_memcap = '4gb' %}
 {% set flow_memcap = '4gb' %}
-{% set defrag_memcap == '1gb' %}
+{% set defrag_memcap = '1gb' %}
 {% set interface_threads = '4' %}
 {% elif %}
 {% set stream_memcap = salt['cmd.run'](cmd='echo $(( ' ~ span_count ~ ' * 128 ))mb', python_shell=True) %}
 {% set flow_memcap = stream_memcap %}
-{% set defrag_memcap == '32mb' %}
+{% set defrag_memcap = '32mb' %}
 {% set interface_threads = 'auto' %}
 {% endif %}
 
