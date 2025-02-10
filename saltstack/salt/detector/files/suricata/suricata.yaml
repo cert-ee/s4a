@@ -462,14 +462,13 @@ af-packet:
 {% for interface in int %}
   - interface: {{ interface }}
     threads: {{ interface_threads }}
-    cluster-id: {{ interface_cluster_id }}
+    cluster-id: {{ interface_cluster_id - loop.index0 }}
     cluster-type: cluster_flow
     defrag: no
     use-mmap: yes
     tpacket-v3: yes
     ring-size: 50000
     block-size: 1048576
-{% set interface_cluster_id = interface_cluster_id - 1 %}
 {% endfor %}
     # Number of receive threads. "auto" uses the number of cores
     #threads: auto
