@@ -82,13 +82,6 @@ elastic7x_repo:
     - key_url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
     - file: /etc/apt/sources.list.d/elastic-7.x.list
 
-elastic8x_repo:
-  pkgrepo.managed:
-    - humanname: Elasticsearch 8.x Repo
-    - name: deb [arch=amd64] https://artifacts.elastic.co/packages/8.x/apt stable main
-    - key_url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
-    - file: /etc/apt/sources.list.d/elastic-8.x.list
-
 dependency_pkgs:
   pkg.installed:
     - refresh: true

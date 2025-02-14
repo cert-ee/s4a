@@ -1,18 +1,8 @@
 {% set elastic_version_installed = salt['pkg.version']('elasticsearch') %}
-{% set elastic_tls = salt['cmd.run'](cmd='curl -sk https://127.0.0.1:9200/_cluster/health|jq .number_of_nodes', python_shell=True) %}
-
-{% if elastic_tls is defined and elastic_tls|int >= 1 %}
-{% set elastic_nodes = salt['cmd.run'](cmd='curl -sk https://127.0.0.1:9200/_cluster/health | jq .number_of_nodes', python_shell=True) %}
-{% set elastic_status = salt['cmd.run'](cmd='curl -sk https://127.0.0.1:9200/_cluster/health | jq -r .status', python_shell=True) %}
-{% set elastic_indices = salt['cmd.run'](cmd='curl -sk https://127.0.0.1:9200/*/_search|jq .hits.total.value', python_shell=True) %}
-{% set elastic_deprecationLog = salt['cmd.run'](cmd='curl -sk https://127.0.0.1:9200/.logs-deprecation.elasticsearch-default|jq -r .status', python_shell=True) %}
-{% else %}
 {% set elastic_nodes = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq .number_of_nodes', python_shell=True) %}
 {% set elastic_status = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health | jq -r .status', python_shell=True) %}
-{% set elastic_indices = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/*/_search|jq .hits.total.value', python_shell=True) %}
+{% set elastic_indices = salt['cmd.run'](cmd='curl -s http://localhost:9200/*/_search|jq .hits.total.value', python_shell=True) %}
 {% set elastic_deprecationLog = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/.logs-deprecation.elasticsearch-default|jq -r .status', python_shell=True) %}
-{% endif %}
-
 {% set elastic_data_path_ok = salt['cmd.run'](cmd='if [ -d /srv/elasticsearch ] && [ "$(ls -l /srv/elasticsearch | grep node | grep -o elasticsearch | wc -l)" == "2" ]; then echo True; else echo False; fi', python_shell=True) %}
 
 {% if elastic_version_installed is not defined or not elastic_version_installed or elastic_nodes|int == 1 or elastic_nodes is not defined %}
@@ -37,12 +27,12 @@ elasticsearch:
   cmd.run:
     - name: apt-mark unhold elasticsearch
   pkg.installed:
-    - version: 8.17.1
+    - version: 7.17.22
     - hold: true
     - update_holds: true
     - refresh: true
     - require:
-      - pkgrepo: elastic8x_repo
+      - pkgrepo: elastic7x_repo
       - pkg: dependency_pkgs
   service.dead:
     - name:
@@ -147,11 +137,7 @@ elasticsearch_allocation_settings:
 
 elasticsearch_set_allocation_settings:
   http.wait_for_successful_query:
-{% if elastic_tls is defined and elastic_tls|int >= 1 %}
-    - name: 'https://127.0.0.1:9200/_cluster/settings'
-{% else %}
-    - name: 'http://127.0.0.1:9200/_cluster/settings'
-{% endif %}
+    - name: 'http://localhost:9200/_cluster/settings'
     - method: PUT
     - status: 200
     - request_interval: 5
@@ -172,11 +158,7 @@ elasticsearch_no_replicas_template:
 
 elasticsearch_enable_no_replicas_template:
   http.query:
-{% if elastic_tls is defined and elastic_tls|int >= 1 %}
-    - name: 'https://127.0.0.1:9200/_template/.no_replicas'
-{% else %}
-    - name: 'http://127.0.0.1:9200/_template/.no_replicas'
-{% endif %}
+    - name: 'http://localhost:9200/_template/.no_replicas'
     - method: PUT
     - status: 200
     - header_dict:
@@ -196,11 +178,7 @@ elasticsearch_no_replicas:
 {% if elastic_indices is defined and elastic_indices|int > 0 %}
 elasticsearch_set_no_replicas:
   http.query:
-{% if elastic_tls is defined and elastic_tls|int >= 1 %}
-    - name: 'https://127.0.0.1:9200/*/_settings'
-{% else %}
-    - name: 'http://127.0.0.1:9200/*/_settings'
-{% endif %}
+    - name: 'http://localhost:9200/*/_settings'
     - method: PUT
     - status: 200
     - header_dict:
@@ -210,11 +188,7 @@ elasticsearch_set_no_replicas:
 {% if elastic_deprecationLog is defined and elastic_deprecationLog == "null" %}
 elasticsearch_set_deprecation_log_no_replicas:
   http.query:
-{% if elastic_tls is defined and elastic_tls|int >= 1 %}
-    - name: 'https://127.0.0.1:9200/.logs-deprecation.elasticsearch-default/_settings'
-{% else %}
-    - name: 'http://127.0.0.1:9200/.logs-deprecation.elasticsearch-default/_settings'
-{% endif %}
+    - name: 'http://localhost:9200/.logs-deprecation.elasticsearch-default/_settings'
     - method: PUT
     - status: 200
     - header_dict:
