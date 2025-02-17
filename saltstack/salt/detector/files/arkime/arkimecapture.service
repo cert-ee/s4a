@@ -1,0 +1,18 @@
+{% set cluster_name = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health?pretty|jq -r .cluster_name', python_shell=True) %}
+{% if cluster_name is not defined or cluster_name == "" %}
+{% set cluster_name = grains['host'] %}
+{% endif %}
+[Unit]
+Description=Arkime Capture Service
+After=elasticsearch.target
+
+[Service]
+Type=simple
+ExecStart=/bin/sh -c '/opt/arkime/bin/capture -c /opt/arkime/etc/config.ini -n {{ cluster_name }} >> /var/log/arkime/capture.log 2>&1'
+Restart=always
+LimitMEMLOCK=infinity
+WorkingDirectory=/opt/arkime
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

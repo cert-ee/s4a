@@ -1,0 +1,7 @@
+/var/log/arkime/*.log {
+    daily
+    rotate 5
+    notifempty
+    copytruncate  
+    compress
+}

@@ -1,0 +1,14 @@
+[Unit]
+Description=Arkime Viewer Service
+After=elasticsearch.target
+
+[Service]
+Type=simple
+User=nobody
+WorkingDirectory=/opt/arkime/viewer
+ExecStart=/bin/sh -c '/opt/arkime/bin/node /opt/arkime/viewer/viewer.js -c /opt/arkime/etc/config.ini >> /var/log/arkime/viewer.log 2>&1'
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

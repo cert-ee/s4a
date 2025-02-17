@@ -1,0 +1,10 @@
+---
+version: 1
+rules:
+  - name: "Drop tls"
+    when: "fieldSet"
+    fields:
+      protocols:
+      - tls
+    ops:
+      _maxPacketsToSave: 12

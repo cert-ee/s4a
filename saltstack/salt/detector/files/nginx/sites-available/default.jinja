@@ -105,6 +105,17 @@ server {
 		proxy_hide_header x-frame-options;
         }
 
+        location /arkime {
+                rewrite /[^\/]+(.*) $1  break;
+{% if multiviewer_enabled is defined and multiviewer_enabled == "True" or multiviewer_enabled == "true" %}
+                proxy_pass https://127.0.0.1:8005;
+{% else %}
+                proxy_pass http://127.0.0.1:8005;
+{% endif %}
+                proxy_set_header arkime_user $remote_user;
+                proxy_hide_header x-frame-options;
+        }
+
 	location /api {
 		proxy_pass http://127.0.0.1:4000;
 	}

@@ -1,0 +1,301 @@
+{%- set and_sep = joiner(" and not ") %}
+{% set cluster_name_exists = salt['cmd.run'](cmd='curl -s 127.0.0.1:9200/_cluster/health?pretty|jq -r .cluster_name', python_shell=True) %}
+{% if cluster_name_exists is not defined or cluster_name_exists == "" %}
+{% set cluster_name_exists = grains['host'] %}
+{% endif %}
+{% set bpf_conf_enabled = salt['cmd.run'](cmd='grep -i ^arkime= /etc/s4a-detector/bpf.conf 2> /dev/null| cut -d= -f1', python_shell=True) %}
+{% if bpf_conf_enabled is defined and bpf_conf_enabled == "arkime" %}
+{% set bpf_filter = salt['cmd.run'](cmd='grep ^arkime= /etc/s4a-detector/bpf.conf | cut -d= -f2-', python_shell=True) %}
+{% endif %}
+{% set multiviewer_enabled = salt['cmd.run'](cmd='grep -i MULTIVIEWER_ENABLED=True /etc/default/s4a-detector|cut -d= -f2', python_shell=True) %}
+{% if multiviewer_enabled is defined and (multiviewer_enabled == "True" or multiviewer_enabled == "true") %}
+{% set vpnCert = salt['cmd.run'](cmd='cat /etc/nginx/sites-enabled/vpn  | grep -w ssl_certificate | grep -oE .etc.*.crt', python_shell=True) %}
+{% set vpnKey = salt['cmd.run'](cmd='cat /etc/nginx/sites-enabled/vpn  | grep -w ssl_certificate_key | grep -oE .etc.*.key', python_shell=True) %}
+{% set detectorCert = salt['cmd.run'](cmd='cat /etc/nginx/sites-enabled/default | grep -w ssl_certificate | grep -oE detector.chained.crt', python_shell=True) %}
+{% set detectorKey = salt['cmd.run'](cmd='cat /etc/nginx/sites-enabled/default | grep -w ssl_certificate_key | grep -oE detector.key', python_shell=True) %}
+{% if vpnKey is defined and salt['file.file_exists']( vpnKey ) and vpnCert is defined and salt['file.file_exists']( vpnCert )%}
+{% set tlsCert = vpnCert %}
+{% set tlsKey = vpnKey %}
+{% elif detectorKey is defined and salt['file.file_exists'] ('/etc/nginx/detector.key') and detectorCert is defined and salt['file.file_exists']('/etc/nginx/detector.chained.crt')%}
+{% set tlsCert = '/etc/nginx/detector.chained.crt' %}
+{% set tlsKey = '/etc/nginx/detector.key' %}
+{% endif %}
+
+{% set multiviewer = salt['pillar.get']('detector:multiviewer') %}
+{% endif %}
+# Latest settings documentation: https://arkime.com/settings
+#
+# Arkime uses a tiered system for configuration variables.  This allows Arkime
+# to share one config file for many machines.  The ordering of sections in this
+# file doesn't matter.
+#
+# Order of config variables:
+# 1st) [optional] The section titled with the node name is used first.
+#      Arkime will always tag sessions with node:<node name>
+# 2nd) [optional] If a node has a nodeClass variable, the section titled with
+#      the nodeClass name is used next.  Sessions will be tagged with
+#      node:<node class name> which is useful if watching different
+#      network classes.
+# 3rd) The section titled "default" is used last.
+
+[default]
+dnsOutputAnswers=true
+{% if arkime_config is defined and arkime_config['configuration'] is defined and arkime_config['configuration']['yara_enabled'] is defined and arkime_config['configuration']['yara_enabled'] == True and path_arkime_yara_ini is defined %}
+# The yara file name
+yara={{ path_arkime_yara_ini }}
+{% endif %}
+
+{% if bpf_conf_enabled is defined and bpf_conf_enabled == "arkime" %}
+bpf={{ bpf_filter }}
+{% elif arkime_config is defined and arkime_config['configuration'] is defined and arkime_config['configuration']['exclude_ips'] is defined and arkime_config['configuration']['exclude_ips'][0] is defined %}
+bpf=not {% for ip in arkime_config['configuration']['exclude_ips'] %}{{ and_sep() }}{% if '/' in ip %}net {{ ip }}{% else %}host {{ ip }}{% endif %}{% endfor %}
+{% endif %}
+
+{% if arkime_config is defined and arkime_config['configuration'] is defined and arkime_config['configuration']['drop_tls'] is defined and arkime_config['configuration']['drop_tls'] == True  %}
+rulesFiles = /data/Arkime/etc/drop_tls.yaml
+{% endif %}
+
+{% if arkime_config is defined and arkime_config['configuration'] is defined and arkime_config['configuration']['wise_enabled'] is defined and arkime_config['configuration']['wise_enabled'] == True  %}
+# Host to connect to for wiseService
+wiseHost=127.0.0.1
+wisePort=8081
+plugins=tagger.so; wise.so; suricata.so
+viewerPlugins=wise.js
+wiseLogEvery=10000000
+{% else %}
+plugins=suricata.so
+{% endif %}
+
+suricataAlertFile=/var/log/suricata/eve.json
+
+# Comma seperated list of elasticsearch host:port combinations.  If not using a
+# elasticsearch VIP, a different elasticsearch node in the cluster can be specified
+# for each Arkime node to help spread load on high volume clusters
+elasticsearch={{ es }}
+
+# How often to create a new elasticsearch index. hourly,daily,weekly,monthly
+# Changing the value will cause previous sessions to be unreachable
+rotateIndex=daily
+
+# S2S and Password Hash secret - Must be in default section. Since elasticsearch
+# is wide open by default, we encrypt the stored password hashes with this
+# so a malicous person can't insert a working new account.  It is also used
+# for secure S2S communication. Comment out for no user authentication.
+# Changing the value will make all previously stored passwords no longer work.
+#
+passwordSecret = <passwords_are_elsewhere>
+
+# HTTP Digest Realm - Must be in default section.  Changing the value
+# will make all previously stored passwords no longer work
+httpRealm = Moloch
+
+# Semicolon ';' seperated list of interfaces to listen on for traffic
+interface={{ int }}
+
+# Uncomment to log access requests to a different log file
+accessLogFile = /var/log/arkime/access.log
+
+# The directory to save raw pcap files to
+pcapDir = /srv/pcap
+
+# The max raw pcap file size in gigabytes, with a max value of 36G.
+# The disk should have room for at least 10*maxFileSizeG
+maxFileSizeG = 5
+
+# The max time in minutes between rotating pcap files.  Default is 0, which means
+# only rotate based on current file size and the maxFileSizeG variable
+#maxFileTimeM = 60
+
+# TCP timeout value.  Arkime writes a session record after this many seconds
+# of inactivity.
+tcpTimeout = 300
+
+# Arkime writes a session record after this many seconds, no matter if
+# active or inactive
+tcpSaveTimeout = 360
+
+# UDP timeout value.  Arkime assumes the UDP session is ended after this
+# many seconds of inactivity.
+udpTimeout = 30
+
+# ICMP timeout value.  Arkime assumes the ICMP session is ended after this
+# many seconds of inactivity.
+icmpTimeout = 10
+
+# An aproximiate maximum number of active sessions Arkime/libnids will try
+# and monitor
+maxStreams = 1000000
+
+# Arkime writes a session record after this many packets
+maxPackets = 10000
+
+# Delete pcap files when free space is lower then this in gigabytes OR it can be
+# expressed as a percentage (ex: 5%).  This does NOT delete the session records in
+# the database. It is recommended this value is between 5% and 10% of the disk.
+# Database deletes are done by the db.pl expire script
+freeSpaceG = 2%
+
+# The port to listen on, by default 8005
+viewPort = 8005
+
+# The host/ip to listen on, by default 0.0.0.0 which is ALL
+{% if multiviewer_enabled is defined and (multiviewer_enabled == "True" or multiviewer_enabled == "true") and tlsKey is defined and salt['file.file_exists']( tlsKey ) and tlsCert is defined and salt['file.file_exists']( tlsCert )%}
+certFile = {{ tlsCert }}
+keyFile = {{ tlsKey }}
+viewHost = 0.0.0.0
+
+userAuthIps=127.0.0.1,{{ multiviewer }}
+{% else %}
+viewHost = 127.0.0.1
+{% endif %}
+
+# By default the viewer process is https://hostname:<viewPort> for each node.
+#viewUrl = https://HOSTNAME:8005
+
+webBasePath = /arkime/
+
+# Path of the maxmind geoip country file.  Download free version from:
+#  http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz
+#geoipFile = /data/moloch/etc/GeoIP.dat
+geoLite2Country = /opt/arkime/etc/GeoLite2-Country.mmdb
+
+# Path of the maxmind geoip ASN file.  Download free version from:
+#  http://www.maxmind.com/download/geoip/database/asnum/GeoIPASNum.dat.gz
+#geoipASNFile = /data/moloch/etc/GeoIPASNum.dat
+geoLite2ASN = /opt/arkime/etc/GeoLite2-ASN.mmdb
+
+# Path of the rir assignments file
+#  https://www.iana.org/assignments/ipv4-address-space/ipv4-address-space.csv
+rirFile = /opt/arkime/etc/ipv4-address-space.csv
+
+# The mac address lookup for manufactures file
+ouiFile = /opt/arkime/etc/oui.txt
+
+# User to drop privileges to. The pcapDir must be writable by this user or group below
+dropUser=nobody
+
+# Group to drop privileges to. The pcapDir must be writable by this group or user above
+dropGroup=daemon
+
+# Header to use for determining the username to check in the database for instead of
+# using http digest.  Use this if apache or something else is doing the auth.
+# Set viewHost to localhost or use iptables
+# Might need something like this in the httpd.conf
+# RewriteRule .* - [E=ENV_RU:%{REMOTE_USER}]
+# RequestHeader set MOLOCH_USER %{ENV_RU}e
+userNameHeader=arkime_user
+
+# lisame indexisse n2htud failide hashid
+supportSha256=true
+
+# Should we parse extra smtp traffic info
+parseSMTP=true
+
+# Should we parse extra smb traffic info
+parseSMB=true
+
+# Should we parse HTTP QS Values
+parseQSValue=false
+
+# Semicolon ';' seperated list of SMTP Headers that have ips, need to have the terminating colon ':'
+smtpIpHeaders=X-Originating-IP:;X-Barracuda-Apparent-Source-IP:
+
+# Semicolon ';' seperated list of directories to load parsers from
+parsersDir=/opt/arkime/parsers
+
+# Semicolon ';' seperated list of directories to load plugins from
+pluginsDir=/opt/arkime/plugins
+
+# ES will blow up if we allow the spiData to search too many indices.
+spiDataMaxIndices=8
+
+###### Performance tuning ########
+# MOST IMPORTANT, use basic magicMode, libfile kills performance
+magicMode=basic
+
+pcapReadMethod=tpacketv3
+tpacketv3BlockSize=8388608
+tpacketv3NumThreads=2
+
+maxPacketsInQueue = 500000
+
+# Number of threads processing packets
+packetThreads=4
+
+# ADVANCED - Semicolon ';' seperated list of files to load for config.  Files are loaded
+# in order and can replace values set in this file or previous files.
+#includes=
+
+# ADVANCED - How is pcap written to disk
+#  simple        = use O_DIRECT if available, writes in pcapWriteSize chunks,
+#                  a file per packet thread.
+pcapWriteMethod=simple
+
+# Disable pcap compression
+simpleCompression=none
+
+# ADVANCED - Buffer size when writing pcap files.  Should be a multiple of the raid 5 or xfs
+# stripe size.  Defaults to 256k
+pcapWriteSize = 4194304
+
+# ADVANCED - value for pcap_set_buffer_size, may not be used depending on kernel etc
+pcapBufferSize = 30000000
+
+# ADVANCED - Number of bytes to bulk index at a time
+dbBulkSize = 300000
+
+# ADVANCED - Number of seconds before we force a flush to ES
+dbFlushTimeout = 5
+
+# ADVANCED - Compress requests to ES, reduces ES bandwidth by ~80% at the cost
+# of increased CPU. MUST have "http.compression: true" in elasticsearch.yml file
+compressES = false
+
+# ADVANCED - Max number of connections to elastic search
+maxESConns = 30
+
+# ADVANCED - Max number of es requests outstanding in q
+maxESRequests = 500
+
+# ADVANCED - Number of packets to ask libnids/libpcap to read per poll/spin
+# Increasing may hurt stats and ES performance
+# Decreasing may cause more dropped packets
+packetsPerPoll = 50000
+
+# ADVANCED - Arkime will try to compensate for SYN packet drops by swapping
+# the source and destination addresses when a SYN-acK packet was captured first.
+# Probably useful to set it false, when running Arkime in wild due to SYN floods.
+antiSynDrop = false
+
+# DEBUG - Write to stdout info every X packets.
+# Set to -1 to never log status
+logEveryXPackets = 10000000
+
+# DEBUG - Write to stdout unknown protocols
+logUnknownProtocols = false
+
+# DEBUG - Write to stdout elastic search requests
+logESRequests = false
+
+# DEBUG - Write to stdout file creation information
+logFileCreation = false
+
+cronQueries = false
+
+[{{cluster_name_exists}}]
+
+[headers-http-request]
+referer=type:string;count:true;unique:true
+accept-encoding=type:string;count:true
+
+[headers-http-response]
+location=type:string;count:true
+content-type=type:string;count:true
+
+[headers-email]
+x-priority=type:integer
+
+[value-actions]
+VTIP=url:https://www.virustotal.com/en/ip-address/%TEXT%/information/;name:Virus Total IP;category:ip
+VTHOST=url:https://www.virustotal.com/en/domain/%HOST%/information/;name:Virus Total Host;category:host
+VTURL=url:https://www.virustotal.com/latest-scan/%URL%;name:Virus Total URL;category:url
