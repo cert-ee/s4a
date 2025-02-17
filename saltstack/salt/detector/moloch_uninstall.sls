@@ -10,6 +10,21 @@ detector_moloch_pkg:
   pkg.purged:
     - name: moloch
 
+detector_moloch_remove_files:
+  file.absent:
+    - names: 
+      - /etc/logrotate.d/moloch
+      - /etc/systemd/system/molochcapture.service
+      - /etc/systemd/system/molochviewer.service
+      - /data/moloch/db/daily.sh
+
+detector_moloch_remove_daily_cron:
+  cron.absent:
+    - name: /data/moloch/db/daily.sh
+    - user: root
+    - minute: 0
+    - hour: '*/1'
+
 detector_disable_moloch_components:
   cmd.run:
     - name: |
