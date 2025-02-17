@@ -25,6 +25,14 @@ detector_moloch_remove_daily_cron:
     - minute: 0
     - hour: '*/1'
 
+detector_moloch_remove_geo_cron:
+  cron.present:
+    - name: /data/moloch/bin/moloch_update_geo.sh > /dev/null 2>&1
+    - user: root
+    - minute: 5
+    - hour: '0'
+    - dayweek: '*/3'
+
 detector_disable_moloch_components:
   cmd.run:
     - name: |
