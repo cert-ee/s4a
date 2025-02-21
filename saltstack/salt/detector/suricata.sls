@@ -131,5 +131,5 @@ suricata_component_enable:
   cmd.run:
     - name: |
         source /etc/default/s4a-detector
-        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "suricata"},{ $set: { installed:true } })'
-        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "suricata"},{ $set: { enabled:true } })'
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "suricata"},{ $set: { installed:true } })'
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "suricata"},{ $set: { enabled:true } })'
