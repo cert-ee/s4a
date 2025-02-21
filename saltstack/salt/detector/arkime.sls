@@ -35,7 +35,7 @@
 {% endif %}
 
 include:
-#  - detector.deps
+  - detector.deps
   - detector.capture_interface
 
 # ttyname failed: Inappropriate ioctl for device
