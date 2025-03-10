@@ -1,6 +1,6 @@
 {% set path_arkime_wise_ini = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/settings/paths | jq -r .path_moloch_wise_ini', python_shell=True) %}
-{% set wise_enabled = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/components/moloch | jq -r .configuration.wise_enabled', python_shell=True) %}
-{% set wise_installed = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/components/moloch | jq -r .configuration.wise_installed', python_shell=True) %}
+{% set wise_enabled = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/components/arkime | jq -r .configuration.wise_enabled', python_shell=True) %}
+{% set wise_installed = salt['cmd.run'](cmd='curl -s http://localhost:4000/api/components/arkime | jq -r .configuration.wise_installed', python_shell=True) %}
 
 {% if salt['file.file_exists' ]('/etc/s4a-detector/wise_lan_ips_dns.ini') %}
 {% set wise_reversedns_enabled = salt['cmd.run'](cmd='cat /etc/s4a-detector/wise_lan_ips_dns.ini | sed -r "/^(\ * |)#/d" | xargs | sed "/^$/d" | wc -l', python_shell=True) %}
