@@ -12,12 +12,7 @@ echo "Updating ipv4 GeoIP Database, ipv4 addressspace and known devices:"
 
 for file in $files
 do
-        /usr/bin/wget -nv "$repo_url/geoip/$file" -O $path/$file.tmp
-
-        if [ -s $path/$file.tmp ]
-        then
-                mv $path/$file.tmp $path/$file
-        fi
+        /usr/bin/wget -nv "$repo_url/geoip/$file" -O $path/$file
 
         if [ -s $path/$file ]
         then
