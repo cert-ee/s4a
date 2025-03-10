@@ -4,27 +4,27 @@
 
 {% if connect_test.result == True %}
 {% set int = salt.http.query('http://'+api.host+':'+api.port|string+'/api/network_interfaces/listForSalt', decode=true )['dict']['interfaces'] %}
-{% set result_moloch = salt.http.query('http://'+api.host+':'+api.port|string+'/api/components/moloch', decode=true ) %}
+{% set result_arkime = salt.http.query('http://'+api.host+':'+api.port|string+'/api/components/arkime', decode=true ) %}
 
 {% set path_arkime_wise_ini = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/settings/paths | jq -r .path_moloch_wise_ini', python_shell=True) %}
 {% set path_arkime_yara_ini = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/settings/paths | jq -r .path_moloch_yara_ini', python_shell=True) %}
-{% set wise_enabled = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/components/moloch | jq -r .configuration.wise_enabled', python_shell=True) %}
-{% set wise_installed = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/components/moloch | jq -r .installed', python_shell=True) %}
+{% set wise_enabled = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/components/arkime | jq -r .configuration.wise_enabled', python_shell=True) %}
+{% set wise_installed = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/components/arkime | jq -r .installed', python_shell=True) %}
 {% endif %}
 
 {% if int is not defined or int == "" %}
 {% set int = int_def %}
 {% endif %}
 
-{% if result_moloch is defined and result_moloch['dict'] is defined %}
-{% set arkime_config = result_moloch['dict'] | tojson %}
+{% if result_arkime is defined and result_arkime['dict'] is defined %}
+{% set arkime_config = result_arkime['dict'] | tojson %}
 {% endif %}
 
 #{% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', '127.0.0.1' ) + ':9200' %}
 {% set es = 'http://127.0.0.1:9200' %}
 {% set elastic_status = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_cluster/health | jq -r .status', python_shell=True) %}
 {% set elastic_node_count = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_cluster/health | jq -r .number_of_nodes', python_shell=True) %}
-{% set arkimeDBVersion = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_template/*arkime_sessions3_template?filter_path=**._meta.molochDbVersion | jq -r .arkime_sessions3_template.mappings._meta.molochDbVersion', python_shell=True) %}
+{% set arkimeDBVersion = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_template/*arkime_sessions3_template?filter_path=**._meta.arkimeDbVersion | jq -r .arkime_sessions3_template.mappings._meta.arkimeDbVersion', python_shell=True) %}
 {% set arkimeShards = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_template/*arkime_sessions3_template | jq -r .[].settings.index.number_of_shards', python_shell=True) %}
 {% set arkimeShardsPerNode = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_template/*arkime_sessions3_template | jq -r .[].settings.index.routing.allocation.total_shards_per_node', python_shell=True) %}
 {% set arkimeReplicas = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_template/*arkime_sessions3_template | jq -r .[].settings.index.number_of_replicas', python_shell=True) %}
@@ -326,8 +326,8 @@ detector_arkime_wise_component_enabled:
   cmd.run:
     - name: |
         source /etc/default/s4a-detector
-        mongosh --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "molochwise"},{ $set: { installed:true } })'
-        mongosh --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "molochwise"},{ $set: { enabled:true } })'
+        mongosh --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "arkimewise"},{ $set: { installed:true } })'
+        mongosh --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "arkimewise"},{ $set: { enabled:true } })'
 
 detector_arkime_wise_service:
   service.running:
@@ -351,8 +351,8 @@ detector_arkime_wise_component_disable:
   cmd.run:
     - name: |
         source /etc/default/s4a-detector
-        mongosh --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "molochwise"},{ $set: { installed:false } })'
-        mongosh --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "molochwise"},{ $set: { enabled:false } })'
+        mongosh --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "arkimewise"},{ $set: { installed:false } })'
+        mongosh --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "arkimewise"},{ $set: { enabled:false } })'
 {% endif %}
 
 detector_arkime_enable_arkimecapture:
@@ -401,9 +401,9 @@ detector_arkime_component_enable:
   cmd.run:
     - name: |
         source /etc/default/s4a-detector
-        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "moloch"},{ $set: { installed:true } })'
-        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "molochviewer"},{ $set: { installed:true } })'
-        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "molochcapture"},{ $set: { installed:true } })'
-        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "moloch"},{ $set: { enabled:true } })'
-        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "molochviewer"},{ $set: { enabled:true } })'
-        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "molochcapture"},{ $set: { enabled:true } })'
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "arkime"},{ $set: { installed:true } })'
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "arkime"},{ $set: { installed:true } })'
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "arkimecapture"},{ $set: { installed:true } })'
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "arkime"},{ $set: { enabled:true } })'
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "arkimeviewer"},{ $set: { enabled:true } })'
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "arkimecapture"},{ $set: { enabled:true } })'
