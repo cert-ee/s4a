@@ -6,7 +6,7 @@ After=elasticsearch.target
 Type=simple
 User=nobody
 WorkingDirectory=/opt/arkime/wiseService
-ExecStart=/bin/sh -c '/opt/arkime/bin/node /opt/arkime/viewer/wiseService.js -c /opt/arkime/etc/wise.ini >> /var/log/arkime/wise.log 2>&1'
+ExecStart=/bin/sh -c '/opt/arkime/bin/node wiseService.js -c /opt/arkime/etc/wise.ini >> /var/log/arkime/wise.log 2>&1'
 
 [Install]
 WantedBy=multi-user.target

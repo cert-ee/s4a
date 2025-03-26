@@ -26,9 +26,15 @@ mongodb-org_repo:
 mongodb-org_repo:
   pkgrepo.managed:
     - humanname: mongodb-org
-    - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/7.0 multiverse
+    - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse
     - key_url: https://www.mongodb.org/static/pgp/server-7.0.asc
     - file: /etc/apt/sources.list.d/mongodb-org-7.0.list
+
+mongodb-org-remove-old-repos:
+  file.absent:
+    - names: 
+      - /etc/apt/sources.list.d/mongodb-org-5.0.list
+      - /etc/apt/sources.list.d/mongodb-org-6.0.list
 {% endif %}
 
 {% if mongodb_version_major is defined and mongodb_version_major|int == 6 %}
@@ -45,17 +51,10 @@ mongodb-org-upgrade-preps:
         mongosh -u $MONGODB_USER -p $MONGODB_PASS --authenticationDatabase=admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"5.0\" } )"
 {% endif %}
 
-nodejs_repo:
-  pkgrepo.managed:
-    - humanname: nodejs
-    - name: deb https://deb.nodesource.com/node_10.x focal main
-    - key_url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
-    - file: /etc/apt/sources.list.d/nodesource.list
-
 influxdata_repo:
   pkgrepo.managed:
     - humanname: influxdata
-    - name: deb https://repos.influxdata.com/ubuntu focal stable
+    - name: deb https://repos.influxdata.com/ubuntu jammy stable
     - keyserver: ha.pool.sks-keyservers.net
     - key_url: https://repos.influxdata.com/influxdata-archive_compat.key
     - file: /etc/apt/sources.list.d/influxdata.list
@@ -70,7 +69,7 @@ yarn_repo:
 s4a_repo:
   pkgrepo.managed:
     - humanname: repo-s4a
-    - name: deb [trusted=yes arch=amd64] {{ salt['pillar.get']('detector:repo') }} focal universe
+    - name: deb [trusted=yes arch=amd64] {{ salt['pillar.get']('detector:repo') }} jammy universe
     - key_url: {{ salt['pillar.get']('detector:repo') }}/GPG.pub
     - file: /etc/apt/sources.list.d/repo-s4a.list
     - clean_file: True

@@ -6,10 +6,10 @@
 {% set int = salt.http.query('http://'+api.host+':'+api.port|string+'/api/network_interfaces/listForSalt', decode=true )['dict']['interfaces'] %}
 {% set result_arkime = salt.http.query('http://'+api.host+':'+api.port|string+'/api/components/arkime', decode=true ) %}
 
-{% set path_arkime_wise_ini = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/settings/paths | jq -r .path_moloch_wise_ini', python_shell=True) %}
-{% set path_arkime_yara_ini = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/settings/paths | jq -r .path_moloch_yara_ini', python_shell=True) %}
+{% set path_arkime_wise_ini = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/settings/paths | jq -r .path_arkime_wise_ini', python_shell=True) %}
+{% set path_arkime_yara_ini = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/settings/paths | jq -r .path_arkime_yara_ini', python_shell=True) %}
 {% set wise_enabled = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/components/arkime | jq -r .configuration.wise_enabled', python_shell=True) %}
-{% set wise_installed = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/components/arkime | jq -r .installed', python_shell=True) %}
+{% set wise_installed = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/components/arkimewise | jq -r .installed', python_shell=True) %}
 {% endif %}
 
 {% if int is not defined or int == "" %}
