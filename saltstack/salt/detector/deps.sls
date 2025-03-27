@@ -10,24 +10,27 @@
 
 {% if (mongodb_version_major is defined and mongodb_version_major|int == 5 and mongodb_upgrade_available == True) %}
 mongodb-org_repo:
+ cmd.run:
+    - name: curl -fsSL https://www.mongodb.org/static/pgp/server-5.0.asc | gpg --dearmor -o /etc/apt/keyrings/mongodb-5.gpg
   pkgrepo.managed:
     - humanname: mongodb-org
-    - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse
-    - key_url: https://www.mongodb.org/static/pgp/server-5.0.asc
+    - name: deb [ signed-by=/etc/apt/keyrings/mongodb-5.gpg arch=amd64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse
     - file: /etc/apt/sources.list.d/mongodb-org-5.0.list
 {% elif mongodb_version_major is defined and ((mongodb_version_major|int == 6 and mongodb_upgrade_available == True) or  mongodb_version_major|int == 5) %}
 mongodb-org_repo:
+  cmd.run:
+    - name: curl -fsSL https://www.mongodb.org/static/pgp/server-6.0.asc | gpg --dearmor -o /etc/apt/keyrings/mongodb-6.gpg
   pkgrepo.managed:
     - humanname: mongodb-org
-    - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse
-    - key_url: https://www.mongodb.org/static/pgp/server-6.0.asc
+    - name: deb [ signed-by=/etc/apt/keyrings/mongodb-7.gpg arch=amd64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse
     - file: /etc/apt/sources.list.d/mongodb-org-6.0.list
 {% elif (mongodb_version_major is defined and mongodb_version_major|int >= 6) or mongodb_version_installed == False %}
 mongodb-org_repo:
+  cmd.run:
+    - name: curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | gpg --dearmor -o /etc/apt/keyrings/mongodb-7.gpg
   pkgrepo.managed:
     - humanname: mongodb-org
-    - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse
-    - key_url: https://www.mongodb.org/static/pgp/server-7.0.asc
+    - name: deb [ signed-by=/etc/apt/keyrings/mongodb-7.gpg arch=amd64 ] http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse
     - file: /etc/apt/sources.list.d/mongodb-org-7.0.list
 
 mongodb-org-remove-old-repos:
@@ -52,33 +55,36 @@ mongodb-org-upgrade-preps:
 {% endif %}
 
 influxdata_repo:
+  cmd.run:
+    - name: curl -fsSL https://repos.influxdata.com/influxdata-archive_compat.key | gpg --dearmor -o /etc/apt/keyrings/influxdata.gpg
   pkgrepo.managed:
     - humanname: influxdata
-    - name: deb https://repos.influxdata.com/ubuntu jammy stable
-    - keyserver: ha.pool.sks-keyservers.net
-    - key_url: https://repos.influxdata.com/influxdata-archive_compat.key
+    - name: deb [signed-by=/etc/apt/keyrings/influxdata.gpg arch=amd64] https://repos.influxdata.com/ubuntu jammy stable
     - file: /etc/apt/sources.list.d/influxdata.list
 
 yarn_repo:
+  cmd.run:
+    - name: curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor -o /etc/apt/keyrings/yarn.gpg
   pkgrepo.managed:
     - humanname: yarn
-    - name: deb https://dl.yarnpkg.com/debian/ stable main
-    - key_url: https://dl.yarnpkg.com/debian/pubkey.gpg
+    - name: deb [signed-by=/etc/apt/keyrings/yarn.gpg arch=amd64] https://dl.yarnpkg.com/debian/ stable main
     - file: /etc/apt/sources.list.d/yarn.list
 
 s4a_repo:
+  cmd.run:
+    - name: curl -fsSL {{ salt['pillar.get']('detector:repo') }}/GPG.pub | gpg --dearmor -o /etc/apt/keyrings/s4a.gpg
   pkgrepo.managed:
     - humanname: repo-s4a
-    - name: deb [trusted=yes arch=amd64] {{ salt['pillar.get']('detector:repo') }} jammy universe
-    - key_url: {{ salt['pillar.get']('detector:repo') }}/GPG.pub
+    - name: deb [signed-by=/etc/apt/keyrings/s4a.gpg trusted=yes arch=amd64] {{ salt['pillar.get']('detector:repo') }} jammy universe
     - file: /etc/apt/sources.list.d/repo-s4a.list
     - clean_file: True
 
 elastic7x_repo:
+  cmd.run:
+    - name: curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /etc/apt/keyrings/elasticsearch.gpg
   pkgrepo.managed:
     - humanname: Elasticsearch 7.x Repo
-    - name: deb [arch=amd64] https://artifacts.elastic.co/packages/7.x/apt stable main
-    - key_url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    - name: deb [signed-by=/etc/apt/keyrings/elasticsearch.gpg arch=amd64] https://artifacts.elastic.co/packages/7.x/apt stable main
     - file: /etc/apt/sources.list.d/elastic-7.x.list
 
 dependency_pkgs:
