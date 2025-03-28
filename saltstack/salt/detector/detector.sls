@@ -15,7 +15,7 @@ mongodb-org:
         - mongodb-org-shell: latest
         - mongodb-org-tools: latest
     - require:
-        - pkgrepo: mongodb-org_repo
+        - mongodb-org_repo
 
 mongod_conf:
   file.managed:
