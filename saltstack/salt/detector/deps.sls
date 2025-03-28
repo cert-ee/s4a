@@ -11,27 +11,30 @@
 {% if (mongodb_version_major is defined and mongodb_version_major|int == 5 and mongodb_upgrade_available == True) %}
 mongodb-org_repo:
  cmd.run:
-    - name: curl -fsSL https://www.mongodb.org/static/pgp/server-5.0.asc | gpg --dearmor -o /etc/apt/keyrings/mongodb-5.gpg
+    - name: curl -fsSL https://www.mongodb.org/static/pgp/server-5.0.asc | gpg --dearmor > /etc/apt/keyrings/mongodb-5.gpg
   pkgrepo.managed:
     - humanname: mongodb-org
     - name: deb [ signed-by=/etc/apt/keyrings/mongodb-5.gpg arch=amd64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse
     - file: /etc/apt/sources.list.d/mongodb-org-5.0.list
+    - clean_file: True
 {% elif mongodb_version_major is defined and ((mongodb_version_major|int == 6 and mongodb_upgrade_available == True) or  mongodb_version_major|int == 5) %}
 mongodb-org_repo:
   cmd.run:
-    - name: curl -fsSL https://www.mongodb.org/static/pgp/server-6.0.asc | gpg --dearmor -o /etc/apt/keyrings/mongodb-6.gpg
+    - name: curl -fsSL https://www.mongodb.org/static/pgp/server-6.0.asc | gpg --dearmor > /etc/apt/keyrings/mongodb-6.gpg
   pkgrepo.managed:
     - humanname: mongodb-org
     - name: deb [ signed-by=/etc/apt/keyrings/mongodb-6.gpg arch=amd64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse
     - file: /etc/apt/sources.list.d/mongodb-org-6.0.list
+    - clean_file: True
 {% elif (mongodb_version_major is defined and mongodb_version_major|int >= 6) or mongodb_version_installed == False %}
 mongodb-org_repo:
   cmd.run:
-    - name: curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | gpg --dearmor -o /etc/apt/keyrings/mongodb-7.gpg
+    - name: curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | gpg --dearmor > /etc/apt/keyrings/mongodb-7.gpg
   pkgrepo.managed:
     - humanname: mongodb-org
     - name: deb [ signed-by=/etc/apt/keyrings/mongodb-7.gpg arch=amd64 ] http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse
     - file: /etc/apt/sources.list.d/mongodb-org-7.0.list
+    - clean_file: True
 
 mongodb-org-remove-old-repos:
   file.absent:
@@ -56,23 +59,25 @@ mongodb-org-upgrade-preps:
 
 influxdata_repo:
   cmd.run:
-    - name: curl -fsSL https://repos.influxdata.com/influxdata-archive_compat.key | gpg --dearmor -o /etc/apt/keyrings/influxdata.gpg
+    - name: curl -fsSL https://repos.influxdata.com/influxdata-archive_compat.key | gpg --dearmor > /etc/apt/keyrings/influxdata.gpg
   pkgrepo.managed:
     - humanname: influxdata
     - name: deb [signed-by=/etc/apt/keyrings/influxdata.gpg arch=amd64] https://repos.influxdata.com/ubuntu jammy stable
     - file: /etc/apt/sources.list.d/influxdata.list
+    - clean_file: True
 
 yarn_repo:
   cmd.run:
-    - name: curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor -o /etc/apt/keyrings/yarn.gpg
+    - name: curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor > /etc/apt/keyrings/yarn.gpg
   pkgrepo.managed:
     - humanname: yarn
     - name: deb [signed-by=/etc/apt/keyrings/yarn.gpg arch=amd64] https://dl.yarnpkg.com/debian/ stable main
     - file: /etc/apt/sources.list.d/yarn.list
+    - clean_file: True
 
 s4a_repo:
   cmd.run:
-    - name: curl -fsSL {{ salt['pillar.get']('detector:repo') }}/GPG.pub | gpg --dearmor -o /etc/apt/keyrings/s4a.gpg
+    - name: curl -fsSL {{ salt['pillar.get']('detector:repo') }}/GPG.pub | gpg --dearmor > /etc/apt/keyrings/s4a.gpg
   pkgrepo.managed:
     - humanname: repo-s4a
     - name: deb [signed-by=/etc/apt/keyrings/s4a.gpg trusted=yes arch=amd64] {{ salt['pillar.get']('detector:repo') }} jammy universe
@@ -81,11 +86,12 @@ s4a_repo:
 
 elastic7x_repo:
   cmd.run:
-    - name: curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor -o /etc/apt/keyrings/elasticsearch.gpg
+    - name: curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor > /etc/apt/keyrings/elasticsearch.gpg
   pkgrepo.managed:
     - humanname: Elasticsearch 7.x Repo
     - name: deb [signed-by=/etc/apt/keyrings/elasticsearch.gpg arch=amd64] https://artifacts.elastic.co/packages/7.x/apt stable main
     - file: /etc/apt/sources.list.d/elastic-7.x.list
+    - clean_file: True
 
 dependency_pkgs:
   pkg.installed:
