@@ -10,7 +10,7 @@
 
 {% if (mongodb_version_major is defined and mongodb_version_major|int == 5 and mongodb_upgrade_available == True) %}
 mongodb-org_repo:
- cmd.run:
+  cmd.run:
     - name: curl -fsSL https://www.mongodb.org/static/pgp/server-5.0.asc | gpg --dearmor > /etc/apt/keyrings/mongodb-5.gpg
   pkgrepo.managed:
     - humanname: mongodb-org
