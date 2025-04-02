@@ -14,7 +14,7 @@ mongodb-org_repo:
     - name: curl -fsSL https://www.mongodb.org/static/pgp/server-5.0.asc | gpg --dearmor > /etc/apt/keyrings/mongodb-5.gpg
   pkgrepo.managed:
     - humanname: mongodb-org
-    - name: deb [ signed-by=/etc/apt/keyrings/mongodb-5.gpg arch=amd64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse
+    - name: deb [signed-by=/etc/apt/keyrings/mongodb-5.gpg arch=amd64] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse
     - file: /etc/apt/sources.list.d/mongodb-org-5.0.list
     - clean_file: True
 {% elif mongodb_version_major is defined and ((mongodb_version_major|int == 6 and mongodb_upgrade_available == True) or  mongodb_version_major|int == 5) %}
@@ -23,7 +23,7 @@ mongodb-org_repo:
     - name: curl -fsSL https://www.mongodb.org/static/pgp/server-6.0.asc | gpg --dearmor > /etc/apt/keyrings/mongodb-6.gpg
   pkgrepo.managed:
     - humanname: mongodb-org
-    - name: deb [ signed-by=/etc/apt/keyrings/mongodb-6.gpg arch=amd64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse
+    - name: deb [signed-by=/etc/apt/keyrings/mongodb-6.gpg arch=amd64] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse
     - file: /etc/apt/sources.list.d/mongodb-org-6.0.list
     - clean_file: True
 {% elif (mongodb_version_major is defined and mongodb_version_major|int >= 6) or mongodb_version_installed == False %}
@@ -32,7 +32,7 @@ mongodb-org_repo:
     - name: curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | gpg --dearmor > /etc/apt/keyrings/mongodb-7.gpg
   pkgrepo.managed:
     - humanname: mongodb-org
-    - name: deb [ signed-by=/etc/apt/keyrings/mongodb-7.gpg arch=amd64 ] http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse
+    - name: deb [signed-by=/etc/apt/keyrings/mongodb-7.gpg arch=amd64] http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse
     - file: /etc/apt/sources.list.d/mongodb-org-7.0.list
     - clean_file: True
 
