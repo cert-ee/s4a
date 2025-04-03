@@ -74,6 +74,8 @@ server {
 	auth_basic "Detector";
 	auth_basic_user_file /etc/nginx/.htpasswd;
 
+	rewrite ^/moloch/(.*)$ /arkime/$1 permanent;
+
 	location /netdata {
 		rewrite /[^\/]+(.*) $1  break;
 		proxy_pass http://127.0.0.1:19999;
