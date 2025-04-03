@@ -29,6 +29,10 @@ detector_kibana_logrotate:
     - mode: 644
 
 {% if kibana_index_status == "0" %}
+npm:
+  pkg.installed:
+    - install_recommends: False
+
 elasticdump:
   npm.installed:
     - name: elasticdump
