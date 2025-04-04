@@ -1,10 +1,5 @@
-evebox_repo:
-  pkgrepo.managed:
-    - humanname: EveBox Debian Repository
-    - name: deb [arch=amd64] http://files.evebox.org/evebox/debian stable main
-    - key_url: https://evebox.org/files/GPG-KEY-evebox
-    - file: /etc/apt/sources.list.d/evebox.list
-    - clean_file: true
+include:
+  - detector.deps
 
 evebox:
   cmd.run:
@@ -15,7 +10,7 @@ evebox:
     - update_holds: true
     - refresh: true
     - require:
-      - pkgrepo: evebox_repo
+      - evebox_repo
 
 evebox_pkgs:
   pkg.latest:

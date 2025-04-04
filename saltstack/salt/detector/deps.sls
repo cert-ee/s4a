@@ -93,6 +93,19 @@ elastic7x_repo:
     - file: /etc/apt/sources.list.d/elastic-7.x.list
     - clean_file: True
 
+evebox_repo:
+  cmd.run:
+    - name: curl -fsSL https://evebox.org/files/GPG-KEY-evebox | gpg --dearmor > /etc/apt/keyrings/evebox.gpg
+  pkgrepo.managed:
+    - humanname: EveBox Debian Repository
+    - name: deb [signed-by=/etc/apt/keyrings/evebox.gpg arch=amd64] http://files.evebox.org/evebox/debian stable main
+    - file: /etc/apt/sources.list.d/evebox.list
+    - clean_file: true
+
+suricata_repo:
+  cmd.run:
+    - name: add-apt-repository -n -d ppa:oisf/suricata-6.0 --yes
+
 dependency_pkgs:
   pkg.installed:
     - refresh: true

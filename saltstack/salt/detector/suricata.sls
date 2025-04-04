@@ -41,10 +41,6 @@ detector_suricata_yaml:
       - user: suricata_user
       - pkg: suricata
 
-suricata_repo:
-  pkgrepo.managed:
-    - ppa: oisf/suricata-6.0
-
 suricata_unhold:
   pkg.unheld:
     - pkgs:
@@ -54,7 +50,7 @@ suricata:
   pkg.latest:
     - refresh: True
     - require:
-        - pkgrepo: suricata_repo
+        - suricata_repo
 
 suricata_hold:
   pkg.held:
