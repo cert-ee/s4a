@@ -2,12 +2,15 @@
 
 ruleFeedsPath=/srv/s4a-detector/suricata
 suricataRules=/etc/suricata/rules/all.rules
+suricataLog=/var/log/suricata/suricata.log
 disabledSids=$ruleFeedsPath/rules_disabled.txt
+disabledSidsCustom=$ruleFeedsPath/rules_disabled_custom.txt
 ruleStatus=$ruleFeedsPath/rules_status.json
 
 tmpPath=$ruleFeedsPath/rules/.tmp
 tmpRulesStage1=$tmpPath/rules_stage1.rules
 tmpRulesStage2=$tmpPath/rules_stage2.rules
+tmpDisabledSids=$tmpPath/rules_disabled.txt
 
 fixMultilineRules() {
 	sed -r 's/\\\ $/\\/' | sed  -r ':a ;$! N; s/\\\n//; ta ; P ; D'
@@ -46,7 +49,9 @@ done
 }
 
 deduplicateRules() {
-	grep -wvf <(sed -r "s/#.*.$//" $disabledSids | grep -oE '[0-9]+' | sed 's/^/sid:/') $1 | sort -u
+
+	cat $disabledSidsCustom $disabledSids 2> /dev/null | sed '/^$/d' | sort -u >> $tmpDisabledSids
+	grep -wvf <(sed -r "s/#.*.$//" $tmpDisabledSids | grep -oE '[0-9]+' | sed 's/^/sid:/') $1 | sort -u
 }
 
 reloadSuricata() {
@@ -62,13 +67,19 @@ cleanup() {
         fi
 }
 
-printRuleStatus() {
+checkErrors() {
+lastReloadTimestamp="$(grep "Loading rule file" $suricataLog | sed 's/ - <Config>.*.$//' | tail -n1)"
+invalidSignatures="$(grep "$lastReloadTimestamp" -A 1000 $suricataLog | grep ERR_INVALID_SIGNATURE | grep -oE 'sid:[0-9]+' |cut -d: -f2| sort -u)"
+invalidSignaturesCount=$(wc -l <<< $invalidSignatures)
+}
 
-customRuleCount=$(sed '/^$/d' <<< "${customSids[@]}" | wc -l)
-allRulesCount=$(grep -oE sid:[0-9]+ $suricataRules -c)
-rulesDisabledCount=$(cat $disabledSids|wc -l)
-rulesEnabledCount=$(( $allRulesCount - $rulesDisabledCount ))
-printf '{"rules_count":'$allRulesCount',"rules_count_custom":'$customRuleCount',"rules_count_enabled":'$rulesEnabledCount'}'
+
+printRuleStatus() {
+customRuleCount=$(sed '/^$/d' <<< "${customSids[@]}" | grep -vf $tmpDisabledSids | wc -l)
+allRulesCount=$(grep -oE sid:[0-9]+ $tmpRulesStage1 -c)
+rulesDisabledCount=$(cat $tmpDisabledSids|wc -l)
+rulesEnabledCount=$(grep -oE sid:[0-9]+ $suricataRules -c)
+printf '{"rules_count":'$allRulesCount',"rules_count_custom":'$customRuleCount',"rules_count_enabled":'$rulesEnabledCount',"invalid_signatures_count":'$invalidSignaturesCount',"invalid_signatures":['$(xargs <<< $invalidSignatures|sed -e 's/ /,/g')']}'
 }
 
 ####### MAIN #########
@@ -87,6 +98,11 @@ echo -n "Deploying signatures to $suricataRules: "
 	cp $tmpRulesStage2 $suricataRules
 	reloadSuricata
 echo "done"
+
+echo -n "Checking for Invalid Signatures: "
+sleep 30
+checkErrors
+echo "found $invalidSignaturesCount"
 
 echo -n "Generating rule status: "
 printRuleStatus > $ruleFeedsPath/rules_status.json
