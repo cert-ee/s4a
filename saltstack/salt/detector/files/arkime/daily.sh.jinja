@@ -6,7 +6,7 @@
 # To define custom reserverd disk space use conf parameter elasticFreeSpaceReserved with a value of reserverd GigaBytes.
 # To define custom days to keep Suricata logs use conf parameter suricataLogsToKeep with a value of days to keep logs.
 #
-# Example content of /etc/s4a-detector/custom_elastic_cleanup.conf: 
+# Example content of /etc/s4a-detector/custom_cleanup.conf: 
 # elasticFreeSpaceReserved=500
 # suricataLogsToKeep=30
 
@@ -104,7 +104,7 @@ suricataSize=$(echo $sum | awk '{ byte =$1 /1024/1024/1024; print byte}')
 ######################## End of Functions ##########################
 
 ESHOSTPORT={{ es }}
-customSettings=/etc/s4a-detector/custom_elastic_cleanup.conf
+customSettings=/etc/s4a-detector/custom_cleanup.conf
 
 if [ -r $customSettings ]
 then
