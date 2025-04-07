@@ -3,6 +3,7 @@
 ruleFeedsPath=/srv/s4a-detector/suricata
 suricataRules=/etc/suricata/rules/all.rules
 disabledSids=$ruleFeedsPath/rules_disabled.txt
+ruleStatus=$ruleFeedsPath/rules_status.json
 
 tmpPath=$ruleFeedsPath/rules/.tmp
 tmpRulesStage1=$tmpPath/rules_stage1.rules
@@ -12,6 +13,11 @@ fixMultilineRules() {
 	sed -r 's/\\\ $/\\/' | sed  -r ':a ;$! N; s/\\\n//; ta ; P ; D'
 }
 
+getCentralRulesets() {
+source /etc/default/s4a-detector
+mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.feed.find();'| grep filename|cut -d"'" -f2 | sed 's/\.tar\.gz//' | xargs|sed 's/ /\|/g'
+}
+
 extractRules() {
 if [ -f $tmpRulesStage1 ]; then rm $tmpRulesStage1; fi
 
@@ -19,12 +25,21 @@ for filename in $(find $1 -type f -name "*.tar.gz")
 do
 echo -n "Proccessing $filename: " >&2
 ruleset=$(sed -e 's/^.*\///' -e 's/.tar.gz$//' <<< $filename)
+
 mkdir -p $tmpPath/$ruleset
 tar zxf $filename -C $tmpPath/$ruleset/
 	for ruleFile in $(find $tmpPath/$ruleset/ -type f -name "*.rules")
 	do
 	echo -n "."
 	cat $ruleFile | fixMultilineRules | grep ^alert >> $2
+
+	if [[ "$ruleset" =~ ($centralRulesets) ]];
+	then
+	continue
+	else
+	customSids+=$(grep -oE sid:[0-9]+ $ruleFile | grep -v "^\#")
+	fi
+
 	done
 echo "done"
 done
@@ -47,7 +62,18 @@ cleanup() {
         fi
 }
 
+printRuleStatus() {
+
+customRuleCount=$(sed '/^$/d' <<< "${customSids[@]}" | wc -l)
+allRulesCount=$(grep -oE sid:[0-9]+ $suricataRules -c)
+rulesDisabledCount=$(cat $disabledSids|wc -l)
+rulesEnabledCount=$(( $allRulesCount - $rulesDisabledCount ))
+printf '{"rules_count":'$allRulesCount',"rules_count_custom":'$customRuleCount',"rules_count_enabled":'$rulesEnabledCount'}'
+}
+
 ####### MAIN #########
+customSids=()
+centralRulesets="$(getCentralRulesets)"
 
 echo "Extracting signatures from $ruleFeedsPath/rules:"
 	extractRules "$ruleFeedsPath/rules/" $tmpRulesStage1
@@ -61,5 +87,11 @@ echo -n "Deploying signatures to $suricataRules: "
 	cp $tmpRulesStage2 $suricataRules
 	reloadSuricata
 echo "done"
+
+echo -n "Generating rule status: "
+printRuleStatus > $ruleFeedsPath/rules_status.json
+
+echo "done"
+
 
 cleanup
