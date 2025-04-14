@@ -17,6 +17,7 @@ mongodb-org_repo:
     - user: root
     - group: root
     - mode: 755
+    - replace: false
   pkgrepo.managed:
     - humanname: mongodb-org
     - name: deb [signed-by=/etc/apt/keyrings/mongodb-5.gpg arch=amd64] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse
@@ -31,6 +32,7 @@ mongodb-org_repo:
     - user: root
     - group: root
     - mode: 755
+    - replace: false
   pkgrepo.managed:
     - humanname: mongodb-org
     - name: deb [signed-by=/etc/apt/keyrings/mongodb-6.gpg arch=amd64] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse
@@ -45,6 +47,7 @@ mongodb-org_repo:
     - user: root
     - group: root
     - mode: 755
+    - replace: false
   pkgrepo.managed:
     - humanname: mongodb-org
     - name: deb [signed-by=/etc/apt/keyrings/mongodb-7.gpg arch=amd64] http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse
@@ -80,6 +83,7 @@ influxdata_repo:
     - user: root
     - group: root
     - mode: 755
+    - replace: false
   pkgrepo.managed:
     - humanname: influxdata
     - name: deb [signed-by=/etc/apt/keyrings/influxdata.gpg arch=amd64] https://repos.influxdata.com/ubuntu jammy stable
@@ -94,6 +98,7 @@ yarn_repo:
     - user: root
     - group: root
     - mode: 755
+    - replace: false
   pkgrepo.managed:
     - humanname: yarn
     - name: deb [signed-by=/etc/apt/keyrings/yarn.gpg arch=amd64] https://dl.yarnpkg.com/debian/ stable main
@@ -108,6 +113,7 @@ s4a_repo:
     - user: root
     - group: root
     - mode: 755
+    - replace: false
   pkgrepo.managed:
     - humanname: repo-s4a
     - name: deb [signed-by=/etc/apt/keyrings/s4a.gpg trusted=yes arch=amd64] {{ salt['pillar.get']('detector:repo') }} jammy universe
@@ -122,6 +128,7 @@ elastic7x_repo:
     - user: root
     - group: root
     - mode: 755
+    - replace: false
   pkgrepo.managed:
     - humanname: Elasticsearch 7.x Repo
     - name: deb [signed-by=/etc/apt/keyrings/elasticsearch.gpg arch=amd64] https://artifacts.elastic.co/packages/7.x/apt stable main
@@ -136,6 +143,7 @@ evebox_repo:
     - user: root
     - group: root
     - mode: 755
+    - replace: false
   pkgrepo.managed:
     - humanname: EveBox Debian Repository
     - name: deb [signed-by=/etc/apt/keyrings/evebox.gpg arch=amd64] http://files.evebox.org/evebox/debian stable main
