@@ -48,6 +48,8 @@ suricata:
     - refresh: True
     - require:
         - suricata_repo
+
+suricata_package_hold:
   cmd.run:
     - name: apt-mark hold suricata
 
