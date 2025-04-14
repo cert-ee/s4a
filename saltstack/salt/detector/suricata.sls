@@ -41,21 +41,15 @@ detector_suricata_yaml:
       - user: suricata_user
       - pkg: suricata
 
-suricata_unhold:
-  pkg.unheld:
-    - pkgs:
-      - suricata
-
 suricata:
+  cmd.run:
+    - name: apt-mark unhold suricata
   pkg.latest:
+    - hold: true
+    - update_holds: true
     - refresh: True
     - require:
         - suricata_repo
-
-suricata_hold:
-  pkg.held:
-    - pkgs:
-      - suricata
 
 detector_suricata_default:
   file.managed:
