@@ -75,14 +75,37 @@ invalidSignaturesCount=$(wc -l <<< $invalidSignatures)
 
 
 printRuleStatus() {
+
+if [ "$1" == "init" ]
+then
+printf '{"rules_count":0,"rules_count_custom":0,"rules_count_enabled":0,"invalid_signatures_count":0,"invalid_signatures":[]}'
+else
 customRuleCount=$(sed '/^$/d' <<< "${customSids[@]}" | grep -vf $tmpDisabledSids | wc -l)
 allRulesCount=$(grep -oE sid:[0-9]+ $tmpRulesStage1 -c)
 rulesDisabledCount=$(cat $tmpDisabledSids|wc -l)
 rulesEnabledCount=$(grep -oE sid:[0-9]+ $suricataRules -c)
 printf '{"rules_count":'$allRulesCount',"rules_count_custom":'$customRuleCount',"rules_count_enabled":'$rulesEnabledCount',"invalid_signatures_count":'$invalidSignaturesCount',"invalid_signatures":['$(xargs <<< $invalidSignatures|sed -e 's/ /,/g')']}'
+fi
 }
 
 ####### MAIN #########
+
+if [ ! -f "$ruleStatus" ] || [ "$1" == "init" ]
+then
+echo "Initializing $ruleStatus"
+
+if [ ! -d $ruleFeedsPath/rules ]
+then
+mkdir -p $ruleFeedsPath/rules
+fi
+
+printRuleStatus init > $ruleFeedsPath/rules_status.json
+chown s4a: -R $ruleFeedsPath/
+exit 0
+fi
+
+if [ $(find /srv/s4a-detector/suricata/rules/ -name "*.tar.gz" -type f | wc -l) -gt 0 ]
+then
 customSids=()
 centralRulesets="$(getCentralRulesets)"
 
@@ -109,5 +132,6 @@ printRuleStatus > $ruleFeedsPath/rules_status.json
 
 echo "done"
 
-
 cleanup
+
+fi
