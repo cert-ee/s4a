@@ -45,11 +45,11 @@ suricata:
   cmd.run:
     - name: apt-mark unhold suricata
   pkg.latest:
-    - hold: true
-    - update_holds: true
     - refresh: True
     - require:
         - suricata_repo
+  cmd.run:
+    - name: apt-mark hold suricata
 
 detector_suricata_default:
   file.managed:
