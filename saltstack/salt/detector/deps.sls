@@ -12,6 +12,11 @@
 mongodb-org_repo:
   cmd.run:
     - name: curl -fsSL https://www.mongodb.org/static/pgp/server-5.0.asc | gpg --dearmor > /etc/apt/keyrings/mongodb-5.gpg
+  file.managed:
+    - name: /etc/apt/keyrings/mongodb-5.gpg
+    - user: root
+    - group: root
+    - mode: 755
   pkgrepo.managed:
     - humanname: mongodb-org
     - name: deb [signed-by=/etc/apt/keyrings/mongodb-5.gpg arch=amd64] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse
@@ -21,6 +26,11 @@ mongodb-org_repo:
 mongodb-org_repo:
   cmd.run:
     - name: curl -fsSL https://www.mongodb.org/static/pgp/server-6.0.asc | gpg --dearmor > /etc/apt/keyrings/mongodb-6.gpg
+  file.managed:
+    - name: /etc/apt/keyrings/mongodb-6.gpg
+    - user: root
+    - group: root
+    - mode: 755
   pkgrepo.managed:
     - humanname: mongodb-org
     - name: deb [signed-by=/etc/apt/keyrings/mongodb-6.gpg arch=amd64] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse
@@ -30,6 +40,11 @@ mongodb-org_repo:
 mongodb-org_repo:
   cmd.run:
     - name: curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | gpg --dearmor > /etc/apt/keyrings/mongodb-7.gpg
+  file.managed:
+    - name: /etc/apt/keyrings/mongodb-7.gpg
+    - user: root
+    - group: root
+    - mode: 755
   pkgrepo.managed:
     - humanname: mongodb-org
     - name: deb [signed-by=/etc/apt/keyrings/mongodb-7.gpg arch=amd64] http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse
@@ -60,6 +75,11 @@ mongodb-org-upgrade-preps:
 influxdata_repo:
   cmd.run:
     - name: curl -fsSL https://repos.influxdata.com/influxdata-archive_compat.key | gpg --dearmor > /etc/apt/keyrings/influxdata.gpg
+  file.managed:
+    - name: /etc/apt/keyrings/influxdata.gpg
+    - user: root
+    - group: root
+    - mode: 755
   pkgrepo.managed:
     - humanname: influxdata
     - name: deb [signed-by=/etc/apt/keyrings/influxdata.gpg arch=amd64] https://repos.influxdata.com/ubuntu jammy stable
@@ -69,6 +89,11 @@ influxdata_repo:
 yarn_repo:
   cmd.run:
     - name: curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor > /etc/apt/keyrings/yarn.gpg
+  file.managed:
+    - name: /etc/apt/keyrings/yarn.gpg
+    - user: root
+    - group: root
+    - mode: 755
   pkgrepo.managed:
     - humanname: yarn
     - name: deb [signed-by=/etc/apt/keyrings/yarn.gpg arch=amd64] https://dl.yarnpkg.com/debian/ stable main
@@ -78,6 +103,11 @@ yarn_repo:
 s4a_repo:
   cmd.run:
     - name: curl -fsSL {{ salt['pillar.get']('detector:repo') }}/GPG.pub | gpg --dearmor > /etc/apt/keyrings/s4a.gpg
+  file.managed:
+    - name: /etc/apt/keyrings/s4a.gpg
+    - user: root
+    - group: root
+    - mode: 755
   pkgrepo.managed:
     - humanname: repo-s4a
     - name: deb [signed-by=/etc/apt/keyrings/s4a.gpg trusted=yes arch=amd64] {{ salt['pillar.get']('detector:repo') }} jammy universe
@@ -87,6 +117,11 @@ s4a_repo:
 elastic7x_repo:
   cmd.run:
     - name: curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor > /etc/apt/keyrings/elasticsearch.gpg
+  file.managed:
+    - name: /etc/apt/keyrings/elasticsearch.gpg
+    - user: root
+    - group: root
+    - mode: 755
   pkgrepo.managed:
     - humanname: Elasticsearch 7.x Repo
     - name: deb [signed-by=/etc/apt/keyrings/elasticsearch.gpg arch=amd64] https://artifacts.elastic.co/packages/7.x/apt stable main
@@ -96,6 +131,11 @@ elastic7x_repo:
 evebox_repo:
   cmd.run:
     - name: curl -fsSL https://evebox.org/files/GPG-KEY-evebox | gpg --dearmor > /etc/apt/keyrings/evebox.gpg
+  file.managed:
+    - name: /etc/apt/keyrings/evebox.gpg
+    - user: root
+    - group: root
+    - mode: 755
   pkgrepo.managed:
     - humanname: EveBox Debian Repository
     - name: deb [signed-by=/etc/apt/keyrings/evebox.gpg arch=amd64] http://files.evebox.org/evebox/debian stable main
