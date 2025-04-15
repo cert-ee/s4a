@@ -152,7 +152,7 @@ evebox_repo:
 
 suricata_repo:
   cmd.run:
-    - name: add-apt-repository -n -d ppa:oisf/suricata-6.0 --yes
+    - name: add-apt-repository -n -d ppa:oisf/suricata-6.0 --yes > /dev/null 2>&1
 
 dependency_pkgs:
   pkg.installed:
