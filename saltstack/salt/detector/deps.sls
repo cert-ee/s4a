@@ -16,7 +16,7 @@ mongodb-org_repo:
     - name: /etc/apt/keyrings/mongodb-5.gpg
     - user: root
     - group: root
-    - mode: 755
+    - mode: 644
     - replace: false
   pkgrepo.managed:
     - humanname: mongodb-org
@@ -31,7 +31,7 @@ mongodb-org_repo:
     - name: /etc/apt/keyrings/mongodb-6.gpg
     - user: root
     - group: root
-    - mode: 755
+    - mode: 644
     - replace: false
   pkgrepo.managed:
     - humanname: mongodb-org
@@ -46,7 +46,7 @@ mongodb-org_repo:
     - name: /etc/apt/keyrings/mongodb-7.gpg
     - user: root
     - group: root
-    - mode: 755
+    - mode: 644
     - replace: false
   pkgrepo.managed:
     - humanname: mongodb-org
@@ -82,7 +82,7 @@ influxdata_repo:
     - name: /etc/apt/keyrings/influxdata.gpg
     - user: root
     - group: root
-    - mode: 755
+    - mode: 644
     - replace: false
   pkgrepo.managed:
     - humanname: influxdata
@@ -97,7 +97,7 @@ yarn_repo:
     - name: /etc/apt/keyrings/yarn.gpg
     - user: root
     - group: root
-    - mode: 755
+    - mode: 644
     - replace: false
   pkgrepo.managed:
     - humanname: yarn
@@ -112,7 +112,7 @@ s4a_repo:
     - name: /etc/apt/keyrings/s4a.gpg
     - user: root
     - group: root
-    - mode: 755
+    - mode: 644
     - replace: false
   pkgrepo.managed:
     - humanname: repo-s4a
@@ -127,7 +127,7 @@ elastic7x_repo:
     - name: /etc/apt/keyrings/elasticsearch.gpg
     - user: root
     - group: root
-    - mode: 755
+    - mode: 744
     - replace: false
   pkgrepo.managed:
     - humanname: Elasticsearch 7.x Repo
@@ -142,7 +142,7 @@ evebox_repo:
     - name: /etc/apt/keyrings/evebox.gpg
     - user: root
     - group: root
-    - mode: 755
+    - mode: 744
     - replace: false
   pkgrepo.managed:
     - humanname: EveBox Debian Repository
@@ -151,8 +151,17 @@ evebox_repo:
     - clean_file: true
 
 suricata_repo:
-  cmd.run:
-    - name: add-apt-repository -n -d ppa:oisf/suricata-6.0 --yes > /dev/null 2>&1
+  file.managed:
+    - name: /etc/apt/keyrings/oisf-ubuntu-suricata-6_0.gpg
+    - source: salt://{{ slspath }}/files/suricata/oisf-ubuntu-suricata-6_0.gpg
+    - user: root
+    - group: root
+    - mode: 644
+  pkgrepo.managed:
+    - humanname: Suricata Repository
+    - name: deb [signed-by=/etc/apt/keyrings/oisf-ubuntu-suricata-6_0.gpg arch=amd64] https://ppa.launchpadcontent.net/oisf/suricata-6.0/ubuntu/ jammy main
+    - file: /etc/apt/sources.list.d/suricata.list
+    - clean_file: true
 
 dependency_pkgs:
   pkg.installed:
