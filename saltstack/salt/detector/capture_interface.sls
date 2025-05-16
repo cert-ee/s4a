@@ -3,7 +3,7 @@
 {% set connect_test = salt.network.connect(api.host, port=api.port) %}
 {% set current_capture_interfaces_cmd = salt['cmd.run'](cmd='grep -l S4a.Traffic.capture.interface /etc/netplan/*.yaml || true', python_shell=True) %}
 {% set current_capture_interfaces = current_capture_interfaces_cmd.splitlines() %}
-{% set internet_over_vpn_enabled = salt['cmd.run'](cmd='ip route|grep default|grep -c tun0', python_shell=True) %}
+{% set internet_over_vpn_enabled = salt['cmd.run'](cmd='ip route|grep default|grep -c tun0 2> /dev/null', python_shell=True) %}
 
 {% if connect_test.result == True %}
 {%	set interfaces = salt.http.query('http://'+api.host+':'+api.port|string+'/api/network_interfaces/listForSalt', decode=true )['dict']['interfaces'] %}
