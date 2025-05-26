@@ -39,7 +39,7 @@ done
 average=`echo $sizes | jq -s 'add/length'`
 
 # Convert average to GB
-arkimeAverageSession=$(echo $average | awk '{ byte =$1 /1024/1024/1024; print byte}')
+arkimeAverageSession=$(echo $average | awk -v OFMT='%f' '{ byte =$1 /1024/1024/1024; print byte}')
 
 # Make sure that arkimeAverageSession is not zero
 #if [ $arkimeAverageSession -eq 0 ] ; then
@@ -98,7 +98,7 @@ done
 sum=`echo $sizes | jq -s 'add'`
 
 # Convert sum bytes to GB
-suricataSize=$(echo $sum | awk '{ byte =$1 /1024/1024/1024; print byte}')
+suricataSize=$(echo $sum | awk -v OFMT='%f' '{ byte =$1 /1024/1024/1024; print byte}')
 }
 
 ######################## End of Functions ##########################
