@@ -64,7 +64,7 @@ vars:
     SSH_PORTS: 22
     DNP3_PORTS: 20000
     MODBUS_PORTS: 502
-
+    FTP_PORTS: 21
 
 ##
 ## Step 2: select the rules to enable or disable
