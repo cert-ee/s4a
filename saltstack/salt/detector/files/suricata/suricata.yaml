@@ -1256,7 +1256,7 @@ spm-algo: auto
 
 # Suricata is multi-threaded. Here the threading can be influenced.
 threading:
-{% if cpu_count is defined and cpu_count|int >= 50 %}
+{% if (cpu_count is defined and cpu_count|int >= 50) and (mem_avail is defined and mem_avail|int > 200) %}
   set-cpu-affinity: yes
 {% else %}
   set-cpu-affinity: no
@@ -1272,7 +1272,7 @@ threading:
   # receive-cpu-set is used for capture threads
   # verdict-cpu-set is used for IPS verdict threads
   #
-{% if cpu_count is defined and cpu_count|int < 50 %}
+{% if (cpu_count is defined and cpu_count|int < 50) or (mem_avail is defined and mem_avail|int < 200) %}
   cpu-affinity:
     - management-cpu-set:
         cpu: [ 0 ]  # include only these cpus in affinity settings
@@ -1289,7 +1289,7 @@ threading:
           medium: [ "1-2" ]
           high: [ 3 ]
           default: "medium"
-{% elif cpu_count is defined and cpu_count|int > 50 and cpu_count|int < 100 %}
+{% elif (cpu_count is defined and cpu_count|int > 50 and cpu_count|int < 100) and (mem_avail is defined and mem_avail|int > 200) %}
   cpu-affinity:
     - management-cpu-set:
         cpu: [ "2-6" ]  # include only these cpus in affinity settings
@@ -1301,7 +1301,7 @@ threading:
         prio:
           high: [ "2-6","11-25" ]
           default: "high"
-{% elif cpu_count is defined and cpu_count|int > 100 %}
+{% elif (cpu_count is defined and cpu_count|int > 100) and (mem_avail is defined and mem_avail|int > 200) %}
   cpu-affinity:
     - management-cpu-set:
         cpu: [ "4-12" ]  # include only these cpus in affinity settings
