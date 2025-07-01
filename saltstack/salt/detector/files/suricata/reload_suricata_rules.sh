@@ -70,7 +70,7 @@ cleanup() {
 checkErrors() {
 lastReloadTimestamp="$(grep "Loading rule file" $suricataLog | sed 's/ - <Config>.*.$//' | tail -n1)"
 invalidSignatures="$(grep "$lastReloadTimestamp" -A 1000 $suricataLog | grep ERR_INVALID_SIGNATURE | grep -oE 'sid:[0-9]+' |cut -d: -f2| sort -u)"
-invalidSignaturesCount=$(wc -l <<< $invalidSignatures)
+invalidSignaturesCount=$(grep -E [0-9]+ -c <<< $invalidSignatures)
 }
 
 
