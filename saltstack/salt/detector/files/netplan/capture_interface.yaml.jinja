@@ -1,0 +1,9 @@
+# S4a Traffic capture interface
+network:
+    renderer: networkd
+    ethernets:
+      {{ int }}:
+        dhcp4: false
+        dhcp6: false
+        mtu: 9214
+        optional: true

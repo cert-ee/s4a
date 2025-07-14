@@ -10,9 +10,8 @@ purge_old_netdata_pkg:
 netdata_pkg:
   cmd.run:
     - name: apt-mark unhold netdata-core
-  pkg.installed:
+  pkg.latest:
     - name: netdata
-    - version: 1.19.0-3ubuntu1
     - hold: true
     - update_holds: true
     - refresh: true
@@ -20,9 +19,8 @@ netdata_pkg:
 netdata-core_pkg:
   cmd.run:
     - name: apt-mark unhold netdata-core
-  pkg.installed:
+  pkg.latest:
     - name: netdata-core
-    - version: 1.19.0-3ubuntu1
     - hold: true
     - update_holds: true
     - refresh: true

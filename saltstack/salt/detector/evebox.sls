@@ -1,10 +1,5 @@
-evebox_repo:
-  pkgrepo.managed:
-    - humanname: EveBox Debian Repository
-    - name: deb [arch=amd64] http://files.evebox.org/evebox/debian stable main
-    - key_url: https://evebox.org/files/GPG-KEY-evebox
-    - file: /etc/apt/sources.list.d/evebox.list
-    - clean_file: true
+include:
+  - detector.deps
 
 evebox:
   cmd.run:
@@ -15,7 +10,7 @@ evebox:
     - update_holds: true
     - refresh: true
     - require:
-      - pkgrepo: evebox_repo
+      - evebox_repo
 
 evebox_pkgs:
   pkg.latest:
@@ -28,7 +23,7 @@ evebox_pkgs:
 GeoLite2-City:
   file.managed:
     - name: /etc/evebox/GeoLite2-City.mmdb.gz
-    - source: https://repo.s4a.cert.ee/geoip/GeoLite2-City.mmdb.gz
+    - source: {{ salt['pillar.get']('detector:repo') }}/geoip/GeoLite2-City.mmdb.gz
     - skip_verify: true
   cmd.run:
     - name: gunzip -f /etc/evebox/GeoLite2-City.mmdb.gz
@@ -102,4 +97,4 @@ evebox-agent_component_enable:
   cmd.run:
     - name: |
         source /etc/default/s4a-detector
-        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "evebox"},{ $set: { installed:true } })'
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "evebox"},{ $set: { installed:true } })'

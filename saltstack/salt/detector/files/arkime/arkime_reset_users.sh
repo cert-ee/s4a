@@ -17,7 +17,7 @@ mongo_result=`mongosh --quiet --authenticationDatabase $MONGODB_DATABASE -u $MON
 if [ $? == 0 ] ; then
 	for user in `awk {'print $1'} <<< "$mongo_result" | sort -u`
 	do
-		/usr/local/bin/moloch_reset_profile.sh $user `grep "^$user " <<< "$mongo_result" | awk {'print $2'}`
+		/usr/local/bin/arkime_reset_profile.sh $user `grep "^$user " <<< "$mongo_result" | awk {'print $2'}`
 	done
 else
 	echo "MongoDB error"

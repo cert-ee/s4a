@@ -74,6 +74,8 @@ server {
 	auth_basic "Detector";
 	auth_basic_user_file /etc/nginx/.htpasswd;
 
+	rewrite ^/moloch/(.*)$ /arkime/$1 permanent;
+
 	location /netdata {
 		rewrite /[^\/]+(.*) $1  break;
 		proxy_pass http://127.0.0.1:19999;
@@ -103,6 +105,17 @@ server {
 {% endif %}
 		proxy_set_header moloch_user $remote_user;
 		proxy_hide_header x-frame-options;
+        }
+
+        location /arkime {
+                rewrite /[^\/]+(.*) $1  break;
+{% if multiviewer_enabled is defined and multiviewer_enabled == "True" or multiviewer_enabled == "true" %}
+                proxy_pass https://127.0.0.1:8005;
+{% else %}
+                proxy_pass http://127.0.0.1:8005;
+{% endif %}
+                proxy_set_header arkime_user $remote_user;
+                proxy_hide_header x-frame-options;
         }
 
 	location /api {

@@ -8,16 +8,31 @@ mongodb-org:
     - refresh: true
     - pkgs:
         - mongodb-org: latest
+        - mongodb-org-database: latest
+        - mongodb-mongosh: latest
         - mongodb-org-mongos: latest
         - mongodb-org-server: latest
         - mongodb-org-shell: latest
         - mongodb-org-tools: latest
     - require:
-        - pkgrepo: mongodb-org_repo
+        - mongodb-org_repo
+
+mongod_conf:
+  file.managed:
+    - name: /etc/mongod.conf
+    - source: salt://{{ slspath }}/files/mongodb/mongod.conf
+    - user: root
+    - group: root
+    - mode: 644
+
+mongod_service:
   service.running:
     - name: mongod
-    - full_restart: true
+    - full_restart: True
     - enable: true
+    - require:
+      - mongod_conf
+      - mongodb-org
     - watch:
       - pkg: mongodb-org
 

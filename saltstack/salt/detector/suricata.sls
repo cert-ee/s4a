@@ -39,20 +39,19 @@ detector_suricata_yaml:
         int: {{ int }}
     - watch:
       - user: suricata_user
-      - pkg: suricata_pkg
+      - pkg: suricata
 
-suricata_repo:
-  pkgrepo.managed:
-    - ppa: oisf/suricata-6.0
-
-suricata_pkg:
+suricata:
+  cmd.run:
+    - name: apt-mark unhold suricata
   pkg.latest:
     - refresh: True
-    - pkgs:
-        - libhtp2
-        - suricata
     - require:
-        - pkgrepo: suricata_repo
+        - suricata_repo
+
+suricata_package_hold:
+  cmd.run:
+    - name: apt-mark hold suricata
 
 detector_suricata_default:
   file.managed:
@@ -95,7 +94,7 @@ detector_suricata_rules_perms:
       - group
       - mode
     - require:
-      - pkg: suricata_pkg
+      - pkg: suricata
 
 detector_suricata_logs_perms:
   file.directory:
@@ -109,7 +108,7 @@ detector_suricata_logs_perms:
       - group
       - mode
     - require:
-      - pkg: suricata_pkg
+      - pkg: suricata
 
 suricata_service_dead:
   service.dead:
@@ -119,3 +118,14 @@ suricata_sevice_enable:
   service.running:
     - name: suricata
     - enable: true
+
+suricata_component_enable:
+  cmd.run:
+    - name: |
+        source /etc/default/s4a-detector
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "suricata"},{ $set: { installed:true } })'
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "suricata"},{ $set: { enabled:true } })'
+
+suricata_init_rules_status:
+  cmd.run:
+    - name: /usr/local/bin/reload_suricata_rules.sh init

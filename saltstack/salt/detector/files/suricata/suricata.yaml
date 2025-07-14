@@ -3,8 +3,26 @@
 {% set bpf_filter = salt['cmd.run'](cmd='grep ^suricata= /etc/s4a-detector/bpf.conf | cut -d= -f2-', python_shell=True) %}
 {% endif %}
 {% set cpu_count = salt['cmd.run'](cmd='grep processor -c /proc/cpuinfo 2> /dev/null | cut -d= -f1', python_shell=True) %}
+{% set mem_avail = salt['cmd.run'](cmd='echo $(($(grep MemTotal /proc/meminfo |grep -oE [0-9]+)/1000000))', python_shell=True) %}
 {% set span_count = salt['cmd.run'](cmd='curl -s localhost:4000/api/network_interfaces/listForSalt | jq .interfaces[] | wc -l', python_shell=True) %}
+{% set interface_cluster_id = 99 %}
+
+{% if mem_avail is defined and mem_avail|int > 200 %}
+{% set stream_memcap = '12gb' %}
+{% set flow_memcap = '12gb' %}
+{% set interface_threads = '12' %}
+{% set defrag_memcap = '1gb' %}
+{% elif mem_avail is defined and mem_avail|int > 100 and mem_avail|int < 200 %}
+{% set stream_memcap = '4gb' %}
+{% set flow_memcap = '4gb' %}
+{% set defrag_memcap = '1gb' %}
+{% set interface_threads = '4' %}
+{% else %}
 {% set stream_memcap = salt['cmd.run'](cmd='echo $(( ' ~ span_count ~ ' * 128 ))mb', python_shell=True) %}
+{% set flow_memcap = stream_memcap %}
+{% set defrag_memcap = '32mb' %}
+{% set interface_threads = 'auto' %}
+{% endif %}
 
 %YAML 1.1
 ---
@@ -46,7 +64,7 @@ vars:
     SSH_PORTS: 22
     DNP3_PORTS: 20000
     MODBUS_PORTS: 502
-
+    FTP_PORTS: 21
 
 ##
 ## Step 2: select the rules to enable or disable
@@ -441,13 +459,24 @@ logging:
 # interfaces: {{ int }}
 
 af-packet:
-{% for val in int %}
-  - interface: {{ val }}
+{% for interface in int %}
+  - interface: {{ interface }}
+    threads: {{ interface_threads }}
+    cluster-id: {{ interface_cluster_id - loop.index0 }}
+    cluster-type: cluster_flow
+    defrag: no
+    use-mmap: yes
+    tpacket-v3: yes
+    ring-size: 50000
+    block-size: 1048576
+{% if bpf_conf_enabled is defined and bpf_conf_enabled == "suricata" %}
+    bpf-filter: {{ bpf_filter }}
+{% endif %}
 {% endfor %}
     # Number of receive threads. "auto" uses the number of cores
     #threads: auto
     # Default clusterid. AF_PACKET will load balance packets based on flow.
-    cluster-id: 99
+    #cluster-id: 99
     # Default AF_PACKET cluster type. AF_PACKET can load balance per flow or per hash.
     # This is only supported for Linux kernel > 3.1
     # possible value are:
@@ -462,10 +491,10 @@ af-packet:
     #  to the next. Requires at least Linux 3.10.
     # Recommended modes are cluster_flow on most boxes and cluster_cpu or cluster_qm on system
     # with capture card using RSS (require cpu affinity tuning and system irq tuning)
-    cluster-type: cluster_flow
+    #cluster-type: cluster_flow
     # In some fragmentation case, the hash can not be computed. If "defrag" is set
     # to yes, the kernel will do the needed defragmentation before sending the packets.
-    defrag: yes
+    #defrag: yes
     # After Linux kernel 3.10 it is possible to activate the rollover option: if a socket is
     # full then kernel will send the packet on the next socket with room available. This option
     # can minimize packet drop and increase the treated bandwidth on single intensive flow.
@@ -510,9 +539,6 @@ af-packet:
     #checksum-checks: kernel
     # BPF filter to apply to this interface. The pcap filter syntax apply here.
     #bpf-filter: port 80 or udp
-{% if bpf_conf_enabled is defined and bpf_conf_enabled == "suricata" %}
-    bpf-filter: {{ bpf_filter }}
-{% endif %}
     # You can use the following variables to activate AF_PACKET tap or IPS mode.
     # If copy-mode is set to ips or tap, the traffic coming to the current
     # interface will be copied to the copy-iface interface. If 'tap' is set, the
@@ -558,8 +584,8 @@ pcap:
     # via ioctl call and to full capture if not.
     #snaplen: 1518
   # Put default values here
-  - interface: default
-    #checksum-checks: auto
+  # - interface: default
+  #checksum-checks: auto
 
 # Settings for reading pcap files
 pcap-file:
@@ -931,12 +957,12 @@ host-os-policy:
 # Defrag settings:
 
 defrag:
-  memcap: 32mb
+  memcap: {{ defrag_memcap }}
   hash-size: 65536
   trackers: 65535 # number of defragmented flows to follow
   max-frags: 65535 # number of fragments to keep (higher than trackers)
   prealloc: yes
-  timeout: 60
+  timeout: 30
 
 # Enable defrag per host settings
 #  host-config:
@@ -973,7 +999,7 @@ defrag:
 # in bytes.
 
 flow:
-  memcap: 128mb
+  memcap: {{ flow_memcap }}
   hash-size: 65536
   prealloc: 10000
   emergency-recovery: 30
@@ -985,7 +1011,7 @@ flow:
 # setups where both sides of a flow are not tagged with the same vlan
 # tag, we can ignore the vlan id's in the flow hashing.
 vlan:
-  use-for-tracking: true
+  use-for-tracking: false
 
 # Specific timeouts for flows. Here you can specify the timeouts that the
 # active flows will wait to transit from the current state to another, on each
@@ -1094,7 +1120,7 @@ stream:
   checksum-validation: yes      # reject wrong csums
   inline: auto                  # auto will use inline mode in IPS mode, yes or no set it statically
   reassembly:
-    memcap: 256mb
+    memcap: {{ stream_memcap }}
     depth: 1mb                  # reassemble 1mb into a stream
     toserver-chunk-size: 2560
     toclient-chunk-size: 2560
@@ -1230,7 +1256,7 @@ spm-algo: auto
 
 # Suricata is multi-threaded. Here the threading can be influenced.
 threading:
-{% if cpu_count is defined and cpu_count|int >= 50 %}
+{% if (cpu_count is defined and cpu_count|int >= 50) and (mem_avail is defined and mem_avail|int > 200) %}
   set-cpu-affinity: yes
 {% else %}
   set-cpu-affinity: no
@@ -1246,7 +1272,7 @@ threading:
   # receive-cpu-set is used for capture threads
   # verdict-cpu-set is used for IPS verdict threads
   #
-{% if cpu_count is defined and cpu_count|int < 50 %}
+{% if (cpu_count is defined and cpu_count|int < 50) or (mem_avail is defined and mem_avail|int < 200) %}
   cpu-affinity:
     - management-cpu-set:
         cpu: [ 0 ]  # include only these cpus in affinity settings
@@ -1263,39 +1289,29 @@ threading:
           medium: [ "1-2" ]
           high: [ 3 ]
           default: "medium"
-{% elif cpu_count is defined and cpu_count|int > 50 and cpu_count|int < 90 %}
+{% elif (cpu_count is defined and cpu_count|int > 50 and cpu_count|int < 100) and (mem_avail is defined and mem_avail|int > 200) %}
   cpu-affinity:
     - management-cpu-set:
-        cpu: [ "1-5" ]  # include only these cpus in affinity settings
+        cpu: [ "2-6" ]  # include only these cpus in affinity settings
     - receive-cpu-set:
-        cpu: [ "6-10" ]  # include only these cpus in affinity settings
+        cpu: [ "0" ]
     - worker-cpu-set:
         cpu: [ "11-25" ]
         mode: "exclusive"
-        # Use explicitely 3 threads and don't compute number by using
-        # detect-thread-ratio variable:
-        # threads: 3
         prio:
-          low: [ 0 ]
-          medium: [ "1-2" ]
-          high: [ "11-25" ]
+          high: [ "2-6","11-25" ]
           default: "high"
-{% elif cpu_count is defined and cpu_count|int > 90 %}
+{% elif (cpu_count is defined and cpu_count|int > 100) and (mem_avail is defined and mem_avail|int > 200) %}
   cpu-affinity:
     - management-cpu-set:
-        cpu: [ "1-10" ]  # include only these cpus in affinity settings
+        cpu: [ "4-12" ]  # include only these cpus in affinity settings
     - receive-cpu-set:
-        cpu: [ "11-20" ]  # include only these cpus in affinity settings
+        cpu: [ "0" ]  # include only these cpus in affinity settings
     - worker-cpu-set:
-        cpu: [ "21-50" ]
+        cpu: [ "21-70" ]
         mode: "exclusive"
-        # Use explicitely 3 threads and don't compute number by using
-        # detect-thread-ratio variable:
-        # threads: 3
         prio:
-          low: [ 0 ]
-          medium: [ "1-2" ]
-          high: [ "21-50" ]
+          high: [ "4-12","13-70" ]
           default: "high"
 {% endif %}
 

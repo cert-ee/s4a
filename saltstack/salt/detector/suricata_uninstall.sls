@@ -1,3 +1,8 @@
+suricata_unhold:
+  pkg.unheld:
+    - pkgs:
+      - suricata
+
 suricata_pkg:
   service.dead:
     - name: suricata
@@ -5,6 +10,10 @@ suricata_pkg:
   pkg.purged:
     - names:
       - suricata
-      - pfring-dkms
-      - pfring-tcpdump
-      - pfring-lib
+
+suricata_component_disable:
+  cmd.run:
+    - name: |
+        source /etc/default/s4a-detector
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "suricata"},{ $set: { installed:false } })'
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "suricata"},{ $set: { enabled:false } })'

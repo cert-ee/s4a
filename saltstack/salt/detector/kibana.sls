@@ -8,7 +8,7 @@ detector_kibana_pkg:
     - name: apt-mark unhold kibana
   pkg.installed:
     - name: kibana
-    - version: 7.17.22
+    - version: 7.17.28
     - hold: true
     - update_holds: true
     - refresh: true
@@ -29,6 +29,10 @@ detector_kibana_logrotate:
     - mode: 644
 
 {% if kibana_index_status == "0" %}
+npm:
+  pkg.installed:
+    - install_recommends: False
+
 elasticdump:
   npm.installed:
     - name: elasticdump

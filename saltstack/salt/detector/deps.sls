@@ -1,74 +1,167 @@
 # Assume that if no version is available, mongo repo is unconfigured and we are in process of installing new detector
-{% set mongodb_version_installed = salt['pkg.version']('mongodb-org') %}
-{% set mongodb_upgrade_available = salt['pkg.upgrade_available']('mongodb-org') %}
+{% set mongodb_version_installed = salt['pkg.version']('mongodb-org-server') %}
+{% set mongodb_upgrade_available = salt['pkg.upgrade_available']('mongodb-org-server') %}
 {% if mongodb_version_installed is defined %}
-{% 	set mongodb_version = mongodb_version_installed.split('.') %}
-{% 	set mongodb_version_major = mongodb_version[0] %}
-{% 	set mongodb_version_minor = mongodb_version[1] %}
-{% 	set mongodb_version_patch = mongodb_version[2] %}
+{%	set mongodb_version = mongodb_version_installed.split('.') %}
+{%	set mongodb_version_major = mongodb_version[0] %}
+{%	set mongodb_version_minor = mongodb_version[1] %}
+{%	set mongodb_version_patch = mongodb_version[2] %}
 {% endif %}
-{% set cpu_family = salt['cmd.run'](cmd='cat /sys/devices/cpu/caps/pmu_name', python_shell=True) %}
 
-{% if (mongodb_version_major is defined and mongodb_version_major|int == 4 and mongodb_version_minor|int == 4 and mongodb_upgrade_available == True) or cpu_family == "westmere" %}
+{% if (mongodb_version_major is defined and mongodb_version_major|int == 5 and mongodb_upgrade_available == True) %}
 mongodb-org_repo:
+  cmd.run:
+    - name: curl -fsSL https://www.mongodb.org/static/pgp/server-5.0.asc | gpg --dearmor > /etc/apt/keyrings/mongodb-5.gpg
+  file.managed:
+    - name: /etc/apt/keyrings/mongodb-5.gpg
+    - user: root
+    - group: root
+    - mode: 644
+    - replace: false
   pkgrepo.managed:
     - humanname: mongodb-org
-    - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4 multiverse
-    - key_url: https://www.mongodb.org/static/pgp/server-4.4.asc
-    - file: /etc/apt/sources.list.d/mongodb-org-4.4.list
-{% elif mongodb_version_major is not defined or not mongodb_version_major or (mongodb_version_major is defined and (mongodb_version_major|int == 4 and mongodb_version_minor|int == 4) or (mongodb_version_major|int == 5 and mongodb_version_minor|int == 0)) %}
-mongodb-org_repo:
-  pkgrepo.managed:
-    - humanname: mongodb-org
-    - name: deb [ arch=amd64,arm64 ] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse
-    - key_url: https://www.mongodb.org/static/pgp/server-5.0.asc
+    - name: deb [signed-by=/etc/apt/keyrings/mongodb-5.gpg arch=amd64] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/5.0 multiverse
     - file: /etc/apt/sources.list.d/mongodb-org-5.0.list
+    - clean_file: True
+{% elif mongodb_version_major is defined and ((mongodb_version_major|int == 6 and mongodb_upgrade_available == True) or  mongodb_version_major|int == 5) %}
+mongodb-org_repo:
+  cmd.run:
+    - name: curl -fsSL https://www.mongodb.org/static/pgp/server-6.0.asc | gpg --dearmor > /etc/apt/keyrings/mongodb-6.gpg
+  file.managed:
+    - name: /etc/apt/keyrings/mongodb-6.gpg
+    - user: root
+    - group: root
+    - mode: 644
+    - replace: false
+  pkgrepo.managed:
+    - humanname: mongodb-org
+    - name: deb [signed-by=/etc/apt/keyrings/mongodb-6.gpg arch=amd64] http://repo.mongodb.org/apt/ubuntu focal/mongodb-org/6.0 multiverse
+    - file: /etc/apt/sources.list.d/mongodb-org-6.0.list
+    - clean_file: True
+{% elif (mongodb_version_major is defined and mongodb_version_major|int >= 6) or not mongodb_version_installed %}
+mongodb-org_repo:
+  cmd.run:
+    - name: curl -fsSL https://www.mongodb.org/static/pgp/server-7.0.asc | gpg --dearmor > /etc/apt/keyrings/mongodb-7.gpg
+  file.managed:
+    - name: /etc/apt/keyrings/mongodb-7.gpg
+    - user: root
+    - group: root
+    - mode: 644
+    - replace: false
+  pkgrepo.managed:
+    - humanname: mongodb-org
+    - name: deb [signed-by=/etc/apt/keyrings/mongodb-7.gpg arch=amd64] http://repo.mongodb.org/apt/ubuntu jammy/mongodb-org/7.0 multiverse
+    - file: /etc/apt/sources.list.d/mongodb-org-7.0.list
+    - clean_file: True
+
+mongodb-org-remove-old-repos:
+  file.absent:
+    - names: 
+      - /etc/apt/sources.list.d/mongodb-org-5.0.list
+      - /etc/apt/sources.list.d/mongodb-org-6.0.list
 {% endif %}
 
-{% if mongodb_version_major is defined and mongodb_version_major|int == 4 %}
+{% if mongodb_version_major is defined and mongodb_version_major|int == 6 %}
 mongodb-org-upgrade-preps:
   cmd.run:
     - name: |
         source /root/.mongodb.passwd
-        mongo -u $MONGODB_USER -p $MONGODB_PASS --authenticationDatabase=admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"4.4\" } )"
+        mongosh -u $MONGODB_USER -p $MONGODB_PASS --authenticationDatabase=admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"6.0\" } )"
+{% elif mongodb_version_major is defined and mongodb_version_major|int == 5 %}
+mongodb-org-upgrade-preps:
+  cmd.run:
+    - name: |
+        source /root/.mongodb.passwd
+        mongosh -u $MONGODB_USER -p $MONGODB_PASS --authenticationDatabase=admin --eval "db.adminCommand( { setFeatureCompatibilityVersion: \"5.0\" } )"
 {% endif %}
 
-nodejs_repo:
-  pkgrepo.managed:
-    - humanname: nodejs
-    - name: deb https://deb.nodesource.com/node_10.x focal main
-    - key_url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
-    - file: /etc/apt/sources.list.d/nodesource.list
-
 influxdata_repo:
+  cmd.run:
+    - name: curl -fsSL https://repos.influxdata.com/influxdata-archive_compat.key | gpg --dearmor > /etc/apt/keyrings/influxdata.gpg
+  file.managed:
+    - name: /etc/apt/keyrings/influxdata.gpg
+    - user: root
+    - group: root
+    - mode: 644
+    - replace: false
   pkgrepo.managed:
     - humanname: influxdata
-    - name: deb https://repos.influxdata.com/ubuntu focal stable
-    - keyserver: ha.pool.sks-keyservers.net
-    - key_url: https://repos.influxdata.com/influxdata-archive_compat.key
+    - name: deb [signed-by=/etc/apt/keyrings/influxdata.gpg arch=amd64] https://repos.influxdata.com/ubuntu jammy stable
     - file: /etc/apt/sources.list.d/influxdata.list
+    - clean_file: True
 
 yarn_repo:
+  cmd.run:
+    - name: curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor > /etc/apt/keyrings/yarn.gpg
+  file.managed:
+    - name: /etc/apt/keyrings/yarn.gpg
+    - user: root
+    - group: root
+    - mode: 644
+    - replace: false
   pkgrepo.managed:
     - humanname: yarn
-    - name: deb https://dl.yarnpkg.com/debian/ stable main
-    - key_url: https://dl.yarnpkg.com/debian/pubkey.gpg
+    - name: deb [signed-by=/etc/apt/keyrings/yarn.gpg arch=amd64] https://dl.yarnpkg.com/debian/ stable main
     - file: /etc/apt/sources.list.d/yarn.list
+    - clean_file: True
 
 s4a_repo:
+  cmd.run:
+    - name: curl -fsSL {{ salt['pillar.get']('detector:repo') }}/GPG.pub | gpg --dearmor > /etc/apt/keyrings/s4a.gpg
+  file.managed:
+    - name: /etc/apt/keyrings/s4a.gpg
+    - user: root
+    - group: root
+    - mode: 644
+    - replace: false
   pkgrepo.managed:
     - humanname: repo-s4a
-    - name: deb [trusted=yes arch=amd64] {{ salt['pillar.get']('detector:repo') }} focal universe
-    - key_url: {{ salt['pillar.get']('detector:repo') }}/GPG.pub
+    - name: deb [signed-by=/etc/apt/keyrings/s4a.gpg trusted=yes arch=amd64] {{ salt['pillar.get']('detector:repo') }} jammy universe
     - file: /etc/apt/sources.list.d/repo-s4a.list
     - clean_file: True
 
 elastic7x_repo:
+  cmd.run:
+    - name: curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor > /etc/apt/keyrings/elasticsearch.gpg
+  file.managed:
+    - name: /etc/apt/keyrings/elasticsearch.gpg
+    - user: root
+    - group: root
+    - mode: 744
+    - replace: false
   pkgrepo.managed:
     - humanname: Elasticsearch 7.x Repo
-    - name: deb https://artifacts.elastic.co/packages/7.x/apt stable main
-    - key_url: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+    - name: deb [signed-by=/etc/apt/keyrings/elasticsearch.gpg arch=amd64] https://artifacts.elastic.co/packages/7.x/apt stable main
     - file: /etc/apt/sources.list.d/elastic-7.x.list
+    - clean_file: True
+
+evebox_repo:
+  cmd.run:
+    - name: curl -fsSL https://evebox.org/files/GPG-KEY-evebox | gpg --dearmor > /etc/apt/keyrings/evebox.gpg
+  file.managed:
+    - name: /etc/apt/keyrings/evebox.gpg
+    - user: root
+    - group: root
+    - mode: 744
+    - replace: false
+  pkgrepo.managed:
+    - humanname: EveBox Debian Repository
+    - name: deb [signed-by=/etc/apt/keyrings/evebox.gpg arch=amd64] http://files.evebox.org/evebox/debian stable main
+    - file: /etc/apt/sources.list.d/evebox.list
+    - clean_file: true
+
+suricata_repo:
+  file.managed:
+    - name: /etc/apt/keyrings/oisf-ubuntu-suricata-6_0.gpg
+    - source: salt://{{ slspath }}/files/suricata/oisf-ubuntu-suricata-6_0.gpg
+    - user: root
+    - group: root
+    - mode: 644
+  pkgrepo.managed:
+    - humanname: Suricata Repository
+    - name: deb [signed-by=/etc/apt/keyrings/oisf-ubuntu-suricata-6_0.gpg arch=amd64] https://ppa.launchpadcontent.net/oisf/suricata-6.0/ubuntu/ jammy main
+    - file: /etc/apt/sources.list.d/suricata.list
+    - clean_file: true
 
 dependency_pkgs:
   pkg.installed:

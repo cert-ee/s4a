@@ -9,7 +9,7 @@
 {% set path_moloch_wise_ini = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/settings/paths | jq -r .path_moloch_wise_ini', python_shell=True) %}
 {% set path_moloch_yara_ini = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/settings/paths | jq -r .path_moloch_yara_ini', python_shell=True) %}
 {% set wise_enabled = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/components/moloch | jq -r .configuration.wise_enabled', python_shell=True) %}
-{% set wise_installed = salt['cmd.run'](cmd='source /etc/default/s4a-detector && mongo --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval \'db.component.find({"_id" : "molochwise"})\'|jq -r .installed', python_shell=True) %}
+{% set wise_installed = salt['cmd.run'](cmd='curl -s http://127.0.0.1:4000/api/components/moloch | jq -r .installed', python_shell=True) %}
 {% endif %}
 
 {% if int is not defined or int == "" %}
@@ -69,8 +69,6 @@ detector_moloch_4x_db_upgrade:
 {% endif %}
 
 moloch:
-  cmd.run:
-    - name: apt-mark unhold moloch
   pkg.installed:
     - version: 5.4.0-1
     - hold: true
@@ -350,8 +348,8 @@ detector_moloch_wise_component_enabled:
   cmd.run:
     - name: |
         source /etc/default/s4a-detector
-        mongo --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochwise"},{ $set: { installed:true } })'
-        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochwise"},{ $set: { enabled:true } })'
+        mongosh --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochwise"},{ $set: { installed:true } })'
+        mongosh --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochwise"},{ $set: { enabled:true } })'
 
 detector_moloch_wise_service:
   service.running:
@@ -375,8 +373,8 @@ detector_moloch_wise_component_disable:
   cmd.run:
     - name: |
         source /etc/default/s4a-detector
-        mongo --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochwise"},{ $set: { installed:false } })'
-        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "moloch"},{ $set: { "configuration.wise_enabled" : false } })'
+        mongosh --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochwise"},{ $set: { installed:false } })'
+        mongosh --quiet $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochwise"},{ $set: { enabled:false } })'
 {% endif %}
 
 detector_moloch_enable_molochcapture:
@@ -425,9 +423,9 @@ detector_moloch_component_enable:
   cmd.run:
     - name: |
         source /etc/default/s4a-detector
-        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "moloch"},{ $set: { installed:true } })'
-        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochviewer"},{ $set: { installed:true } })'
-        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochcapture"},{ $set: { installed:true } })'
-        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "moloch"},{ $set: { enabled:true } })'
-        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochviewer"},{ $set: { enabled:true } })'
-        mongo $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochcapture"},{ $set: { enabled:true } })'
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "moloch"},{ $set: { installed:true } })'
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochviewer"},{ $set: { installed:true } })'
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochcapture"},{ $set: { installed:true } })'
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "moloch"},{ $set: { enabled:true } })'
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochviewer"},{ $set: { enabled:true } })'
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.update({"_id": "molochcapture"},{ $set: { enabled:true } })'
