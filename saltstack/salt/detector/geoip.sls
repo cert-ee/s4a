@@ -1,3 +1,4 @@
+---
 detector_update_geoip_sh:
   file.managed:
     - name: /usr/local/sbin/update_geoip.sh
@@ -15,7 +16,7 @@ detector_geoip_cron:
     - hour: '0'
     - dayweek: '*/3'
     - require:
-      - file: detector_update_geoip_sh
+        - file: detector_update_geoip_sh
 
 geoip_dir:
   file.directory:
@@ -25,7 +26,7 @@ geoip_dir:
     - file_mode: 644
     - makedirs: true
     - names:
-      - /srv/s4a-detector/geoip
+        - /srv/s4a-detector/geoip
 
 run_update_geoip:
   cmd.run:
@@ -36,10 +37,10 @@ run_update_geoip:
 remove_arkime_geoip_leftovers:
   file.absent:
     - names:
-      - /srv/s4a-detector/geoip/GeoLite2-Country.mmdb
-      - /srv/s4a-detector/geoip/GeoLite2-ASN.mmdb
-      - /srv/s4a-detector/geoip/ipv4-address-space.csv
-      - /srv/s4a-detector/geoip//opt/arkime/etc/oui.txt
+        - /srv/s4a-detector/geoip/GeoLite2-Country.mmdb
+        - /srv/s4a-detector/geoip/GeoLite2-ASN.mmdb
+        - /srv/s4a-detector/geoip/ipv4-address-space.csv
+        - /srv/s4a-detector/geoip//opt/arkime/etc/oui.txt
 
 remove_arkime_legacy_geoip_cron:
   cron.absent:
@@ -47,9 +48,9 @@ remove_arkime_legacy_geoip_cron:
     - user: root
     - minute: 5
     - hour: '0'
-    - dayweek: '*/3
+    - dayweek: '*/3'
 
 remove_evebox_geoip_leftovers:
   file.absent:
     - names:
-      - /srv/s4a-detector/geoip/GeoLite2-Country.mmdb
+        - /srv/s4a-detector/geoip/GeoLite2-Country.mmdb
