@@ -53,4 +53,4 @@ remove_arkime_legacy_geoip_cron:
 remove_evebox_geoip_leftovers:
   file.absent:
     - names:
-        - /srv/s4a-detector/geoip/GeoLite2-Country.mmdb
+        - /srv/s4a-detector/geoip/GeoLite2-City.mmdb
