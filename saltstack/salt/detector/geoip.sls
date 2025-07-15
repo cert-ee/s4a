@@ -16,3 +16,13 @@ detector_geoip_cron:
     - dayweek: '*/3'
     - require:
       - file: detector_update_geoip_sh
+
+geoip_dir:
+  file.directory:
+    - user: root
+    - group: root
+    - dir_mode: 755
+    - file_mode: 644
+    - makedirs: true
+    - names:
+      - /srv/s4a-detector/geoip
