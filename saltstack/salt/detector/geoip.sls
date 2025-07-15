@@ -9,7 +9,7 @@ detector_update_geoip_sh:
 
 detector_geoip_cron:
   cron.present:
-    - name: /usr/local/sbin/update_geoip.sh > /dev/null 2>&1
+    - name: /usr/local/sbin/update_geoip.sh restart > /dev/null 2>&1
     - user: root
     - minute: 5
     - hour: '0'
@@ -26,3 +26,9 @@ geoip_dir:
     - makedirs: true
     - names:
       - /srv/s4a-detector/geoip
+
+detector_run_update_geoip:
+  cmd.run:
+    - name: /usr/local/sbin/update_geoip.sh > /dev/null
+    - cwd: /usr/local/sbin
+    - runas: root

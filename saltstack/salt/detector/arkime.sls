@@ -37,6 +37,7 @@
 include:
   - detector.deps
   - detector.capture_interface
+  - detector.geoip
 
 # ttyname failed: Inappropriate ioctl for device
 #neutralize_annoying_message:
@@ -132,14 +133,7 @@ detector_arkime_config_ini:
     - require:
       - pkg: arkime
 
-detector_run_update_geoip:
-  cmd.run:
-    - name: /usr/local/sbin/update_geoip.sh > /dev/null
-    - cwd: /usr/local/sbin
-    - runas: root
-    - require:
-      - pkg: arkime
-
+{% if not salt['file.file_exists' ]('/srv/s4a-detector/geoip/GeoLite2-Country.mmdb') %}
 /opt/arkime/etc/GeoLite2-Country.mmdb:
   file.symlink:
     - target: /srv/s4a-detector/geoip/GeoLite2-Country.mmdb
@@ -155,6 +149,8 @@ detector_run_update_geoip:
 /opt/arkime/etc/oui.txt:
   file.symlink:
     - target: /srv/s4a-detector/geoip//opt/arkime/etc/oui.txt
+{% endif %}
+
 
 detector_arkime_check_elastic_up:
   http.wait_for_successful_query:

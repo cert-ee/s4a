@@ -28,7 +28,7 @@ do
         fi
 done
 
-if [ ${#error[@]} -eq 0 ] && [[ "$saltRunning" == "0" ]]
+if [ ${#error[@]} -eq 0 ] && [[ "$saltRunning" == "0" ]] && [[ "$1" == "restart" ]]
 then
         echo "Restarting $services"
 	for service in $services; do systemctl restart $service; done
