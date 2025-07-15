@@ -26,6 +26,7 @@ do
         else
                 error+="$path/$file "
         fi
+	sleep 1
 done
 
 if [ ${#error[@]} -eq 0 ] && [[ "$saltRunning" == "0" ]] && [[ "$1" == "restart" ]]
