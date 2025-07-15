@@ -133,7 +133,7 @@ detector_arkime_config_ini:
     - require:
       - pkg: arkime
 
-{% if not salt['file.file_exists' ]('/srv/s4a-detector/geoip/GeoLite2-Country.mmdb') %}
+#{% if not salt['file.file_exists' ]('/srv/s4a-detector/geoip/GeoLite2-Country.mmdb') %}
 /opt/arkime/etc/GeoLite2-Country.mmdb:
   file.symlink:
     - target: /srv/s4a-detector/geoip/GeoLite2-Country.mmdb
@@ -149,7 +149,7 @@ detector_arkime_config_ini:
 /opt/arkime/etc/oui.txt:
   file.symlink:
     - target: /srv/s4a-detector/geoip/oui.txt
-{% endif %}
+#{% endif %}
 
 
 detector_arkime_check_elastic_up:
