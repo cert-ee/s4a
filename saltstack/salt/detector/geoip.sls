@@ -41,6 +41,7 @@ remove_arkime_geoip_leftovers:
         - /opt/arkime/etc/GeoLite2-ASN.mmdb
         - /opt/arkime/etc/ipv4-address-space.csv
         - /opt/arkime/etc/oui.txt
+        - /opt/arkime/etc/GeoLite2-City.mmdb
 
 remove_arkime_legacy_geoip_cron:
   cron.absent:
