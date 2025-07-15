@@ -21,12 +21,11 @@ evebox_pkgs:
       - curl
       - python3-elasticsearch
 
-#{% if not salt['file.file_exists' ]('/etc/evebox/GeoLite2-City.mmdb') %}
+{% if not salt['file.symlink_exists' ]('/etc/evebox/GeoLite2-City.mmdb') %}
 /etc/evebox/GeoLite2-City.mmdb:
   file.symlink:
     - target: /srv/s4a-detector/geoip/GeoLite2-City.mmdb
-    - force: true
-#{% endif %}
+{% endif %}
 
 evebox_conf:
   file.managed:

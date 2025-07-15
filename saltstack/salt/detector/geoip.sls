@@ -27,8 +27,29 @@ geoip_dir:
     - names:
       - /srv/s4a-detector/geoip
 
-detector_run_update_geoip:
+run_update_geoip:
   cmd.run:
     - name: /usr/local/sbin/update_geoip.sh > /dev/null
     - cwd: /usr/local/sbin
     - runas: root
+
+remove_arkime_geoip_leftovers:
+  file.absent:
+    - names:
+      - /srv/s4a-detector/geoip/GeoLite2-Country.mmdb
+      - /srv/s4a-detector/geoip/GeoLite2-ASN.mmdb
+      - /srv/s4a-detector/geoip/ipv4-address-space.csv
+      - /srv/s4a-detector/geoip//opt/arkime/etc/oui.txt
+
+remove_arkime_legacy_geoip_cron:
+  cron.absent:
+    - name: /opt/arkime/bin/arkime_update_geo.sh > /dev/null 2>&1
+    - user: root
+    - minute: 5
+    - hour: '0'
+    - dayweek: '*/3
+
+remove_evebox_geoip_leftovers:
+  file.absent:
+    - names:
+      - /srv/s4a-detector/geoip/GeoLite2-Country.mmdb
