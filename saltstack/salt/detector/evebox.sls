@@ -20,15 +20,9 @@ evebox_pkgs:
       - curl
       - python3-elasticsearch
 
-GeoLite2-City:
-  file.managed:
-    - name: /etc/evebox/GeoLite2-City.mmdb.gz
-    - source: {{ salt['pillar.get']('detector:repo') }}/geoip/GeoLite2-City.mmdb.gz
-    - skip_verify: true
-  cmd.run:
-    - name: gunzip -f /etc/evebox/GeoLite2-City.mmdb.gz
-    - require:
-      - file: /etc/evebox/GeoLite2-City.mmdb.gz
+/etc/evebox/GeoLite2-City.mmdb:
+  file.symlink:
+    - target: /srv/s4a-detector/geoip/GeoLite2-City.mmdb
 
 evebox_conf:
   file.managed:

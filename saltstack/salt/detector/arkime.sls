@@ -106,16 +106,6 @@ detector_arkime_daily_cron:
     - require:
       - file: detector_arkime_daily_script
 
-detector_arkime_geo_cron:
-  cron.present:
-    - name: /opt/arkime/bin/arkime_update_geo.sh > /dev/null 2>&1
-    - user: root
-    - minute: 5
-    - hour: '0'
-    - dayweek: '*/3'
-    - require:
-      - file: detector_arkime_update_geo_sh
-
 detector_arkime_limits_conf:
   file.managed:
     - name: /etc/security/limits.d/99-arkime.conf
@@ -123,15 +113,6 @@ detector_arkime_limits_conf:
     - user: root
     - group: root
     - mode: 644
-
-detector_arkime_update_geo_sh:
-  file.managed:
-    - name: /opt/arkime/bin/arkime_update_geo.sh
-    - source: salt://{{ slspath }}/files/arkime/arkime_update_geo.sh.jinja
-    - user: root
-    - group: root
-    - mode: 755
-    - template: jinja
 
 detector_arkime_config_ini:
   file.managed:
@@ -151,13 +132,29 @@ detector_arkime_config_ini:
     - require:
       - pkg: arkime
 
-detector_arkime_update_geo:
+detector_run_update_geoip:
   cmd.run:
-    - name: /opt/arkime/bin/arkime_update_geo.sh > /dev/null
-    - cwd: /opt/arkime/bin
+    - name: /usr/local/sbin/update_geoip.sh > /dev/null
+    - cwd: /usr/local/sbin
     - runas: root
     - require:
       - pkg: arkime
+
+/opt/arkime/etc/GeoLite2-Country.mmdb:
+  file.symlink:
+    - target: /srv/s4a-detector/geoip/GeoLite2-Country.mmdb
+
+/opt/arkime/etc/GeoLite2-ASN.mmdb:
+  file.symlink:
+    - target: /srv/s4a-detector/geoip/GeoLite2-ASN.mmdb
+
+/opt/arkime/etc/ipv4-address-space.csv:
+  file.symlink:
+    - target: /srv/s4a-detector/geoip/ipv4-address-space.csv
+
+/opt/arkime/etc/oui.txt:
+  file.symlink:
+    - target: /srv/s4a-detector/geoip//opt/arkime/etc/oui.txt
 
 detector_arkime_check_elastic_up:
   http.wait_for_successful_query:
