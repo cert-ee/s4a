@@ -148,7 +148,7 @@ detector_arkime_config_ini:
 
 /opt/arkime/etc/oui.txt:
   file.symlink:
-    - target: /srv/s4a-detector/geoip//opt/arkime/etc/oui.txt
+    - target: /srv/s4a-detector/geoip/oui.txt
 {% endif %}
 
 
