@@ -5,7 +5,7 @@ path=/srv/s4a-detector/geoip/
 services="arkimecapture.service evebox-agent.service"
 saltRunning="$(ps -ef | grep -E "/usr/bin/python3.*.state.apply.detector.(evebox|arkime)" | grep -v grep| wc -l)"
 
-
+{% raw %}
 error=()
 
 echo "Updating ipv4 GeoIP Database, ipv4 addressspace and known devices:"
@@ -37,3 +37,4 @@ then
         echo "Missing file: ${error[@]}"
         exit 2
 fi
+{% endraw %}
