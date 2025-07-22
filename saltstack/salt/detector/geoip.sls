@@ -34,6 +34,7 @@ run_update_geoip:
     - cwd: /usr/local/sbin
     - runas: root
 
+{% if salt['file.directory_exists' ]('/opt/arkime') %}
 remove_arkime_geoip_leftovers:
   file.absent:
     - names:
@@ -42,6 +43,23 @@ remove_arkime_geoip_leftovers:
         - /opt/arkime/etc/ipv4-address-space.csv
         - /opt/arkime/etc/oui.txt
         - /opt/arkime/etc/GeoLite2-City.mmdb
+
+/opt/arkime/etc/GeoLite2-Country.mmdb:
+  file.symlink:
+    - target: /srv/s4a-detector/geoip/GeoLite2-Country.mmdb
+
+/opt/arkime/etc/GeoLite2-ASN.mmdb:
+  file.symlink:
+    - target: /srv/s4a-detector/geoip/GeoLite2-ASN.mmdb
+
+/opt/arkime/etc/ipv4-address-space.csv:
+  file.symlink:
+    - target: /srv/s4a-detector/geoip/ipv4-address-space.csv
+
+/opt/arkime/etc/oui.txt:
+  file.symlink:
+    - target: /srv/s4a-detector/geoip/oui.txt
+{% endif %}
 
 remove_arkime_legacy_geoip_cron:
   cron.absent:
@@ -55,3 +73,7 @@ remove_evebox_geoip_leftovers:
   file.absent:
     - names:
         - /etc/evebox/GeoLite2-City.mmdb
+
+/etc/evebox/GeoLite2-City.mmdb:
+  file.symlink:
+    - target: /srv/s4a-detector/geoip/GeoLite2-City.mmdb

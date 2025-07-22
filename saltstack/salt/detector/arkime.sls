@@ -133,22 +133,6 @@ detector_arkime_config_ini:
     - require:
       - pkg: arkime
 
-/opt/arkime/etc/GeoLite2-Country.mmdb:
-  file.symlink:
-    - target: /srv/s4a-detector/geoip/GeoLite2-Country.mmdb
-
-/opt/arkime/etc/GeoLite2-ASN.mmdb:
-  file.symlink:
-    - target: /srv/s4a-detector/geoip/GeoLite2-ASN.mmdb
-
-/opt/arkime/etc/ipv4-address-space.csv:
-  file.symlink:
-    - target: /srv/s4a-detector/geoip/ipv4-address-space.csv
-
-/opt/arkime/etc/oui.txt:
-  file.symlink:
-    - target: /srv/s4a-detector/geoip/oui.txt
-
 detector_arkime_check_elastic_up:
   http.wait_for_successful_query:
     - name: {{ es }}/_cluster/health

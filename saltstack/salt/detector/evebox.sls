@@ -21,10 +21,6 @@ evebox_pkgs:
       - curl
       - python3-elasticsearch
 
-/etc/evebox/GeoLite2-City.mmdb:
-  file.symlink:
-    - target: /srv/s4a-detector/geoip/GeoLite2-City.mmdb
-
 evebox_conf:
   file.managed:
     - name: /etc/evebox/evebox.yaml
