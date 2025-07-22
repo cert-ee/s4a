@@ -4,7 +4,7 @@ Description=EveBox Agent
 [Service]
 User=evebox
 Group=evebox
-ExecStart=/usr/bin/evebox agent
+ExecStart=/usr/bin/evebox agent --enable-geoip
 
 [Install]
 WantedBy=multi-user.target

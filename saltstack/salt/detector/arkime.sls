@@ -37,6 +37,7 @@
 include:
   - detector.deps
   - detector.capture_interface
+  - detector.geoip
 
 # ttyname failed: Inappropriate ioctl for device
 #neutralize_annoying_message:
@@ -106,16 +107,6 @@ detector_arkime_daily_cron:
     - require:
       - file: detector_arkime_daily_script
 
-detector_arkime_geo_cron:
-  cron.present:
-    - name: /opt/arkime/bin/arkime_update_geo.sh > /dev/null 2>&1
-    - user: root
-    - minute: 5
-    - hour: '0'
-    - dayweek: '*/3'
-    - require:
-      - file: detector_arkime_update_geo_sh
-
 detector_arkime_limits_conf:
   file.managed:
     - name: /etc/security/limits.d/99-arkime.conf
@@ -123,15 +114,6 @@ detector_arkime_limits_conf:
     - user: root
     - group: root
     - mode: 644
-
-detector_arkime_update_geo_sh:
-  file.managed:
-    - name: /opt/arkime/bin/arkime_update_geo.sh
-    - source: salt://{{ slspath }}/files/arkime/arkime_update_geo.sh.jinja
-    - user: root
-    - group: root
-    - mode: 755
-    - template: jinja
 
 detector_arkime_config_ini:
   file.managed:
@@ -148,14 +130,6 @@ detector_arkime_config_ini:
 {% if path_arkime_yara_ini is defined %}
         path_arkime_yara_ini: {{ path_arkime_yara_ini }}
 {% endif %}
-    - require:
-      - pkg: arkime
-
-detector_arkime_update_geo:
-  cmd.run:
-    - name: /opt/arkime/bin/arkime_update_geo.sh > /dev/null
-    - cwd: /opt/arkime/bin
-    - runas: root
     - require:
       - pkg: arkime
 
