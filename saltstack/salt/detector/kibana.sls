@@ -8,7 +8,7 @@ detector_kibana_pkg:
     - name: apt-mark unhold kibana
   pkg.installed:
     - name: kibana
-    - version: 7.17.28
+    - version: 7.17.29
     - hold: true
     - update_holds: true
     - refresh: true
@@ -29,13 +29,16 @@ detector_kibana_logrotate:
     - mode: 644
 
 {% if kibana_index_status == "0" %}
-npm:
-  pkg.installed:
-    - install_recommends: False
+elasticdump_install:
+  archive.extracted:
+    - name: /usr/local/lib/node_modules/elasticdump/
+    - source: salt://{{ slspath }}/files/kibana/elasticdump.tgz
+    - user: root
+    - group: root
 
-elasticdump:
-  npm.installed:
-    - name: elasticdump
+/usr/local/bin/elasticdump:
+  file.symlink:
+    - target: /usr/local/lib/node_modules/elasticdump/bin/elasticdump
 
 detector_kibana_dashboard_index_mapping:
   file.managed:
