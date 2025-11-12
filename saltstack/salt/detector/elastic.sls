@@ -133,7 +133,7 @@ elasticsearch_systemd_override:
     - group: root
     - mode: 644
 
-detector_arkime_systemctl_reload:
+detector_elastic_systemctl_reload:
   cmd.run:
     - name: systemctl daemon-reload
     - onchanges:
