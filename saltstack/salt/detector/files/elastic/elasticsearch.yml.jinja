@@ -18,6 +18,9 @@ path.data: /srv/elasticsearch
 path.logs: /var/log/elasticsearch
 {% if multiviewer_enabled == "True" or multiviewer_enabled == "true" %}
 network.host: 0.0.0.0
+transport.host: localhost
+discovery.type: single-node
+discovery.seed_hosts: ["127.0.0.1", "[::1]"]
 {% else %}
 network.host: _local_
 {% endif %}

@@ -60,6 +60,7 @@ elasticsearch_dirs:
       - /etc/elasticsearch/scripts
       - /var/log/elasticsearch
       - /var/run/elasticsearch
+      - /etc/systemd/system/elasticsearch.service.d
 {% if elastic_data_path_ok == "False" %}
       - /srv/elasticsearch
 {% endif %}
@@ -123,6 +124,20 @@ elasticsearch_cron:
     - group: root
     - mode: 750
     - template: jinja
+
+elasticsearch_systemd_override:
+  file.managed:
+    - name: /etc/systemd/system/elasticsearch.service.d/override.conf
+    - source: salt://{{ slspath }}/files/elastic/systemd_override.conf
+    - user: root
+    - group: root
+    - mode: 644
+
+detector_arkime_systemctl_reload:
+  cmd.run:
+    - name: systemctl daemon-reload
+    - onchanges:
+      - file: elasticsearch_systemd_override
 
 elasticsearch_service:
   service.running:
