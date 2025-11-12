@@ -1,4 +1,6 @@
-{% set kibana_index_status = salt['cmd.run'](cmd='curl -s -XGET http://localhost:9200/_cat/indices | grep kibana -c', python_shell=True) %}
+#{% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', '127.0.0.1' ) + ':9200' %}
+{% set es = 'http://127.0.0.1:9200' %}
+{% set kibana_index_status = salt['cmd.run'](cmd='curl -s -XGET http://127.0.0.1:9200/_cat/aliases | grep kibana -c', python_shell=True) %}
 
 include:
   - detector.deps
@@ -8,17 +10,24 @@ detector_kibana_pkg:
     - name: apt-mark unhold kibana
   pkg.installed:
     - name: kibana
-    - version: 7.17.29
+    - version: 8.19.6
     - hold: true
     - update_holds: true
     - refresh: true
     - require:
-      - pkgrepo: elastic7x_repo
+      - pkgrepo: elastic8x_repo
 
 detector_kibana_conf:
   file.managed:
     - name: /etc/kibana/kibana.yml
-    - source: salt://{{ slspath }}/files/kibana/kibana.yml
+    - source: salt://{{ slspath }}/files/kibana/kibana.yml.jinja
+    - template: jinja
+    - user: root
+    - group: kibana
+    - mode: 660
+    - template: jinja
+    - defaults:
+        es: {{ es }}
 
 detector_kibana_logrotate:
   file.managed:
@@ -45,17 +54,17 @@ detector_kibana_dashboard_index_mapping:
     - name: /etc/kibana/s4a-kibana-v7.16-mapping.json
     - source: salt://{{ slspath }}/files/kibana/s4a-kibana-v7.16-mapping.json
   cmd.run:
-    - name: elasticdump --quiet --input=/etc/kibana/s4a-kibana-v7.16-mapping.json --output=http://localhost:9200/.kibana --type=mapping
+    - name: elasticdump --quiet --input=/etc/kibana/s4a-kibana-v7.16-mapping.json --output=http://127.0.0.1:9200/.kibana --type=mapping
 
 detector_kibana_dashboard_index_data:
   file.managed:
     - name: /etc/kibana/s4a-kibana-v7.16-data.json
     - source: salt://{{ slspath }}/files/kibana/s4a-kibana-v7.16-data.json
   cmd.run: 
-    - name: elasticdump --quiet --input=/etc/kibana/s4a-kibana-v7.16-data.json --output=http://localhost:9200/.kibana --type=data
+    - name: elasticdump --quiet --input=/etc/kibana/s4a-kibana-v7.16-data.json --output=http://127.0.0.1:9200/.kibana --type=data
 {% endif %}
 
-detector_kibana_service:
+detector_start_kibana_service:
   service.running:
     - name: kibana
     - watch:

@@ -14,7 +14,6 @@ cluster.name: {{ detector_name }}
 cluster.name: {{ cluster_name_exists }}
 {% endif %}
 node.name: "{{ salt['grains.get']('host', 'node1') }}"
-node.data: true
 path.data: /srv/elasticsearch
 path.logs: /var/log/elasticsearch
 {% if multiviewer_enabled == "True" or multiviewer_enabled == "true" %}
@@ -24,14 +23,10 @@ network.host: _local_
 {% endif %}
 bootstrap.memory_lock: true
 http.port: 9200
-transport.host: localhost
-transport.tcp.port: 9300
+transport.port: 9300
 
 gateway.expected_data_nodes: 1
 gateway.recover_after_data_nodes: 1
-
-discovery.type: single-node
-discovery.seed_hosts: ["127.0.0.1", "[::1]"]
 
 indices.breaker.fielddata.limit: 70%
 
@@ -41,4 +36,25 @@ cluster.routing.allocation.disk.watermark.high: 5gb
 cluster.routing.allocation.disk.watermark.flood_stage: 2gb
 cluster.info.update.interval: 1m
 
+{% if salt['file.file_exists']('/etc/elasticsearch/vpn.key')%}
+xpack.security.enabled: true
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.key: vpn.key
+xpack.security.transport.ssl.certificate: vpn.crt
+xpack.security.transport.ssl.certificate_authorities: ca.crt
+xpack.security.transport.ssl.client_authentication: optional
+
+xpack.security.http.ssl.enabled: true
+xpack.security.http.ssl.key: vpn.key
+xpack.security.http.ssl.certificate: vpn.crt
+xpack.security.http.ssl.certificate_authorities: ca.crt
+xpack.security.http.ssl.client_authentication: optional
+
+xpack.security.authc:
+  anonymous:
+    username: anonymous_user 
+    roles: superuser
+    authz_exception: true
+{% else %}
 xpack.security.enabled: false
+{% endif %}

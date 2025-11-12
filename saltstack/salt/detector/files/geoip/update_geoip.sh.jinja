@@ -1,5 +1,5 @@
 #!/bin/bash
-repo_url=https://repo.s4a.cert.ee
+repo_url={{ salt['pillar.get']('detector:repo') }}
 files="ipv4-address-space.csv.gz oui.txt.gz GeoLite2-Country.mmdb.gz GeoLite2-ASN.mmdb.gz GeoLite2-City.mmdb.gz"
 path=/srv/s4a-detector/geoip/
 services="arkimecapture.service evebox-agent.service"

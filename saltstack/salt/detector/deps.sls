@@ -120,7 +120,7 @@ s4a_repo:
     - file: /etc/apt/sources.list.d/repo-s4a.list
     - clean_file: True
 
-elastic7x_repo:
+elastic8x_repo:
   cmd.run:
     - name: curl -fsSL https://artifacts.elastic.co/GPG-KEY-elasticsearch | gpg --dearmor > /etc/apt/keyrings/elasticsearch.gpg
   file.managed:
@@ -130,9 +130,9 @@ elastic7x_repo:
     - mode: 744
     - replace: false
   pkgrepo.managed:
-    - humanname: Elasticsearch 7.x Repo
-    - name: deb [signed-by=/etc/apt/keyrings/elasticsearch.gpg arch=amd64] https://artifacts.elastic.co/packages/7.x/apt stable main
-    - file: /etc/apt/sources.list.d/elastic-7.x.list
+    - humanname: Elasticsearch 8.x Repo
+    - name: deb [signed-by=/etc/apt/keyrings/elasticsearch.gpg trusted=yes arch=amd64] https://artifacts.elastic.co/packages/8.x/apt stable main
+    - file: /etc/apt/sources.list.d/elastic-8.x.list
     - clean_file: True
 
 evebox_repo:
