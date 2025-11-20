@@ -209,6 +209,31 @@ detector_arkime_reset_users:
     - require:
       - file: detector_arkime_reset_users_sh
 
+remove_arkime_geoip_leftovers:
+  file.absent:
+    - names:
+        - /opt/arkime/etc/GeoLite2-Country.mmdb
+        - /opt/arkime/etc/GeoLite2-ASN.mmdb
+        - /opt/arkime/etc/ipv4-address-space.csv
+        - /opt/arkime/etc/oui.txt
+        - /opt/arkime/etc/GeoLite2-City.mmdb
+
+/opt/arkime/etc/GeoLite2-Country.mmdb:
+  file.symlink:
+    - target: /srv/s4a-detector/geoip/GeoLite2-Country.mmdb
+
+/opt/arkime/etc/GeoLite2-ASN.mmdb:
+  file.symlink:
+    - target: /srv/s4a-detector/geoip/GeoLite2-ASN.mmdb
+
+/opt/arkime/etc/ipv4-address-space.csv:
+  file.symlink:
+    - target: /srv/s4a-detector/geoip/ipv4-address-space.csv
+
+/opt/arkime/etc/oui.txt:
+  file.symlink:
+    - target: /srv/s4a-detector/geoip/oui.txt
+
 detector_arkime_capture_systemd:
   file.managed:
     - name: /etc/systemd/system/arkimecapture.service
