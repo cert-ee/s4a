@@ -90,21 +90,6 @@ influxdata_repo:
     - file: /etc/apt/sources.list.d/influxdata.list
     - clean_file: True
 
-yarn_repo:
-  cmd.run:
-    - name: curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor > /etc/apt/keyrings/yarn.gpg
-  file.managed:
-    - name: /etc/apt/keyrings/yarn.gpg
-    - user: root
-    - group: root
-    - mode: 644
-    - replace: false
-  pkgrepo.managed:
-    - humanname: yarn
-    - name: deb [signed-by=/etc/apt/keyrings/yarn.gpg arch=amd64] https://dl.yarnpkg.com/debian/ stable main
-    - file: /etc/apt/sources.list.d/yarn.list
-    - clean_file: True
-
 s4a_repo:
   cmd.run:
     - name: curl -fsSL {{ salt['pillar.get']('detector:repo') }}/GPG.pub | gpg --dearmor > /etc/apt/keyrings/s4a.gpg
