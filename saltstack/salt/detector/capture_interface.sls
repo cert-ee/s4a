@@ -25,7 +25,7 @@ capture_interface_{{ int }}:
     - source: salt://{{ slspath }}/files/netplan/capture_interface.yaml.jinja
     - user: root
     - group: root
-    - mode: 644
+    - mode: 600
     - template: jinja
     - defaults:
         int: {{ int }}
