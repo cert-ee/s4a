@@ -64,6 +64,11 @@ detector_kibana_dashboard_index_data:
     - name: elasticdump --quiet --input=/etc/kibana/s4a-kibana-v7.16-data.json --output=http://127.0.0.1:9200/.kibana --type=data
 {% endif %}
 
+remove_old_kibana_systemd_service:
+  file.absent:
+    - names:
+        - /etc/systemd/system/kibana.service
+
 detector_start_kibana_service:
   service.running:
     - name: kibana
