@@ -139,7 +139,7 @@ detector_arkime_config_ini:
 
 detector_arkime_check_elastic_up:
   http.wait_for_successful_query:
-    - name: {{ es }}/_cluster/health
+    - name: http://127.0.0.1:9200/_cluster/health
     - method: GET
     - status: 200
     - request_interval: 5
