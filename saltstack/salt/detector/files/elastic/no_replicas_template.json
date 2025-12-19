@@ -1,1 +1,10 @@
-{"template" : "*","settings" : {"number_of_replicas" : 0 }}
+{
+ "index_patterns": [
+      "*"
+    ],
+    "settings": {
+      "index": {
+        "number_of_replicas": "0"
+      }
+    }
+}

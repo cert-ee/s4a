@@ -1,4 +1,4 @@
 openvpn_service:
   service.running:
-    - name: openvpn
+    - name: openvpn@detector
     - enable: true

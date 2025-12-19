@@ -21,7 +21,6 @@
 {% endif %}
 
 #{% set es = 'http://' + salt['pillar.get']('detector.elasticsearch.host', '127.0.0.1' ) + ':9200' %}
-{% set es = 'http://127.0.0.1:9200' %}
 {% set elastic_status = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_cluster/health | jq -r .status', python_shell=True) %}
 {% set elastic_node_count = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_cluster/health | jq -r .number_of_nodes', python_shell=True) %}
 {% set arkimeDBVersion = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_template/*arkime_sessions3_template?filter_path=**._meta.arkimeDbVersion | jq -r .arkime_sessions3_template.mappings._meta.arkimeDbVersion', python_shell=True) %}
@@ -29,6 +28,11 @@
 {% set arkimeShardsPerNode = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_template/*arkime_sessions3_template | jq -r .[].settings.index.routing.allocation.total_shards_per_node', python_shell=True) %}
 {% set arkimeReplicas = salt['cmd.run'](cmd='curl -s http://127.0.0.1:9200/_template/*arkime_sessions3_template | jq -r .[].settings.index.number_of_replicas', python_shell=True) %}
 
+{% if elastic_node_count|int ==  1 %}
+{% set es = 'http://127.0.0.1:9200' %}
+{% elif elastic_node_count|int == 4 %}
+{% set es = 'http://127.0.0.1:9200,http://127.0.0.1:9201,http://127.0.0.1:9202,http://127.0.0.1:9203' %}
+{% endif %}
 
 {% if salt['file.file_exists' ]('/etc/s4a-detector/wise_lan_ips_dns.ini') %}
 {% set wise_reversedns_enabled = salt['cmd.run'](cmd='cat /etc/s4a-detector/wise_lan_ips_dns.ini | sed -r "/^(\ * |)#/d" | xargs | sed "/^$/d" | wc -l', python_shell=True) %}
@@ -135,7 +139,7 @@ detector_arkime_config_ini:
 
 detector_arkime_check_elastic_up:
   http.wait_for_successful_query:
-    - name: {{ es }}/_cluster/health
+    - name: http://127.0.0.1:9200/_cluster/health
     - method: GET
     - status: 200
     - request_interval: 5
@@ -208,6 +212,31 @@ detector_arkime_reset_users:
     - runas: root
     - require:
       - file: detector_arkime_reset_users_sh
+
+remove_arkime_geoip_leftovers:
+  file.absent:
+    - names:
+        - /opt/arkime/etc/GeoLite2-Country.mmdb
+        - /opt/arkime/etc/GeoLite2-ASN.mmdb
+        - /opt/arkime/etc/ipv4-address-space.csv
+        - /opt/arkime/etc/oui.txt
+        - /opt/arkime/etc/GeoLite2-City.mmdb
+
+/opt/arkime/etc/GeoLite2-Country.mmdb:
+  file.symlink:
+    - target: /srv/s4a-detector/geoip/GeoLite2-Country.mmdb
+
+/opt/arkime/etc/GeoLite2-ASN.mmdb:
+  file.symlink:
+    - target: /srv/s4a-detector/geoip/GeoLite2-ASN.mmdb
+
+/opt/arkime/etc/ipv4-address-space.csv:
+  file.symlink:
+    - target: /srv/s4a-detector/geoip/ipv4-address-space.csv
+
+/opt/arkime/etc/oui.txt:
+  file.symlink:
+    - target: /srv/s4a-detector/geoip/oui.txt
 
 detector_arkime_capture_systemd:
   file.managed:
