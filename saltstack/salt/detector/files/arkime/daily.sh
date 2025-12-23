@@ -104,7 +104,7 @@ suricataSize=$(echo $sum | awk -v OFMT='%f' '{ byte =$1 /1024/1024/1024; print b
 
 ######################## End of Functions ##########################
 
-ESHOSTPORT={{ es }}
+ESHOSTPORT=http://127.0.0.1:9200
 customSettings=/etc/s4a-detector/custom_cleanup.conf
 
 if [ -r $customSettings ]
