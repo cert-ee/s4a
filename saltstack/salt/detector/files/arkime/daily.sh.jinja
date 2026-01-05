@@ -9,6 +9,16 @@
 # Example content of /etc/s4a-detector/custom_cleanup.conf: 
 # elasticFreeSpaceReserved=500
 # suricataLogsToKeep=30
+# esReplicas=2
+# arkimeDaysToKeep=900
+
+ESHOSTPORT=http://127.0.0.1:9200
+customSettings=/etc/s4a-detector/custom_cleanup.conf
+
+if [ -r $customSettings ]
+then
+        source $customSettings
+fi
 
 if [[ "$(ps -ef | grep /opt/arkime/db/db.pl | grep -v grep | awk '{print $8}')" == "/opt/arkime/db/db.pl" ]]
 then
@@ -101,20 +111,7 @@ sum=`echo $sizes | jq -s 'add'`
 suricataSize=$(echo $sum | awk -v OFMT='%f' '{ byte =$1 /1024/1024/1024; print byte}')
 }
 
-######################## End of Functions ##########################
-
-ESHOSTPORT={{ es }}
-customSettings=/etc/s4a-detector/custom_cleanup.conf
-
-if [ -r $customSettings ]
-then
-        source $customSettings
-fi
-
-getArkimeSessionsSize
-removeSuricataLogs
-getSuricataSize
-
+getElasticStorageRequired() {
 # Get disk size in GB of disk where /srv is mounted
 if ! mountpoint /srv/elasticsearch > /dev/null 2>&1 && [[ "$(df | grep -E '/srv/es[0-9]+' -c)" != "0" ]]
 then
@@ -151,7 +148,6 @@ fi
 
 if [ $elasticFreeSpaceReserved ]
 then
-	source $customSettings
 	if [[ $elasticFreeSpaceReserved =~ [0-9] ]] && [[ $elasticFreeSpaceReserved -gt 0 ]]
 	then
 		available=$(( $disk - $elasticFreeSpaceReserved))
@@ -161,7 +157,12 @@ fi
 # If custom reserve is not defined add 15% or 20% of disk size depending if /srv/elasticsearch is a separate partition or not. 
 if [ -z $available ] && [[ "$multinodes" == "true" ]]
 then
+	if [ "$esReplicas" ]
+	then
+	replicas=$esReplicas
+	else
         replicas=1
+	fi
 	available=$(( $disk - $(printf "%.0f\n" $(echo "$disk * 0.15" | bc)) ))
 elif [ -z $available ]
 then
@@ -173,15 +174,26 @@ then
                 replicas=0
                 available=$(( $disk - $(printf "%.0f\n" $(echo "$disk * 0.20" | bc)) ))
         fi
-elif [[ "$multinodes" == "true" ]]
+elif [[ "$multinodes" == "true" ]] && [ "$esReplicas" ]
 	then
-	replicas=1
+        replicas=$esReplicas
+elif [[ "$multinodes" == "true" ]]
+        then
+        replicas=1
 else
         replicas=0
 fi
 
 # Final number of days to keep indexes (-1 day because db.pl is not considering current day)
 RETAINNUMDAYS=$(echo "($available - $suricataSize) / $arkimeAverageSession - 1"|bc)
+}
+
+######################## Main ##########################
+
+getArkimeSessionsSize
+removeSuricataLogs
+getSuricataSize
+getElasticStorageRequired
 
 # Check if indexes are in readonly state
 # and disable readonly state if 2GB or more disk space is available
@@ -203,6 +215,11 @@ then
 		echo "ERROR: Cannot disable read only mode. Not enough free disk space"
 		exit 1
 	fi
+fi
+
+if [ "$arkimeDaysToKeep" ] && [ $arkimeDaysToKeep -lt $RETAINNUMDAYS ]
+then
+RETAINNUMDAYS=$arkimeDaysToKeep
 fi
 
 # Delete old Arkime session indexes
