@@ -77,7 +77,7 @@ mongodb-org-upgrade-preps:
 
 influxdata_repo:
   cmd.run:
-    - name: curl -fsSL https://repos.influxdata.com/influxdata-archive_compat.key | gpg --dearmor > /etc/apt/keyrings/influxdata.gpg
+    - name: curl -fsSL https://repos.influxdata.com/influxdata-archive_compat-exp2029.key | gpg --dearmor > /etc/apt/keyrings/influxdata.gpg
   file.managed:
     - name: /etc/apt/keyrings/influxdata.gpg
     - user: root
