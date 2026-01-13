@@ -157,7 +157,7 @@ detector_arkime_db:
 {% if elastic_node_count|int ==  1 %}
     - name: echo INIT | /opt/arkime/db/db.pl {{ es }} init --replicas 0
 {% else %}
-    - name: echo INIT | /opt/arkime/db/db.pl {{ es }} init --shardsPerNode 3 --shards {{ elastic_node_count }} --replicas 1
+    - name: echo INIT | /opt/arkime/db/db.pl http://localhost:9200 init --shardsPerNode 3 --shards {{ elastic_node_count }} --replicas 1
 {% endif %}
     - runas: root
     - require:
