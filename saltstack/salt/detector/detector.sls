@@ -89,7 +89,7 @@ detector_gpg_conf:
   file.managed:
     - user: root
     - group: root
-    - mode: 440
+    - mode: 400
     - makedirs: true
     - name: /root/.gnupg/gpg.conf
     - source: salt://{{ slspath }}/files/gnupg/gpg.conf
