@@ -94,7 +94,7 @@ yarn_repo:
   cmd.run:
     - name: curl -fsSL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor > /etc/apt/keyrings/yarn.gpg
   file.managed:
-   - name: /etc/apt/keyrings/yarn.gpg
+    - name: /etc/apt/keyrings/yarn.gpg
     - user: root
     - group: root
     - mode: 644
