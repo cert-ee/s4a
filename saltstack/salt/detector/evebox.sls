@@ -6,7 +6,7 @@ evebox:
   cmd.run:
     - name: apt-mark unhold evebox
   pkg.installed:
-    - version: 1:0.17.1
+    - version: 1:0.23.0
     - hold: true
     - update_holds: true
     - refresh: true
