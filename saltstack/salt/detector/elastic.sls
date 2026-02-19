@@ -133,11 +133,18 @@ elasticsearch_systemd_override:
     - group: root
     - mode: 644
 
-detector_elastic_systemctl_reload:
+elastic_systemctl_reload:
   cmd.run:
     - name: systemctl daemon-reload
     - onchanges:
       - file: elasticsearch_systemd_override
+
+{% if elastic_version_installed is not defined or not elastic_version_installed %}
+elastic_remove_initial_keystore:
+  file.absent:
+   - names:
+     - /etc/elasticsearch/elasticsearch.keystore
+{% endif %}
 
 elasticsearch_service:
   service.running:
