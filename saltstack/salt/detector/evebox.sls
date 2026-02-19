@@ -98,3 +98,9 @@ evebox-agent_component_enable:
     - name: |
         source /etc/default/s4a-detector
         mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "evebox"},{ $set: { installed:true } })'
+
+evebox-agent_component_check:
+  cmd.run:
+    - name: |
+        source /etc/default/s4a-detector
+        monhosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "evebox"}, {$set: {"health_url": "http://localhost:5636/api/version"}})'
