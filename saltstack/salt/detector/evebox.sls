@@ -29,8 +29,8 @@ evebox_conf:
 
 fetch_suricata_template:
   file.managed:
-    - name: /etc/evebox/suricata-template-7.x.json
-    - source: salt://{{ slspath }}/files/evebox/suricata-template-7.x.json
+    - name: /etc/evebox/suricata-template-8.x.json
+    - source: salt://{{ slspath }}/files/evebox/suricata-template-8.x.json
     - user: root
     - group: root
     - mode: 755
@@ -42,7 +42,7 @@ elasticsearch_suricata_template:
     - status: 200
     - header_dict:
         Content-Type: "application/json"
-    - data_file: /etc/evebox/suricata-template-7.x.json
+    - data_file: /etc/evebox/suricata-template-8.x.json
 
 remove_evebox_geoip_leftovers:
   file.absent:

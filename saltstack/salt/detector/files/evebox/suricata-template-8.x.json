@@ -1,0 +1,51 @@
+{
+  "suricata" : {
+    "order" : 0,
+    "index_patterns" : [
+      "suricata*"
+    ],
+    "settings" : {
+      "index" : {
+        "number_of_shards" : "1",
+        "mapping" : {
+          "total_fields" : {
+            "limit" : "5000"
+          }
+        }
+      }
+    },
+    "mappings" : {
+      "dynamic_templates" : [ ],
+      "properties" : {
+        "src_ip" : {
+          "type" : "ip"
+        },
+        "@timestamp" : {
+          "type" : "date"
+        },
+        "geoip" : {
+          "dynamic" : true,
+          "type" : "object",
+          "properties" : {
+            "ip" : {
+              "type" : "ip"
+            },
+            "latitude" : {
+              "type" : "half_float"
+            },
+            "location" : {
+              "type" : "geo_point"
+            },
+            "longitude" : {
+              "type" : "half_float"
+            }
+          }
+        },
+        "dest_ip" : {
+          "type" : "ip"
+        }
+      }
+    },
+    "aliases" : { }
+  }
+}
