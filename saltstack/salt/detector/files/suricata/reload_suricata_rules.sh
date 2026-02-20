@@ -68,8 +68,8 @@ cleanup() {
 }
 
 checkErrors() {
-lastReloadTimestamp="$(grep "Loading rule file" $suricataLog | sed 's/ - <Config>.*.$//' | tail -n1)"
-invalidSignatures="$(grep "$lastReloadTimestamp" -A 1000 $suricataLog | grep ERR_INVALID_SIGNATURE | grep -oE 'sid:[0-9]+' |cut -d: -f2| sort -u)"
+lastReloadTimestamp="$(grep "Loading rule file" $suricataLog | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}' | tail -n1)"
+invalidSignatures="$(grep "$lastReloadTimestamp" -A 1000 $suricataLog | grep "error parsing signature" | grep -oE sid:[0-9]+ |cut -d: -f2| sort -u)"
 invalidSignaturesCount=$(grep -E [0-9]+ -c <<< $invalidSignatures)
 }
 
