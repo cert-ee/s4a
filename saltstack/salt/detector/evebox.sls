@@ -6,7 +6,7 @@ evebox:
   cmd.run:
     - name: apt-mark unhold evebox
   pkg.installed:
-    - version: 1:0.17.1
+    - version: 1:0.23.0
     - hold: true
     - update_holds: true
     - refresh: true
@@ -29,8 +29,8 @@ evebox_conf:
 
 fetch_suricata_template:
   file.managed:
-    - name: /etc/evebox/suricata-template-7.x.json
-    - source: salt://{{ slspath }}/files/evebox/suricata-template-7.x.json
+    - name: /etc/evebox/suricata-template-8.x.json
+    - source: salt://{{ slspath }}/files/evebox/suricata-template-8.x.json
     - user: root
     - group: root
     - mode: 755
@@ -42,7 +42,7 @@ elasticsearch_suricata_template:
     - status: 200
     - header_dict:
         Content-Type: "application/json"
-    - data_file: /etc/evebox/suricata-template-7.x.json
+    - data_file: /etc/evebox/suricata-template-8.x.json
 
 remove_evebox_geoip_leftovers:
   file.absent:
@@ -98,3 +98,9 @@ evebox-agent_component_enable:
     - name: |
         source /etc/default/s4a-detector
         mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "evebox"},{ $set: { installed:true } })'
+
+evebox-agent_component_check:
+  cmd.run:
+    - name: |
+        source /etc/default/s4a-detector
+        mongosh $MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval 'db.component.updateOne({"_id": "evebox"}, {$set: {"health_url": "http://localhost:5636/api/version"}})'

@@ -152,14 +152,14 @@ evebox_repo:
 
 suricata_repo:
   file.managed:
-    - name: /etc/apt/keyrings/oisf-ubuntu-suricata-6_0.gpg
-    - source: salt://{{ slspath }}/files/suricata/oisf-ubuntu-suricata-6_0.gpg
+    - name: /etc/apt/keyrings/oisf-ubuntu-suricata.gpg
+    - source: salt://{{ slspath }}/files/suricata/oisf-ubuntu-suricata.gpg
     - user: root
     - group: root
     - mode: 644
   pkgrepo.managed:
     - humanname: Suricata Repository
-    - name: deb [signed-by=/etc/apt/keyrings/oisf-ubuntu-suricata-6_0.gpg arch=amd64] https://ppa.launchpadcontent.net/oisf/suricata-6.0/ubuntu/ jammy main
+    - name: deb [signed-by=/etc/apt/keyrings/oisf-ubuntu-suricata.gpg arch=amd64] https://ppa.launchpadcontent.net/oisf/suricata-7.0/ubuntu/ jammy main
     - file: /etc/apt/sources.list.d/suricata.list
     - clean_file: true
 
