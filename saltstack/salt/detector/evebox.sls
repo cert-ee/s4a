@@ -11,7 +11,7 @@ evebox:
     - update_holds: true
     - refresh: true
     - require:
-      - evebox_repo
+      - s4a_repo
 
 evebox_pkgs:
   pkg.latest:
