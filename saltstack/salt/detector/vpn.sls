@@ -7,7 +7,7 @@ openvpn:
 
 openvpn_service_disabled:
   service.disabled:
-    - name: openvpn
+    - name: openvpn@detector
 
 {% if not salt['file.file_exists' ]('/etc/openvpn/detector.conf') %}
 python3-m2crypto:
