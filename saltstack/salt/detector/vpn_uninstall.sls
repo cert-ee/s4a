@@ -1,5 +1,6 @@
 include:
   - detector.user_uninstall
+  - detector.vpn_disabled
 
 openvpn_pkg:
   service.dead:
