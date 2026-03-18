@@ -3,7 +3,7 @@ openvpn_service:
     - name: openvpn
     - enable: true
 
-openvpn_service:
+openvpn@detector_service:
   service.running:
     - name: openvpn@detector
     - enable: true
