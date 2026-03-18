@@ -5,7 +5,11 @@ openvpn:
   pkg.installed:
     - refresh: true
 
-openvpn_service:
+openvpn_service_disabled:
+  service.disabled:
+    - name: openvpn
+
+openvpn_service_dead:
   service.dead:
     - name: openvpn
     - enable: false
