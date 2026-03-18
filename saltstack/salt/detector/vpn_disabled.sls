@@ -3,6 +3,11 @@ openvpn_service:
     - name: openvpn@detector
     - enable: false
 
+openvpn_service:
+  service.dead:
+    - name: openvpn
+    - enable: false
+
 vpn_component_enable:
   cmd.run:
     - name: |
