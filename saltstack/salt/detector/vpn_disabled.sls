@@ -1,3 +1,8 @@
+openvpn@detector_service:
+  service.dead:
+    - name: openvpn@detector
+    - enable: false
+
 openvpn_service:
   service.dead:
     - name: openvpn

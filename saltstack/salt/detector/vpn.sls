@@ -9,6 +9,11 @@ openvpn_service_disabled:
   service.disabled:
     - name: openvpn
 
+openvpn_service_dead:
+  service.dead:
+    - name: openvpn
+    - enable: false
+
 {% if not salt['file.file_exists' ]('/etc/openvpn/detector.conf') %}
 python3-m2crypto:
   pkg.installed:
