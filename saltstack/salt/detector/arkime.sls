@@ -99,8 +99,6 @@ detector_arkime_daily_script:
     - template: jinja
     - require:
       - pkg: arkime
-    - defaults:
-        es: {{ es }}
 
 detector_arkime_daily_cron:
   cron.present:
@@ -155,7 +153,7 @@ detector_arkime_db:
        - arkimeviewer
   cmd.run:
 {% if elastic_node_count|int ==  1 %}
-    - name: echo INIT | /opt/arkime/db/db.pl {{ es }} init --replicas 0
+    - name: echo INIT | /opt/arkime/db/db.pl http://localhost:9200 init --replicas 0
 {% else %}
     - name: echo INIT | /opt/arkime/db/db.pl http://localhost:9200 init --shardsPerNode 3 --shards {{ elastic_node_count }} --replicas 1
 {% endif %}
@@ -165,14 +163,14 @@ detector_arkime_db:
       - detector_arkime_check_elastic_up
 {% endif %}
 
-{% if (arkimeDBVersion is defined and arkimeDBVersion != "null" and arkimeDBVersion|int < 82) and elastic_status == "green" %}
+{% if (arkimeDBVersion is defined and arkimeDBVersion != "null" and arkimeDBVersion|int < 86) and elastic_status == "green" %}
 detector_arkime_db_upgrade:
   service.dead:
     - names:
        - arkimecapture
        - arkimeviewer
   cmd.run:
-    - name: echo UPGRADE | /opt/arkime/db/db.pl {{ es }} upgrade --shardsPerNode {{ arkimeShardsPerNode }}  --shards {{ arkimeShards }} --replicas {{ arkimeReplicas }}
+    - name: echo UPGRADE | /opt/arkime/db/db.pl http://localhost:9200 upgrade --shardsPerNode {{ arkimeShardsPerNode }}  --shards {{ arkimeShards }} --replicas {{ arkimeReplicas }}
     - runas: root
     - require:
       - pkg: arkime
