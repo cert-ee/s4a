@@ -163,7 +163,7 @@ detector_arkime_db:
       - detector_arkime_check_elastic_up
 {% endif %}
 
-{% if (arkimeDBVersion is defined and arkimeDBVersion != "null" and arkimeDBVersion|int < 82) and elastic_status == "green" %}
+{% if (arkimeDBVersion is defined and arkimeDBVersion != "null" and arkimeDBVersion|int < 86) and elastic_status == "green" %}
 detector_arkime_db_upgrade:
   service.dead:
     - names:
