@@ -10,7 +10,7 @@ detector_kibana_pkg:
     - name: apt-mark unhold kibana
   pkg.installed:
     - name: kibana
-    - version: 8.19.12
+    - version: 8.19.18
     - hold: true
     - update_holds: true
     - refresh: true
